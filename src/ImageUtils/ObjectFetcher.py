@@ -29,7 +29,7 @@ class ObjectFetcher:
         self.model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True)
         self.model.eval()
 
-    def __get_prediction(self, img, threshold):
+    def _get_prediction(self, img, threshold):
         transform = T.Compose([T.ToTensor()])
         img = transform(img)
         pred = self.model([img])
@@ -47,24 +47,22 @@ class ObjectFetcher:
         pred_class = pred_class[:pred_t + 1]
         return masks, pred_boxes, pred_class
 
-    def __instance_segmentation_api(self, img_, object_name, threshold=0.5, rect_th=3, text_size=3, text_th=3):
-        masks, boxes, pred_cls = self.__get_prediction(img_, threshold)
+    def _instance_segmentation_api(self, img_, object_name, threshold=0.5, rect_th=3):
+        masks, boxes, pred_cls = self._get_prediction(img_, threshold)
         img = numpy.array(img_)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        objects = []
         if object_name in pred_cls:
+            main_object_idx = -1
             for i in range(len(masks)):
                 if pred_cls[i] == object_name:
-                    a1, a2, a3, a4 = (int(boxes[i][0][0])), (int(boxes[i][0][1])), \
-                                     (int(boxes[i][1][0])), (int(boxes[i][1][1]))
-                    tmp = cv2.rectangle(img, ((int(boxes[i][0][0])), (int(boxes[i][0][1]))), boxes[i][1],
-                                        ((int(boxes[i][1][0])), (int(boxes[i][1][1]))), thickness=rect_th)
-                    img = img[a2:a4, a1:a3]
-                    # plt.figure(figsize=(20, 30))
-                    # plt.imshow(tmp)
-                    # plt.xticks([])
-                    # plt.yticks([])
-                    # plt.show()
-                    return img
+                    main_object_idx = i
+                a1, a2, a3, a4 = (int(boxes[i][0][0])), (int(boxes[i][0][1])), \
+                                 (int(boxes[i][1][0])), (int(boxes[i][1][1]))
+                objects.append([pred_cls[i], img[a2:a4, a1:a3]])
+            if len(objects) > 1:
+                objects[0], objects[main_object_idx] = objects[main_object_idx], objects[0]
+            return objects
         else:
             return None
 
@@ -72,24 +70,13 @@ class ObjectFetcher:
         cap = cv2.VideoCapture(video)
         while True:
             ret, frame = cap.read()
-            obj = self.__instance_segmentation_api(frame, object_name)
-            if obj is not None:
+            objects = self._instance_segmentation_api(frame, object_name)
+            if objects is not None:
                 break
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
         cap.release()
         cv2.destroyAllWindows()
-        return obj
-
-    def fetch_from_image(self):
-        image = Image.open("../../resources/references/cat.jpg")
-        self.__instance_segmentation_api(image, "cat")
-
-# f = ObjectFetcher()
-# f.fetch_from_video("../../resources/videos/table1.MOV", "bed")
-
-# plt.figure(figsize=(20, 30))
-# plt.imshow(img)
-# plt.xticks([])
-# plt.yticks([])
-# plt.show()
+        for o in objects:
+            cv2.imwrite('../output/' + o[0] + '.png', o[1])
+        return objects

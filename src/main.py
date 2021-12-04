@@ -28,11 +28,6 @@ def create_arg_parser():
 def fetch_obj(args):
     fetcher = ReferenceFetcher.ReferencesFetcher()
     marked_plane = fetcher.fetch(VIDEO_PATH + args.video, args.reference_name)
-    # plt.figure(figsize=(20, 30))
-    # plt.imshow(marked_plane)
-    # plt.xticks([])
-    # plt.yticks([])
-    # plt.show()
     ar.ar_main(VIDEO_PATH + args.video, marked_plane, MODELS_PATH + args.model, args)
 
 

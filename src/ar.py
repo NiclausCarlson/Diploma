@@ -14,6 +14,7 @@ import math
 import os
 from objloader_simple import *
 import ImageUtils.ReferencesFetcher as ReferenceFetcher
+from IOUtils.SimpleVideoWriter import *
 
 # Minimum number of matches that have to be found
 # to consider the recognition valid
@@ -31,28 +32,26 @@ def ar_main(video_path, marked_reference, model_path, args):
     This functions loads the target surface image,
     """
     homography = None
-    # matrix of camera parameters (made up but works quite well for me) 
     camera_parameters = np.array([[800, 0, 320], [0, 800, 240], [0, 0, 1]])
-    # create ORB keypoint detector
     orb = cv2.ORB_create()
-    # create BFMatcher object based on hamming distance  
     bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
-    # load the references surface that will be searched in the videos stream
     dir_name = os.getcwd()
-    model = marked_reference #cv2.imread(os.path.join(dir_name, reference_path), 0)
-    # Compute model keypoints and its descriptors
+    model = marked_reference
     kp_model, des_model = orb.detectAndCompute(model, None)
     # Load 3D model from OBJ file
     obj = OBJ(os.path.join(dir_name, model_path), swapyz=True)
     # init videos capture
     cap = cv2.VideoCapture(video_path)
+
+    video_writer = SimpleVideoWriter('../output/video.avi', params_fetcher(video_path))
     while True:
         # read the current frame
         ret, frame = cap.read()
         if not ret:
-            print("Unable to capture videos")
             return
             # find and draw the keypoints of the frame
+        video_writer.write_frame(frame)
+
         kp_frame, des_frame = orb.detectAndCompute(frame, None)
         if des_frame is None:
             print("Not enough matches found: detectAndCompute returns None")
@@ -90,10 +89,11 @@ def ar_main(video_path, marked_reference, model_path, args):
                         pass
                 # draw first 10 matches.
                 if args.matches:
-                    frame = cv2.drawMatches(model, kp_model, frame, kp_frame, matches[:10], 0, flags=2)
+                    # frame = cv2.drawMatches(model, kp_model, frame, kp_frame, matches[:10], 0, flags=2)
+                    # video_writer.write_frame(frame)
+                    pass
                 # show result
                 if args.output:
-                    cv2.imshow('frame', frame)
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         break
             else:
