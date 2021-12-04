@@ -14,7 +14,7 @@ import math
 import os
 from objloader_simple import *
 import ImageUtils.ReferencesFetcher as ReferenceFetcher
-from IOUtils.SimpleVideoWriter import *
+from IOUtils.VideoWriter import *
 
 # Minimum number of matches that have to be found
 # to consider the recognition valid
@@ -43,14 +43,14 @@ def ar_main(video_path, marked_reference, model_path, args):
     # init videos capture
     cap = cv2.VideoCapture(video_path)
 
-    video_writer = SimpleVideoWriter('../output/video.avi', params_fetcher(video_path))
+    video_writer = VideoWriter('../output/video.avi', params_fetcher(video_path))
+    idx = 0
     while True:
         # read the current frame
         ret, frame = cap.read()
         if not ret:
             return
             # find and draw the keypoints of the frame
-        video_writer.write_frame(frame)
 
         kp_frame, des_frame = orb.detectAndCompute(frame, None)
         if des_frame is None:
@@ -89,9 +89,11 @@ def ar_main(video_path, marked_reference, model_path, args):
                         pass
                 # draw first 10 matches.
                 if args.matches:
-                    # frame = cv2.drawMatches(model, kp_model, frame, kp_frame, matches[:10], 0, flags=2)
-                    # video_writer.write_frame(frame)
-                    pass
+                    frame1 = cv2.drawMatches(model, kp_model, frame, kp_frame, matches[:10], 0, flags=2)
+                    # cv2.imwrite('../output/pictures/' + str(idx) + '.png', frame1)
+                    # idx += 1
+                video_writer.write_frame(frame)
+
                 # show result
                 if args.output:
                     if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -110,7 +112,7 @@ def render(img, obj, projection, model, color=False):
     """
     vertices = obj.vertices
     scale_matrix = np.eye(3) * 3
-    h, w = model.shape
+    h, w, l = model.shape
 
     for face in obj.faces:
         face_vertices = face[0]

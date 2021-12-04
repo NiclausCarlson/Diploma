@@ -1,5 +1,4 @@
 import cv2
-from skvideo.io import VideoWriter
 
 
 def params_fetcher(video_path):
@@ -13,11 +12,11 @@ def params_fetcher(video_path):
     raise ValueError('Can\'t read video params')
 
 
-class SimpleVideoWriter:
+class VideoWriter:
     def __init__(self, output_path, args):
         self._fps, self._height, self._width = args[0], args[1], args[2]
-        self._out = VideoWriter(output_path, (self._height, self._width))
-        self._out.open()
+        self._out = cv2.VideoWriter(output_path, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'),
+                                    self._fps, (self._width, self._height))
 
     def write_frame(self, frame):
         self._out.write(frame)
