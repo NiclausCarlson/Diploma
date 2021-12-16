@@ -8,6 +8,13 @@ import cv2
 import random
 
 
+class ObjectDescriptor:
+    def __init__(self, name, image, borders):
+        self.name = name
+        self.image = image
+        self.borders = borders
+
+
 # ade20k
 class ObjectFetcher:
     COCO_INSTANCE_CATEGORY_NAMES = [
@@ -35,9 +42,8 @@ class ObjectFetcher:
         pred = self.model([img])
         pred_score = list(pred[0]['scores'].detach().numpy())
         pred_list = [pred_score.index(x) for x in pred_score if x > threshold]
-        if len(pred_list) == 0:
-            pred_t = 0
-        else:
+        pred_t = 0
+        if len(pred_list) != 0:
             pred_t = pred_list[-1]
         masks = (pred[0]['masks'] > 0.5).squeeze().detach().cpu().numpy()
         pred_class = [self.COCO_INSTANCE_CATEGORY_NAMES[i] for i in list(pred[0]['labels'].numpy())]
@@ -47,7 +53,7 @@ class ObjectFetcher:
         pred_class = pred_class[:pred_t + 1]
         return masks, pred_boxes, pred_class
 
-    def _instance_segmentation_api(self, img_, object_name, threshold=0.5, rect_th=3):
+    def _instance_segmentation_api(self, img_, object_name, threshold=0.5):
         masks, boxes, pred_cls = self._get_prediction(img_, threshold)
         img = numpy.array(img_)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -59,7 +65,7 @@ class ObjectFetcher:
                     main_object_idx = i
                 a1, a2, a3, a4 = (int(boxes[i][0][0])), (int(boxes[i][0][1])), \
                                  (int(boxes[i][1][0])), (int(boxes[i][1][1]))
-                objects.append([pred_cls[i], img[a2:a4, a1:a3]])
+                objects.append(ObjectDescriptor(pred_cls[i], img, (a2, a4, a1, a3)))
             if len(objects) > 1:
                 objects[0], objects[main_object_idx] = objects[main_object_idx], objects[0]
             return objects
@@ -78,5 +84,5 @@ class ObjectFetcher:
         cap.release()
         cv2.destroyAllWindows()
         for o in objects:
-            cv2.imwrite('../output/' + o[0] + '.png', o[1])
+            cv2.imwrite('../output/' + o.name + '.png', o.image)
         return objects

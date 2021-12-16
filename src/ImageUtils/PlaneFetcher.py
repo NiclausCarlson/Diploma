@@ -1,3 +1,3 @@
 class PlaneFetcher:
-    def fetch(self, image):
+    def fetch(self, image, coordinates):
         return image
