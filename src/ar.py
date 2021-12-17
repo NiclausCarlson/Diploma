@@ -90,8 +90,8 @@ def ar_main(video_path, marked_reference, model_path, args):
                 # draw first 10 matches.
                 if args.matches:
                     frame1 = cv2.drawMatches(model, kp_model, frame, kp_frame, matches[:10], 0, flags=2)
-                    # cv2.imwrite('../output/pictures/' + str(idx) + '.png', frame1)
-                    # idx += 1
+                    cv2.imshow('matches', frame1)
+                    cv2.waitKey(0)
                 video_writer.write_frame(frame)
 
                 # show result

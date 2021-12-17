@@ -1,4 +1,7 @@
 import argparse
+
+import cv2
+
 import ImageUtils.ReferencesFetcher as ReferenceFetcher
 import matplotlib.pyplot as plt
 import ar
@@ -27,8 +30,8 @@ def create_arg_parser():
 
 def fetch_obj(args):
     fetcher = ReferenceFetcher.ReferencesFetcher()
-    marked_plane = fetcher.fetch(VIDEO_PATH + args.video, args.reference_name)
-    ar.ar_main(VIDEO_PATH + args.video, marked_plane, MODELS_PATH + args.model, args)
+    plane, mask = fetcher.fetch(VIDEO_PATH + args.video, args.reference_name)
+    ar.ar_main(VIDEO_PATH + args.video, plane, MODELS_PATH + args.model, args)
 
 
 def main():

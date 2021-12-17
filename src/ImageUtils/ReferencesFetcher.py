@@ -12,4 +12,4 @@ class ReferencesFetcher:
     def fetch(self, video, object_name):
         objects = self.object_fetcher.fetch_from_video(video, object_name)
         plane = self.plane_fetcher.fetch(objects[0].image, objects[0].borders)
-        return self.reference_marker.getMarked(plane, objects[0].borders)
+        return self.reference_marker.getPlaneAndMask(plane, objects[0].borders)
