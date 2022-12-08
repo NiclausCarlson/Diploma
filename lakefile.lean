@@ -9,7 +9,7 @@ lean_lib Diploma {
   -- add library configuration options here
 }
 
-@[default_target]
+@[defaultTarget]
 lean_exe diploma {
   root := `Main
 }
