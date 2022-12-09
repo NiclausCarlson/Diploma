@@ -1,31 +1,48 @@
 import Std.Data.HashMap
 
+import Diploma.Computational
+
+
 namespace Polynomials 
-  
-  structure Variable (α: Type) where
+  open Computational
+  structure Variable where
     deg: Nat
     name: String
 
-  structure Monomial (α: Type) where
-    coeff : α 
-    vars: List (Variable α)
+  structure Monomial where
+    coeff : Nat 
+    vars: List Variable
 
-  structure Polynomial (α: Type) where
-    monomials : List (Monomial α)
+  structure Polynomial where
+    monomials : List Monomial
 
-  structure VariableSub (α: Type) where
-    name: String
-    value: α 
+  def var_sub (var : Variable) (vs: Std.HashMap String Nat) : Nat := 
+     (vs.find! var.name)  ^ var.deg
 
+  def monomial_sub_impl (f: List Variable) (vs: Std.HashMap String Nat) : Nat := 
+      match f with
+        | [] => panic! "Found empty variables list"
+        | a₁ :: as => ( var_sub a₁ vs ) + (monomial_sub_impl as vs)
 
---  def v_sub (f : Variable Nat) (x: Nat) : Nat := x ^ f.deg
+  def monomial_sub (f: Monomial) (vs: Std.HashMap String Nat) : Nat :=
+     f.coeff * monomial_sub_impl f.vars vs
+  
+  def polynomial_sub_impl (f: List Monomial) (vs: Std.HashMap String Nat) : Nat :=
+    match f with
+        | [] => panic! "Found empty monomials list"
+        | a₁ :: as => (monomial_sub a₁ vs) + (polynomial_sub_impl as vs)
 
--- хочу поматчить список переменных. Найти каждую переменную в vs и выполнить подстановку.
--- если не удалось, то выдать ошибку
---  def m_sub_impl (f: List (Variable Nat)) (vs: List (VariableSub Nat)) : Nat := sorry
+  def polynomial_sub (f: Polynomial) (vs: Std.HashMap String Nat) : Nat :=
+      polynomial_sub_impl f.monomials vs
 
- -- def m_sub (f: Monomial Nat) (vs: List (VariableSub Nat)) : Nat := 
- --     f.coeff * (m_sub_impl f.vars vs)
+  #eval var_sub {deg:=5, name:="x"} (Std.HashMap.ofList [("x", 5)])
+
+  #eval monomial_sub {coeff:=5, vars:=[{deg:=5, name:="x"}]}
+                   (Std.HashMap.ofList [("x", 5)])
+
+  #eval polynomial_sub {monomials:=[{coeff:=5,
+                                      vars:=[{deg:=5, name:="x"}]
+                                      }]} (Std.HashMap.ofList [("x", 5)])
 
 
 end Polynomials
