@@ -18,10 +18,26 @@ namespace Computational
   def NatComputational: Computational := {
     carrier:=Nat,
     sum:=Nat.add,
-    sub:=Nat.add,
-    mul:=Nat.add,
-    div:=Nat.add,
-    pow:=Nat.add
+    sub:=Nat.sub,
+    mul:=Nat.mul,
+    div:=Nat.div,
+    pow:=Nat.pow
   }
   
+  class A (α : Type) where
+    sum: α → α → α 
+    pow: α → α → α 
+
+  instance [A Nat]: A Nat where
+    sum x y := x + y
+    pow x y := x ^ y
+  
+  structure B [A α] (α : Type) where
+    coeff: α 
+
+--  def f [A Nat] (a b: B Nat): Nat :=
+--    A.sum a.coeff b.coeff
+
+--  #eval f {coeff:=3} {coeff:=4}
+
 end Computational
