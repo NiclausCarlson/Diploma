@@ -1,13 +1,11 @@
-
 namespace Computational
 
-  structure Computational where
-    carrier: Type
-    sum: carrier  → carrier  → carrier 
-    sub: carrier  → carrier  → carrier 
-    mul: carrier  → carrier  → carrier 
-    div: carrier  → carrier  → carrier 
-    pow: carrier  → Nat → carrier 
+  class Computational (α : Type) [ToString α] [Inhabited α] where
+    sum: α → α → α 
+    sub: α → α → α 
+    mul: α → α → α 
+    div: α → α → α 
+    pow: α → Nat → α 
 
   infixl:65 " + "   => Computational.sum
   infixl:65 " - "   => Computational.sub
@@ -15,29 +13,18 @@ namespace Computational
   infixl:70 " / "   => Computational.div
   infixr:80 " ^ "   => Computational.pow
 
-  def NatComputational: Computational := {
-    carrier:=Nat,
-    sum:=Nat.add,
-    sub:=Nat.sub,
-    mul:=Nat.mul,
-    div:=Nat.div,
-    pow:=Nat.pow
-  }
-  
-  class A (α : Type) where
-    sum: α → α → α 
-    pow: α → α → α 
-
-  instance [A Nat]: A Nat where
+  instance: Computational Int where
     sum x y := x + y
+    sub x y := x - y
+    mul x y := x * y
+    div x y := x / y
     pow x y := x ^ y
   
-  structure B [A α] (α : Type) where
-    coeff: α 
-
---  def f [A Nat] (a b: B Nat): Nat :=
---    A.sum a.coeff b.coeff
-
---  #eval f {coeff:=3} {coeff:=4}
+  instance: Computational Float where
+    sum x y := x + y
+    sub x y := x - y
+    mul x y := x * y
+    div x y := x / y
+    pow x y := Float.pow x (Float.ofInt y)
 
 end Computational

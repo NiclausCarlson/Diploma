@@ -10,12 +10,12 @@ namespace Polynomials
     deg: Nat
     name: String
   
-  structure Monomial where
-    coeff : Nat 
+  structure Monomial (α : Type) [ToString α] [Inhabited α] [Computational α] where
+    coeff : α
     vars: List Variable
 
-  structure Polynomial where
-    monomials : List Monomial
+  structure Polynomial (α : Type) [ToString α] [Inhabited α] [Computational α] where
+    monomials : List (Monomial α)
 
 
 namespace ToString
@@ -29,52 +29,50 @@ namespace ToString
                    | [a] => toString a
                    | a₁ :: as => (toString a₁) ++ (toString as)
 
-  instance : ToString Monomial where
+  instance (α : Type) [ToString α] [Inhabited α]  [Computational α]: ToString (Monomial α) where
     toString m := (toString m.coeff) ++ (toString m.vars)
   
-  instance : ToString (List Monomial) where
+  instance (α : Type) [ToString α] [Inhabited α] [Computational α] : ToString (List (Monomial α)) where
     toString monomials := match monomials with 
                     | [] => ""
                     | [a₁] => toString a₁
                     | a₁ :: as => toString a₁ ++ " + " ++ toString as
 
-  instance : ToString Polynomial where
+  instance (α : Type) [ToString α] [Inhabited α] [Computational α] : ToString (Polynomial α) where
     toString p := toString p.monomials
 
 end ToString
 
 #eval toString {monomials:=[{coeff:=5,
                                       vars:=[{deg:=5, name:="x"}]
-                                      }]: Polynomial}
+                                      }]: Polynomial Nat}
                                       
 
-  def var_sub (var : Variable) (vs: Std.HashMap String Nat) : Nat := 
-    (vs.find! var.name) ^ var.deg
+def var_sub [ToString α] [Inhabited α] [Computational α] (var : Variable) (vs: Std.HashMap String α) : α := 
+  (vs.find! var.name) ^ var.deg
 
-  def monomial_sub_impl (f: List Variable) (vs: Std.HashMap String Nat) : Nat := 
-      match f with
-        | [] => panic! "Found empty variables list"
-        | a₁ :: as => ( var_sub a₁ vs ) + (monomial_sub_impl as vs)
-
-  def monomial_sub (f: Monomial) (vs: Std.HashMap String Nat) : Nat :=
-     f.coeff * monomial_sub_impl f.vars vs
-  
-  def polynomial_sub_impl (f: List Monomial) (vs: Std.HashMap String Nat) : Nat :=
+def monomial_sub_impl [ToString α] [Inhabited α] [Computational α] (f: List Variable) (vs: Std.HashMap String α) : α := 
     match f with
-        | [] => panic! "Found empty monomials list"
-        | a₁ :: as => (monomial_sub a₁ vs) + (polynomial_sub_impl as vs)
+      | [] => panic! "Found empty variables list"
+      | a₁ :: as => ( var_sub a₁ vs ) + (monomial_sub_impl as vs)
 
-  def polynomial_sub (f: Polynomial) (vs: Std.HashMap String Nat) : Nat :=
-      polynomial_sub_impl f.monomials vs
+def monomial_sub [ToString α] [Inhabited α] [Computational α] (f: Monomial α) (vs: Std.HashMap String α) : α :=
+   f.coeff * monomial_sub_impl f.vars vs
 
-  #eval var_sub {deg:=5, name:="x"} (Std.HashMap.ofList [("x", 5)])
+def polynomial_sub_impl [ToString α] [Inhabited α] [Computational α] (f: List (Monomial α)) (vs: Std.HashMap String α) : α :=
+  match f with
+      | [] => panic! "Found empty monomials list"
+      | a₁ :: as => (monomial_sub a₁ vs) + (polynomial_sub_impl as vs)
 
-  #eval monomial_sub {coeff:=5, vars:=[{deg:=5, name:="x"}]}
-                   (Std.HashMap.ofList [("x", 5)])
-
-  #eval polynomial_sub {monomials:=[{coeff:=5,
-                                      vars:=[{deg:=5, name:="x"}]
-                                      }]} (Std.HashMap.ofList [("x", 5)])
+def polynomial_sub [ToString α] [Inhabited α] [Computational α] (f: Polynomial α) (vs: Std.HashMap String α) : α :=
+    polynomial_sub_impl f.monomials vs
+    
+#eval var_sub {deg:=5, name:="x"} (Std.HashMap.ofList [("x", 5)])
+#eval monomial_sub {coeff:=5, vars:=[{deg:=5, name:="x"}]}
+                 (Std.HashMap.ofList [("x", 5)])
+#eval polynomial_sub {monomials:=[{coeff:=5,
+                                    vars:=[{deg:=5, name:="x"}]
+                                    }]} (Std.HashMap.ofList [("x", 5)])
 
 
 end Polynomials
