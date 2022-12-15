@@ -1,4 +1,4 @@
-namespace Computational
+namespace computational
 
   class Computational (α : Type) [ToString α] [Inhabited α] where
     sum: α → α → α 
@@ -34,4 +34,4 @@ namespace Computational
     div x y := x / y
     pow x y := Float.pow x (Float.ofInt y)
 
-end Computational
+end computational

@@ -3,8 +3,8 @@ import Std.Data.HashMap
 import Diploma.Computational
 
 
-namespace Polynomials 
-  open Computational
+namespace polynomials 
+  open computational
   
   structure Variable where
     deg: Nat
@@ -75,4 +75,4 @@ def polynomial_sub [ToString α] [Inhabited α] [Computational α] (f: Polynomia
                                     }]} (Std.HashMap.ofList [("x", 5)])
 
 
-end Polynomials
+end polynomials
