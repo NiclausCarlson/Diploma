@@ -7,12 +7,12 @@ namespace polynomials
   open computational
   
   structure Variable where
-    deg: Nat
-    name: String
+    deg  : Nat
+    name : String
   
   structure Monomial (α : Type) [ToString α] [Inhabited α] [Computational α] where
     coeff : α
-    vars: List Variable
+    vars  : List Variable
 
   structure Polynomial (α : Type) [ToString α] [Inhabited α] [Computational α] where
     monomials : List (Monomial α)
@@ -21,32 +21,27 @@ namespace polynomials
 namespace ToString
 
   instance : ToString Variable where
-    toString v := v.name ++ "^" ++ toString v.deg
+    toString v := v.name ++ if v.deg != 1 then "^" ++ toString v.deg else ""
 
-  instance : ToString (List Variable) where
-    toString v := match v with 
-                   | [] => ""
-                   | [a] => toString a
-                   | a₁ :: as => (toString a₁) ++ (toString as)
+  protected def VariablesToString (vs: List Variable): String :=
+    match vs with 
+      | [] => ""
+      | [a] => toString a
+      | a₁ :: as => (toString a₁) ++ (ToString.VariablesToString as)
 
   instance (α : Type) [ToString α] [Inhabited α]  [Computational α]: ToString (Monomial α) where
-    toString m := (toString m.coeff) ++ (toString m.vars)
-  
-  instance (α : Type) [ToString α] [Inhabited α] [Computational α] : ToString (List (Monomial α)) where
-    toString monomials := match monomials with 
-                    | [] => ""
-                    | [a₁] => toString a₁
-                    | a₁ :: as => toString a₁ ++ " + " ++ toString as
+    toString m := (toString m.coeff) ++ (ToString.VariablesToString m.vars)
+
+  protected def MonomialsToString [ToString α] [Inhabited α] [Computational α] (monomials: List (Monomial α)): String :=
+     match monomials with 
+      | [] => ""
+      | [a] => toString a
+      | a₁ :: as => toString a₁ ++ " + " ++ (ToString.MonomialsToString as)
 
   instance (α : Type) [ToString α] [Inhabited α] [Computational α] : ToString (Polynomial α) where
-    toString p := toString p.monomials
+    toString p := ToString.MonomialsToString p.monomials
 
-end ToString
-
-#eval toString {monomials:=[{coeff:=5,
-                                      vars:=[{deg:=5, name:="x"}]
-                                      }]: Polynomial Nat}
-                                      
+end ToString                                   
 
 def var_sub [ToString α] [Inhabited α] [Computational α] (var : Variable) (vs: Std.HashMap String α) : α := 
   (vs.find! var.name) ^ var.deg
