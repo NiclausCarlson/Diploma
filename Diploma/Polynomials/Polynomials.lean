@@ -29,7 +29,7 @@ namespace ToString
       | [a] => toString a
       | a₁ :: as => (toString a₁) ++ (ToString.VariablesToString as)
 
-  instance (α : Type) [ToString α] [Inhabited α]  [Computational α]: ToString (Monomial α) where
+  instance [ToString α] [Inhabited α]  [Computational α]: ToString (Monomial α) where
     toString m := (toString m.coeff) ++ (ToString.VariablesToString m.vars)
 
   protected def MonomialsToString [ToString α] [Inhabited α] [Computational α] (monomials: List (Monomial α)): String :=
@@ -38,7 +38,7 @@ namespace ToString
       | [a] => toString a
       | a₁ :: as => toString a₁ ++ " + " ++ (ToString.MonomialsToString as)
 
-  instance (α : Type) [ToString α] [Inhabited α] [Computational α] : ToString (Polynomial α) where
+  instance [ToString α] [Inhabited α] [Computational α] : ToString (Polynomial α) where
     toString p := ToString.MonomialsToString p.monomials
 
 end ToString                                   
@@ -68,6 +68,5 @@ def polynomial_sub [ToString α] [Inhabited α] [Computational α] (f: Polynomia
 #eval polynomial_sub {monomials:=[{coeff:=5,
                                     vars:=[{deg:=5, name:="x"}]
                                     }]} (Std.HashMap.ofList [("x", 5)])
-
 
 end polynomials

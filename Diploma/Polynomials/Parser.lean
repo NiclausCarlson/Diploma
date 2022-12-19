@@ -40,6 +40,6 @@ def parse (s: String) : Except String ((Polynomial Nat)) :=
     | Parsec.ParseResult.success _ res => Except.ok res
     | Parsec.ParseResult.error it err  => Except.error s!"offset {it.i.byteIdx}: {err}"
 
---#eval parse "1234x^3+xy"
+--#eval parse "1234x^3+xy" failed with stack overflow :(
 
 end polynomials
