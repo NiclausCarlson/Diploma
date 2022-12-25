@@ -1,16 +1,16 @@
-import Std.Data.RBTree
-
 import Diploma.Computational
 import Diploma.Polynomials.Polynomials
+
+import Mathlib.Init.Algebra.Order
 
 namespace algebra
 open polynomials
 open computational
-  namespace orders
+  section orders
     instance : Ord Variable where
       compare v₁ v₂ := compare v₁.name v₂.name 
 
-    private def VariablesToStr (m: List Variable) : String :=
+    def VariablesToStr (m: List Variable) : String :=
       match m with 
         | []    => ""
         | [v]   => v.name
@@ -19,26 +19,43 @@ open computational
     instance : Ord (List Variable) where
       compare v₁ v₂ := compare (VariablesToStr v₁) (VariablesToStr v₂)
 
-    instance [ToString α] [Inhabited α] [Computational α]: Ord (Monomial α) where
+    instance : Ord (Monomial) where
       compare m₁ m₂ := compare m₁.vars m₂.vars
 
-    
+    private def ListLe [LE α] (l₁ l₂: List α) : Prop :=
+        match l₁ with
+                    | [] => match l₂ with
+                                | [] => True
+                                | _  => False
+                    | [a₁] => match l₂ with
+                                | []   => False
+                                | [a₂] => a₁ ≤ a₂
+                                | _    => False
+                    | a₁ :: as₁ => match l₂ with
+                                  | [] => False
+                                  | [_] => False
+                                  | a₂ :: as₂ => And (a₁ ≤ a₂) (ListLe as₁ as₂)   
 
-    def lex [ToString α] [Inhabited α] [Computational α] (p q: Monomial α): Prop :=
-      sorry
+    instance [LE α] : LE (List α) where
+      le l₁ l₂ := ListLe l₁ l₂
 
-    def lex_ordering [ToString α] [Inhabited α] [Computational α] (l: List (Monomial α)): List (Monomial α) :=
-      sorry 
+    instance : LE String where
+      le s₁ s₂ := s₁.data ≤ s₂.data
 
-    def p_lex_ordering [ToString α] [Inhabited α] [Computational α] (p: Polynomial α): Polynomial α :=
-      sorry 
+    instance LexLe  : LE (Monomial) where
+      le m₁ m₂ := (VariablesToStr m₁.vars) ≤ (VariablesToStr m₂.vars)
+
+    theorem lex_le_refl  (a: Monomial) : a ≤ a := sorry     
+
+    instance LexLinearOrder  : LinearOrder (Monomial) where
+      le := (·≤·)
+      le_refl := sorry
+      le_trans := sorry
+      le_antisymm := sorry
+      le_total := sorry
+      decidable_le := sorry
+      decidable_eq := sorry
 
   end orders
-
-  class LinearOrder [ToString α] [Inhabited α] [Computational α] (φ : Monomial α → Monomial α → Prop)  :=
-    refl      : (∀ p     : Monomial α, φ p p)
-    anty_symm : (∀ p q   : Monomial α, φ p q → ((φ q p) = False))
-    trans     : (∀ m p q : Monomial α, (φ m p) ∧ (φ p q) → (φ m q))
-    linear    : (∀ p q   : Monomial α, (φ p q) ∨ (φ q p) = True)
 
 end algebra

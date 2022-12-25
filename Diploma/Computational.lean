@@ -1,6 +1,6 @@
 namespace computational
 
-  class Computational (α : Type) [ToString α] [Inhabited α] where
+  class Computational (α : Type) [ToString α] [Inhabited α] [LE α] where
     sum: α → α → α 
     sub: α → α → α 
     mul: α → α → α 
@@ -12,7 +12,7 @@ namespace computational
   infixl:70 " * " => Computational.mul
   infixl:70 " / " => Computational.div
   infixr:80 " ^ " => Computational.pow
-
+  
   instance: Computational Nat where
     sum x y := x + y
     sub x y := x - y

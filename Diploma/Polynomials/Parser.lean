@@ -22,12 +22,12 @@ def Number : Parsec Nat  := (String.toNat! <$> ((many1Chars digit) <|> One))
 def Coeff  : Parsec Nat  := Number
 
 def MonomialParser : Parsec (Monomial Nat) := do
-                                      let coeff ← ws *> Coeff
-                                      let vars ← many (ws *> Var)
-                                      return {
-                                        coeff := coeff
-                                        vars  := vars.toList
-                                      }
+  let coeff ← ws *> Coeff
+  let vars ← many (ws *> Var)
+  return {
+    coeff := coeff
+    vars  := vars.toList
+  }
 
 def Poly : Parsec (Polynomial Nat) := do
                                        let monomials ← many (ws *> MonomialParser)
