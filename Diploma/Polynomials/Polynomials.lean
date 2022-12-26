@@ -2,7 +2,7 @@ import Std.Data.HashMap
 
 import Diploma.Computational
 import Mathlib.Algebra.Field.Defs
-import Mathlib.Init.Set
+
 
 namespace polynomials 
   open computational
@@ -15,48 +15,48 @@ namespace polynomials
   def Monom := Rat × (List Var) 
 
   def Poly := List Monom
+
+  structure CmpStruct where
+    mk::
+    arr      : Array Int
+    is_empty : Bool
+  deriving BEq
   
+  instance : ToString CmpStruct where
+    toString m := toString m.is_empty  ++ toString m.arr
+
+  private def monomial_eq (m₁ m₂: Monom) : Bool := (set_elems m₁.snd get_comp_struct) == 
+                                                   (set_elems m₂.snd get_comp_struct)
+    where
+     get_comp_struct : CmpStruct := CmpStruct.mk (Array.ofFn add) true
+     add (_: Fin 255) : Int := -1 
+
+     set_elems (vs: List Var) (cmp : CmpStruct) : CmpStruct :=
+       match vs with 
+         | []       => cmp
+         | [v]      => set_elem v.fst v.snd cmp
+         | v :: vvs => set_elem v.fst v.snd (set_elems vvs cmp)
+
+     set_elem (v deg: Nat) (cmp: CmpStruct) : CmpStruct :=
+       CmpStruct.mk (cmp.arr.set! v (merge_equals deg v cmp.arr)) false
+
+     merge_equals (new_value: Nat) (idx: Nat) (arr: Array Int): Int := 
+       merge_equals_impl new_value (arr.get! idx)
+     merge_equals_impl (new_value old_value: Int) : Int := 
+       if old_value < 0 then new_value 
+       else Int.add old_value new_value
+      
+      
+  instance : BEq Monom where
+    beq m₁ m₂ := monomial_eq m₁ m₂
+
   instance : HAppend Poly (List Monom) Poly where
       hAppend p ms := p.append ms
 
-  def Monom.simp (m : Monom) : Monom :=
-    if m.fst == 0 then (0, [])
-    else match m.snd with
-      | []    => (m.fst, [])
-      | [v]   => (m.fst, elim_deg v)
-      | v::vs => (m.fst, (elim_deg v) ++ 
-                         (elim_degs vs)) 
-    where
-      elim_deg (v: Var) : List Var :=
-        if v.snd == 0 then []
-        else [v]
-      elim_degs (l: List Var) : List Var :=
-        match l with 
-          | [] => []
-          | [v] => elim_deg v
-          | l::ls => (elim_deg l) ++ (elim_degs ls)
-  
-  -- Not for prooving. 
-  def list_var_eq_ (m₁ m₂: List Var) : Bool := are_equals m₁ m₂ 
-    where
-       are_equals (vs₁ vs₂: List Var) : Bool := 
-        match vs₁, vs₂ with
-          | [], []         => True
-          | [], _          => False
-          | _, []          => False
-          | [v₁], [v₂]     => v₁ == v₂
-          | [_], _::_      => False
-          | _::_, [_]      => False
-          | v₁::t₁, v₂::t₂ => (v₁ == v₂) ∧ (are_equals t₁ t₂)  
-
   def Monom.sum (m₁ m₂ : Monom) : Poly :=
-    if (list_var_eq_ m₁.snd m₂.snd) then [simp (Rat.add m₁.fst m₂.fst, m₁.snd)]
-    else if m₁.fst == 0 then [simp m₂]
+    if (monomial_eq m₁ m₂) then [(Rat.add m₁.fst m₂.fst, m₁.snd)]
+    else if m₁.fst == 0 then [m₂]
     else [m₁, m₂]
-    where
-      simp (m: Monom) : Monom :=
-        if m.fst == 0 then (0, [])
-        else m
 
   def Monom.var_mul (v: Var) (m: Monom) : Monom := (m.fst, variables_match m.snd)
     where
@@ -86,7 +86,7 @@ namespace polynomials
       match p with 
         | []     => []
         | [m']   => Monom.sum m' m
-        | m'::ms => if list_var_eq_ m'.snd m.snd then (Monom.sum m' m) ++ ms
+        | m'::ms => if monomial_eq m' m then (Monom.sum m' m) ++ ms
                     else (Poly.monom_sum m ms) ++ [m']
 
   def Poly.monom_mul (m : Monom) (p: Poly) : Poly :=
@@ -95,7 +95,6 @@ namespace polynomials
       | [m']   => [Monom.mul m m']
       | m'::ms => (Poly.monom_mul m ms) ++ [Monom.mul m m']
 
-  def Poly.simp (p: Poly) : Poly := sorry
 
   section ToString
     instance : ToString Var where
@@ -120,6 +119,7 @@ namespace polynomials
       toString p := monomials_to_string p
   
     def num_of_char (ch: Char) : Nat := ch.toNat
+    #eval num_of_char 'x'
     def get_var (ch: Char) (deg: Nat) : Var := 
         ((num_of_char ch), deg)
     #eval get_var 'x' 5
@@ -130,6 +130,10 @@ namespace polynomials
     def get_poly (ms: List Monom) : Poly := ms 
     #eval get_poly [(get_monom 2 [get_var 'x' 5, get_var 'y' 7]), 
                     (get_monom 2 [get_var 'x' 5, get_var 'z' 7])]
+
+    #eval monomial_eq (get_monom 2 [get_var 'y' 5, get_var 'z' 5, get_var 'x' 5])
+                      (get_monom 2 [get_var 'x' 5, get_var 'y' 5, get_var 'z' 5])
+
 
   end ToString
 
