@@ -3,12 +3,14 @@ import Std.Data.HashMap
 import Diploma.Computational
 import Mathlib.Algebra.Field.Defs
 
+open computational
+open List
 
 namespace polynomials 
-  open computational
-  open List
 
   def Var := Nat × Nat 
+  def Var.of (name deg: Nat): Var := (name, deg)
+
   instance : BEq Var where
     beq v₁ v₂ := (v₁.fst == v₂.fst) ∧ (v₁.snd == v₂.snd)
   
@@ -16,45 +18,107 @@ namespace polynomials
 
   def Poly := List Monom
 
-  structure CmpStruct where
+  /-!
+    ## Definition and realization of construct monomials equivalence 
+  -/
+  section MonomialEq
+
+  structure MonomialStruct where
     mk::
     arr      : Array Int
     is_empty : Bool
   deriving BEq
   
-  instance : ToString CmpStruct where
+  instance : ToString MonomialStruct where
     toString m := toString m.is_empty  ++ toString m.arr
 
-  private def monomial_eq (m₁ m₂: Monom) : Bool := (set_elems m₁.snd get_comp_struct) == 
-                                                   (set_elems m₂.snd get_comp_struct)
+  def MonomialStruct.get : MonomialStruct := (MonomialStruct.mk (Array.ofFn (fun _:Fin 255 => -1)) true)
+
+  def MonomialStruct.set (v deg: Nat) (cmp: MonomialStruct) : MonomialStruct :=
+      (MonomialStruct.mk (cmp.arr.set! v (merge_equals deg v cmp.arr)) false)
     where
-     get_comp_struct : CmpStruct := CmpStruct.mk (Array.ofFn add) true
-     add (_: Fin 255) : Int := -1 
-
-     set_elems (vs: List Var) (cmp : CmpStruct) : CmpStruct :=
-       match vs with 
-         | []       => cmp
-         | [v]      => set_elem v.fst v.snd cmp
-         | v :: vvs => set_elem v.fst v.snd (set_elems vvs cmp)
-
-     set_elem (v deg: Nat) (cmp: CmpStruct) : CmpStruct :=
-       CmpStruct.mk (cmp.arr.set! v (merge_equals deg v cmp.arr)) false
-
-     merge_equals (new_value: Nat) (idx: Nat) (arr: Array Int): Int := 
+      merge_equals (new_value: Nat) (idx: Nat) (arr: Array Int): Int := 
        merge_equals_impl new_value (arr.get! idx)
-     merge_equals_impl (new_value old_value: Int) : Int := 
+      merge_equals_impl (new_value old_value: Int) : Int := 
        if old_value < 0 then new_value 
        else Int.add old_value new_value
-      
-      
+
+  def MonomialStruct.set_many (vs: List Var) (cmp : MonomialStruct) : MonomialStruct :=
+       match vs with 
+         | []       => cmp
+         | [v]      => MonomialStruct.set  v.fst v.snd cmp
+         | v :: vvs => MonomialStruct.set  v.fst v.snd (MonomialStruct.set_many vvs cmp)
+
+  def MonomialStruct.to_monomial (coeff: Rat) (cmp : MonomialStruct) : Monom :=
+    if cmp.is_empty then (coeff, []) 
+    else (coeff, get_list_var 0 cmp.arr.data)
+    where
+      get_list_var (idx: Nat) (l: List Int): List Var :=
+        match l with
+          | []    => []
+          | [v]   => match_variable idx v
+          | v::vs => match_variable idx v ++ get_list_var (Nat.add idx 1) vs
+      match_variable (idx: Nat) (var: Int): List Var :=
+            if var > 0 then [(idx, var.toNat)] else []
+
+  private def Monom.struct_eq (m₁ m₂: Monom) : Bool := (MonomialStruct.set_many m₁.snd MonomialStruct.get) == 
+                                                       (MonomialStruct.set_many m₂.snd MonomialStruct.get)
+  
+  private def Monom.eq (m₁ m₂: Monom) : Bool :=
+    (m₁.fst == m₂.fst) ∧ (Monom.struct_eq m₁ m₂)
+  
   instance : BEq Monom where
-    beq m₁ m₂ := monomial_eq m₁ m₂
+    beq m₁ m₂ := Monom.struct_eq m₁ m₂
+
+  end MonomialEq
+
+   /-!
+    ## Definition and realization of construct polynomial simplification 
+  -/
+
+  section Simp
+
+  private def Monom.simp (m: Monom) : Monom :=
+    if m.fst == 0 then (0, [])
+    else MonomialStruct.to_monomial m.fst (MonomialStruct.set_many m.snd MonomialStruct.get)
+
+  private def Poly.simp (p: Poly): Poly := (simp_monomials p)
+    where
+      merge_equals (p: Poly): Poly := sorry
+      simp_monomials (p: Poly): Poly :=
+        match p with
+          | [] => [(0, [])]
+          | _ => p
+      simp_monomials_imp (p: List Monom): List Monom :=
+        match p with
+          | []    => []
+          | [m]   => elim_zero (Monom.simp m)
+          | m::ms => elim_zero (Monom.simp m) ++ (simp_monomials_imp ms)
+      elim_zero (p: Monom) : List Monom :=
+        if p.fst == 0 then []
+        else [p]
+
+  class Simp (α: Type) where
+    get_simp: α → α
+
+  instance : Simp Monom where
+    get_simp m := Monom.simp m
+
+  end Simp
+
+
+  /-!
+    ## Polynomials operations with simplifications
+  -/
+
+  section Operations
 
   instance : HAppend Poly (List Monom) Poly where
       hAppend p ms := p.append ms
 
+
   def Monom.sum (m₁ m₂ : Monom) : Poly :=
-    if (monomial_eq m₁ m₂) then [(Rat.add m₁.fst m₂.fst, m₁.snd)]
+    if (Monom.struct_eq m₁ m₂) then [(Rat.add m₁.fst m₂.fst, m₁.snd)]
     else if m₁.fst == 0 then [m₂]
     else [m₁, m₂]
 
@@ -86,7 +150,7 @@ namespace polynomials
       match p with 
         | []     => []
         | [m']   => Monom.sum m' m
-        | m'::ms => if monomial_eq m' m then (Monom.sum m' m) ++ ms
+        | m'::ms => if Monom.struct_eq m' m then (Monom.sum m' m) ++ ms
                     else (Poly.monom_sum m ms) ++ [m']
 
   def Poly.monom_mul (m : Monom) (p: Poly) : Poly :=
@@ -94,6 +158,8 @@ namespace polynomials
       | []     => []
       | [m']   => [Monom.mul m m']
       | m'::ms => (Poly.monom_mul m ms) ++ [Monom.mul m m']
+ 
+  end Operations
 
 
   section ToString
@@ -131,7 +197,7 @@ namespace polynomials
     #eval get_poly [(get_monom 2 [get_var 'x' 5, get_var 'y' 7]), 
                     (get_monom 2 [get_var 'x' 5, get_var 'z' 7])]
 
-    #eval monomial_eq (get_monom 2 [get_var 'y' 5, get_var 'z' 5, get_var 'x' 5])
+    #eval Monom.struct_eq (get_monom 2 [get_var 'y' 5, get_var 'z' 5, get_var 'x' 5])
                       (get_monom 2 [get_var 'x' 5, get_var 'y' 5, get_var 'z' 5])
 
 
