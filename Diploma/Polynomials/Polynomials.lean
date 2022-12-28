@@ -20,6 +20,12 @@ namespace polynomials
 
   def Poly := List Monom
 
+  instance : HAppend Poly (List Monom) Poly where
+      hAppend p ms := p.append ms
+
+  instance : HAppend Poly Poly Poly where
+      hAppend p ms := p.append ms
+
   /-!
     ## Definition and realization of construct monomials equivalence 
   -/
@@ -86,11 +92,21 @@ namespace polynomials
       insert_if_contains {γ : Nat → Nat → Ordering} (v: Var) (map: Std.RBMap Nat Var γ) : (Std.RBMap Nat Var γ) := insert (if_contains v map) map
       insert {γ : Nat → Nat → Ordering} (v: Var) (map: Std.RBMap Nat Var γ) : (Std.RBMap Nat Var γ) := map.insert v.fst v
 
-  private def get_ordered_vars {γ : Nat → Nat → Ordering} (map: Std.RBMap Nat Var γ) : List Var := List.map Prod.snd map.toList
 
-  private def get_ordered_vars_name {γ : Nat → Nat → Ordering} (map: Std.RBMap Nat Var γ) : List Nat := List.map Prod.fst map.toList
+  private def get_ordered_vars (m: Monom) : List Var := 
+    get_ordered_vars_impl (set_vars m get_vars_map)
+  where
+    get_ordered_vars_impl {γ : Nat → Nat → Ordering} (map: Std.RBMap Nat Var γ) : List Var := 
+    List.map Prod.snd map.toList
 
-  private def Monom.vars_ordering (m: Monom) : Monom := (m.fst, get_ordered_vars (set_vars m get_vars_map))
+  private def get_ordered_vars_name (m: Monom) : List Nat := 
+    get_ordered_vars_name_impl (set_vars m get_vars_map)
+  where
+    get_ordered_vars_name_impl {γ : Nat → Nat → Ordering} (map: Std.RBMap Nat Var γ) : List Nat :=
+    List.map Prod.fst map.toList
+
+
+  private def Monom.vars_ordering (m: Monom) : Monom := (m.fst, get_ordered_vars m)
 
   private def Monom.fast_struct_eq (m₁ m₂: Monom): Bool := (set_vars m₁ get_vars_map).toList == (set_vars m₂ get_vars_map).toList
 
@@ -98,13 +114,38 @@ namespace polynomials
     (m₁.fst == m₂.fst) ∧ (Monom.fast_struct_eq m₁ m₂)
   
 
+  private def list_cmp (l₁ l₂ : List Var) : Ordering :=
+     match l₁, l₂ with
+      | [], [] => Ordering.eq
+      | [], _::_ => Ordering.lt
+      | _::_, [] => Ordering.gt
+      | x::xs, y::ys => if (compare x.fst y.fst) == Ordering.eq ∧ 
+                           (compare x.snd y.snd) == Ordering.eq then list_cmp xs ys
+                        else compare x.fst y.fst
 
+  private def monom_cmp (m₁ m₂ : Monom) : Ordering := list_cmp m₁.snd m₂.snd
 
-  private def Poly.eq (p₁ p₂: Poly): Bool :=
-    sorry
+  private def get_monoms_set := Std.mkRBSet Monom (fun (x y : Monom) => list_cmp x.snd y.snd)
+
+  private def set_monoms (ms: List Monom) (set: Std.RBSet Monom monom_cmp): Std.RBSet Monom monom_cmp :=
+    match ms with
+      | []  => set
+      | [m] => insert_if_contains m set
+      | m::ms' => set_monoms ms' (insert_if_contains m set)
+  where
+    if_contains (m : Monom) (set: Std.RBSet Monom monom_cmp): Monom := 
+      match set.find? m with
+        | none => m
+        | some m' => (Rat.add m'.fst m.fst, m.snd)
+    insert_if_contains (m : Monom) (set: Std.RBSet Monom monom_cmp): (Std.RBSet Monom monom_cmp) := 
+      set.insert (if_contains m set)
+
 
   instance : BEq Monom where
     beq m₁ m₂ := Monom.struct_eq m₁ m₂
+
+  private def Poly.eq (p₁ p₂: Poly): Bool :=
+    (set_monoms p₁ get_monoms_set).toList == (set_monoms p₂ get_monoms_set).toList
 
   instance : BEq Poly where
     beq p₁ p₂ := Poly.eq p₁ p₂
@@ -123,29 +164,30 @@ namespace polynomials
 
   private def Monom.fast_simp (m: Monom) : Monom :=
     if m.fst == 0 then (0, [])
-    else (m.fst, get_ordered_vars (set_vars m get_vars_map))
+    else (m.fst, get_ordered_vars m)
 
-  private def Poly.simp (p: Poly): Poly := simp_monomials (merge_equals (simp_monomials p))
+  private def Poly.simp (p: Poly): Poly := 
+    elim_zeroes (simp_monomials (set_monoms (elim_zeroes (simp_monomials p)) get_monoms_set).toList)
     where
-      merge_equals (p: Poly): Poly := sorry
-      simp_monomials (p: Poly): Poly :=
-        match p with
-          | [] => [(0, [])]
-          | _ => p
-      simp_monomials_imp (p: List Monom): List Monom :=
-        match p with
-          | []    => []
-          | [m]   => elim_zero (Monom.simp m)
-          | m::ms => elim_zero (Monom.simp m) ++ (simp_monomials_imp ms)
-      elim_zero (p: Monom) : List Monom :=
-        if p.fst == 0 then []
-        else [p]
+      simp_monomials (p: Poly) : Poly := List.map Monom.fast_simp p
+      elim_zeroes (p: Poly) : Poly := elim_zeroes_impl [] p
+      elim_zeroes_impl (res: Poly) (p: Poly) : Poly := 
+          match p with
+          | [] => []
+          | [m] => res ++ (elim_zero m) 
+          | m::ms => res ++ (elim_zero m) ++ (elim_zeroes_impl [] ms) 
+      elim_zero (m: Monom) : List Monom :=
+        if m.fst == 0 then []
+        else [m]
 
   class Simp (α: Type) where
     get_simp: α → α
 
   instance : Simp Monom where
     get_simp m := Monom.simp m
+
+  instance : Simp Poly where
+    get_simp p := Poly.simp p
 
   end Simp
 
@@ -155,10 +197,6 @@ namespace polynomials
   -/
 
   section Operations
-
-  instance : HAppend Poly (List Monom) Poly where
-      hAppend p ms := p.append ms
-
 
   def Monom.sum (m₁ m₂ : Monom) : Poly :=
     if (Monom.struct_eq m₁ m₂) then [(Rat.add m₁.fst m₂.fst, m₁.snd)]
