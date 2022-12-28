@@ -1,9 +1,11 @@
 import Std.Data.HashMap
+import Std.Data.RBMap
 
 import Diploma.Computational
 import Mathlib.Algebra.Field.Defs
 
 open computational
+open Std.RBSet
 open List
 
 namespace polynomials 
@@ -21,7 +23,7 @@ namespace polynomials
   /-!
     ## Definition and realization of construct monomials equivalence 
   -/
-  section MonomialEq
+  section Eq
 
   structure MonomialStruct where
     mk::
@@ -64,13 +66,50 @@ namespace polynomials
   private def Monom.struct_eq (m₁ m₂: Monom) : Bool := (MonomialStruct.set_many m₁.snd MonomialStruct.get) == 
                                                        (MonomialStruct.set_many m₂.snd MonomialStruct.get)
   
-  private def Monom.eq (m₁ m₂: Monom) : Bool :=
-    (m₁.fst == m₂.fst) ∧ (Monom.struct_eq m₁ m₂)
   
+  -- Check equivalence using RBTree
+  private def get_vars_map := Std.mkRBMap Nat Var (fun (x y : Nat) => compare x y)
+
+  
+  private def set_vars {γ : Nat → Nat → Ordering} (m: Monom) (map: Std.RBMap Nat Var γ): Std.RBMap Nat Var γ:= 
+      set_vars_impl m.snd map
+  where
+      set_vars_impl {γ : Nat → Nat → Ordering} (m: List Var) (map: Std.RBMap Nat Var γ): Std.RBMap Nat Var γ:= 
+        match m with 
+          | []  => map
+          | [v] => insert_if_contains v map
+          | v::vs => set_vars_impl vs (map.insert v.fst v)
+      if_contains {γ : Nat → Nat → Ordering} (v: Var) (map: Std.RBMap Nat Var γ): Var := 
+        match map.find? v.fst with
+          | none => v
+          | some value => (v.fst, Nat.add v.snd value.snd)
+      insert_if_contains {γ : Nat → Nat → Ordering} (v: Var) (map: Std.RBMap Nat Var γ) : (Std.RBMap Nat Var γ) := insert (if_contains v map) map
+      insert {γ : Nat → Nat → Ordering} (v: Var) (map: Std.RBMap Nat Var γ) : (Std.RBMap Nat Var γ) := map.insert v.fst v
+
+  private def get_ordered_vars {γ : Nat → Nat → Ordering} (map: Std.RBMap Nat Var γ) : List Var := List.map Prod.snd map.toList
+
+  private def get_ordered_vars_name {γ : Nat → Nat → Ordering} (map: Std.RBMap Nat Var γ) : List Nat := List.map Prod.fst map.toList
+
+  private def Monom.vars_ordering (m: Monom) : Monom := (m.fst, get_ordered_vars (set_vars m get_vars_map))
+
+  private def Monom.fast_struct_eq (m₁ m₂: Monom): Bool := (set_vars m₁ get_vars_map).toList == (set_vars m₂ get_vars_map).toList
+
+  private def Monom.eq (m₁ m₂: Monom) : Bool :=
+    (m₁.fst == m₂.fst) ∧ (Monom.fast_struct_eq m₁ m₂)
+  
+
+
+
+  private def Poly.eq (p₁ p₂: Poly): Bool :=
+    sorry
+
   instance : BEq Monom where
     beq m₁ m₂ := Monom.struct_eq m₁ m₂
 
-  end MonomialEq
+  instance : BEq Poly where
+    beq p₁ p₂ := Poly.eq p₁ p₂
+
+  end Eq
 
    /-!
     ## Definition and realization of construct polynomial simplification 
@@ -82,7 +121,11 @@ namespace polynomials
     if m.fst == 0 then (0, [])
     else MonomialStruct.to_monomial m.fst (MonomialStruct.set_many m.snd MonomialStruct.get)
 
-  private def Poly.simp (p: Poly): Poly := (simp_monomials p)
+  private def Monom.fast_simp (m: Monom) : Monom :=
+    if m.fst == 0 then (0, [])
+    else (m.fst, get_ordered_vars (set_vars m get_vars_map))
+
+  private def Poly.simp (p: Poly): Poly := simp_monomials (merge_equals (simp_monomials p))
     where
       merge_equals (p: Poly): Poly := sorry
       simp_monomials (p: Poly): Poly :=
@@ -197,8 +240,8 @@ namespace polynomials
     #eval get_poly [(get_monom 2 [get_var 'x' 5, get_var 'y' 7]), 
                     (get_monom 2 [get_var 'x' 5, get_var 'z' 7])]
 
-    #eval Monom.struct_eq (get_monom 2 [get_var 'y' 5, get_var 'z' 5, get_var 'x' 5])
-                      (get_monom 2 [get_var 'x' 5, get_var 'y' 5, get_var 'z' 5])
+    #eval (get_monom 2 [get_var 'y' 5, get_var 'z' 5, get_var 'x' 5,  get_var 'x' 5]) ==
+          (get_monom 2 [get_var 'x' 10, get_var 'y' 5, get_var 'z' 5])
 
 
   end ToString
