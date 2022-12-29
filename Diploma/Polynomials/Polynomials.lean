@@ -180,15 +180,6 @@ namespace polynomials
         if m.fst == 0 then []
         else [m]
 
-  class Simp (α: Type) where
-    get_simp: α → α
-
-  instance : Simp Monom where
-    get_simp m := Monom.simp m
-
-  instance : Simp Poly where
-    get_simp p := Poly.simp p
-
   end Simp
 
 
@@ -240,6 +231,8 @@ namespace polynomials
       | [m']   => [Monom.mul m m']
       | m'::ms => (Poly.monom_mul m ms) ++ [Monom.mul m m']
  
+  def Poly.sum (p₁ p₂ : Poly): Poly := Poly.simp (set_monoms p₂ (set_monoms p₁ get_monoms_set)).toList
+   
   end Operations
 
 
