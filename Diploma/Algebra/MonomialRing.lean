@@ -1,76 +1,54 @@
-import Diploma.Polynomials.Polynomials
-import Diploma.Algebra.MonomialOrder
+import Diploma.Polynomials.Polynomial
 import Mathlib.Algebra.Ring.Defs 
 import Std.Data.RBMap
 
 
 namespace algebra
-  open polynomials
+open polynomial
 
-  def m_cmp (m₁ m₂: String) : Ordering := if m₁ = m₂ then Ordering.eq
-                                          else compare m₁ m₂
-    
-  def fill_rb_map (monomials: List Monomial) (rb_map: Std.RBMap String Monomial m_cmp) :
-                  (Std.RBMap String Monomial m_cmp) :=
-    match monomials with
-      | [] => rb_map
-      | [a] => insert_monomial a rb_map
-      | a :: as => insert_monomial a (fill_rb_map as rb_map) 
-    where insert_monomial (m: Monomial) (rb_map: Std.RBMap String Monomial m_cmp) :
-                          (Std.RBMap String Monomial m_cmp) := 
-          match rb_map.find? (VariablesToStr m.vars) with
-            | none   => rb_map.insert (VariablesToStr m.vars) m
-            | some v => rb_map.insert (VariablesToStr m.vars) {coeff := Int.add v.coeff m.coeff,
-                                                               vars  := v.vars} 
+def Polynomial.add (p₁ p₂ : Polynomial) : Polynomial :=
+  match p₁, p₂ with
+    | Polynomial.Monom m₁, Polynomial.Monom m₂ => match m₁, m₂ with
+        | Monomial.Const c₁, Monomial.Const c₂ => Polynomial.Monom (Monomial.Const (c₁ + c₂))
+        | smth, Monomial.Const _ => Polynomial.Monom smth
+        | Monomial.Const _, smth => Polynomial.Monom smth
+        | smth₁, smth₂ => Polynomial.Add (Polynomial.Monom smth₁) (Polynomial.Monom smth₂)
+    | Polynomial.Monom m , smth => if is_zero m then smth else Polynomial.Add (Polynomial.Monom m) smth
+    | smth , Polynomial.Monom m => if is_zero m then smth else Polynomial.Add smth (Polynomial.Monom m)
+    | smth₁, smth₂ => Polynomial.Add smth₁ smth₂
+  where 
+    is_zero (m: Monomial) : Bool := 
+      match m with 
+        | Monomial.Const c => c == 0
+        | _ => false
 
-  private def simplify (l: List Monomial) : List Monomial :=
-    match simplify_impl l with
-      | [] => [{coeff := 0, vars := {}}]
-      | as => as
-    where 
-      simplify_impl (l: List Monomial) : List Monomial :=
-        match l with
-          | []  => []
-          | [a] => check_coeff (simp_vars a)
-          | a :: as => (check_coeff a) ++ (simplify_impl as)
-      check_coeff (m: Monomial) : List Monomial := if m.coeff == 0 then [] else [m] 
-      simp_vars (m: Monomial) : Monomial :=
-        match simp_vars_impl m.vars with 
-          | [] => {coeff := m.coeff, vars := []}
-          | vs => {coeff := m.coeff, vars := simp_vars_impl vs}
-      simp_vars_impl (vs: List Variable) : List Variable :=
-        match vs with 
-          | [] => []
-          | [v] => simp_deg v
-          | v :: vss => simp_deg v ++ simp_vars_impl vss
-      simp_deg (v: Variable) : List Variable :=
-        if v.deg == 0 then []
-        else [v] 
+instance : Add Polynomial := ⟨Polynomial.add⟩   
 
-  private def get_monomials_list (l: List (String × Monomial)) : List Monomial :=
-    List.map Prod.snd l
+theorem t_zero_add : ∀ (a : Polynomial), 0 + a = a := by
+  intro p
+  cases p with
+    | Monom m => cases m with
+                   | Const c => simp [Polynomial.add]; sorry
+                   | Monom _ => rfl
+    | Add _ _ => rfl
+    | Mult _ _ => rfl 
 
-  private def construct_polynomial (rb_map: Std.RBMap String Monomial m_cmp) : Polynomial :=
-    {
-      monomials := simplify (get_monomials_list rb_map.toList)
-    }
+def Polynomial.mult (p₁ p₂ : Polynomial) : Polynomial := 
+  Polynomial.Mult p₁ p₂
 
-  private def sum (p₁ p₂: Polynomial): Polynomial :=
-    construct_polynomial (fill_rb_map p₂.monomials
-                         (fill_rb_map p₁.monomials (Std.mkRBMap String Monomial m_cmp)))
+theorem t_add_comm : ∀ (a b : Polynomial), a + b = b + a := by  
+  intros p₁ p₂
+  sorry
 
-  #eval sum 0 {monomials := [{coeff:=1, vars:=[{name:="x", deg := 5}]}]}
+theorem t_add_assoc : ∀ (a b c : Polynomial), a + b + c = a + (b + c) := by sorry
 
-  theorem p_zero_add : ∀ p : Polynomial, sum 0 p = p := sorry
-  
-
-  instance : CommRing Polynomial where
+instance : CommRing Polynomial where
     zero := 0
     one  := 1
-    add p₁ p₂ := sum p₁ p₂
-    zero_add := p_zero_add
+    add p₁ p₂ := Polynomial.add p₁ p₂
+    zero_add := sorry
     add_zero := sorry
-    add_comm := sorry
+    add_comm := t_add_comm
     add_assoc := sorry
     mul := sorry
     one_mul := sorry
@@ -82,7 +60,6 @@ namespace algebra
     right_distrib := sorry
     mul_assoc := sorry
     add_left_neg := sorry
-    mul_comm := sorry
-  
+    mul_comm := sorry   
 
 end algebra
