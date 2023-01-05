@@ -33,6 +33,15 @@ theorem t_zero_add : ∀ (a : Polynomial), 0 + a = a := by
     | Add _ _ => rfl
     | Mult _ _ => rfl 
 
+theorem t_add_zero : ∀ (a: Polynomial), a + 0 = a := by
+  intro p
+  cases p with
+    | Monom m => cases m with
+                  | Const c => simp [Polynomial.add]; sorry
+                  | Monom _ => rfl
+    | Add _ _ => rfl
+    | Mult _ _ => rfl
+
 def Polynomial.mult (p₁ p₂ : Polynomial) : Polynomial := 
   Polynomial.Mult p₁ p₂
 
@@ -46,8 +55,8 @@ instance : CommRing Polynomial where
     zero := 0
     one  := 1
     add p₁ p₂ := Polynomial.add p₁ p₂
-    zero_add := sorry
-    add_zero := sorry
+    zero_add := t_zero_add
+    add_zero := t_add_zero
     add_comm := t_add_comm
     add_assoc := sorry
     mul := sorry
