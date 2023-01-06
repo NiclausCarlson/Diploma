@@ -44,14 +44,14 @@ def substitute (vs: Variables n) (vars: Vector Rat n) : Rat := sum (subst vs var
         | [x] => x
         | x::xs => x + sum xs
  
-def m_eval (m: Monomial n) (vars: Vector Rat n) : Rat :=
+def Monomial.eval (m: Monomial n) (vars: Vector Rat n) : Rat :=
   match m with
     | Monomial.Const c => c  
     | Monomial.Monom c vs => c * (substitute vs vars)
 
-def eval (p : Polynomial n) (vars: Vector Rat n): Rat := 
+def Polynomial.eval (p: Polynomial n) (vars: Vector Rat n): Rat := 
   match p with 
-    | Polynomial.Monom m => m_eval m vars
+    | Polynomial.Monom m => Monomial.eval m vars
     | Polynomial.Add p₁ p₂ => (eval p₁ vars) + (eval p₂ vars)
 
 end polynomial
