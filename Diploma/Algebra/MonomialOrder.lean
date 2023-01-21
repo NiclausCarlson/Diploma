@@ -1,49 +1,80 @@
-import Diploma.Computational
 import Diploma.Polynomials.Polynomial
 
 import Mathlib.Init.Algebra.Order
 
+import Diploma.Polynomials.PolynomialCommon
+
 namespace algebra
+
+open Vector
 open polynomial
-section orders
+
+def Order.lex (m₁ m₂: Monomial n): Prop := if m₁.snd = m₂.snd then True 
+                                           else cmp diff
+  where 
+    diff : List Int := 
+      (map₂ (fun x y => (Int.ofNat x) - (Int.ofNat y)) m₁.snd m₂.snd).toList
+    cmp (l: List Int): Prop :=
+      match l with
+        | [] => True
+        | [x] => if x > 0 then True else False
+        | x::xs => if x = 0 then cmp xs
+                   else if x > 0 then True
+                   else False
+
+instance (m₁ m₂: Monomial n): Decidable (Order.lex m₁ m₂) := by
+  simp [Order.lex]
+  sorry
   
-  private def lex_ordering_checker (l₁ l₂: List Nat) : Prop :=
-    match l₁, l₂ with
-      | [], []           => True
-      | [n₁], [n₂]       => n₁ > n₂
-      | n₁::ns₁, n₂::ns₂ => n₁ > n₂ ∨ lex_ordering_checker ns₁ ns₂
-      | _, _ => False
 
-  def lex (m₁ m₂: Monomial): Prop :=
-    match m₁, m₂ with
-      | Monomial.Const _, Monomial.Const _   => True
-      | Monomial.Const _, Monomial.Monom _ _ => True
-      | Monomial.Monom _ _, Monomial.Const _ => False
-      | Monomial.Monom _ vs₁, Monomial.Monom _ vs₂ => 
-        lex_ordering_checker vs₁.data vs₂.data 
+def Ordering.lex (m₁ m₂: Monomial n): Ordering := 
+  if m₁.snd = m₂.snd then Ordering.eq
+  else if Order.lex m₁ m₂ then Ordering.gt
+  else Ordering.lt
 
-  theorem lex_le_refl : ∀ (a : Monomial), lex a a := by 
-    intro p
-    cases p with
-      | Const c => rw [lex]; simp
-      | Monom _ m => rw [lex]
-                     simp 
-                     rw [lex_ordering_checker]
-                     sorry
 
-  theorem lex_le_trans : ∀ (a b c : Monomial), lex a b → lex b c → lex a c := by
-    intros a b c
-    sorry 
-                                                  
-  instance LexLinearOrder : LinearOrder (Monomial) where
-      le m₁ m₂ := lex m₁ m₂
-      le_refl := lex_le_refl
-      le_trans := sorry
-      le_antisymm := sorry
-      le_total := sorry
-      decidable_le := sorry
-      decidable_eq := sorry
+def Order.grlex (m₁ m₂: Monomial n): Prop := 
+  if elem_sum m₁ > elem_sum m₂ then True
+  else if elem_sum m₁ = elem_sum m₂ then Order.lex m₁ m₂
+  else False
+  where
+    elem_sum (m: Monomial n): Nat :=
+      List.foldl (fun x y => x + y) 0 m.snd.toList
 
-end orders
+instance (m₁ m₂: Monomial n): Decidable (Order.grlex m₁ m₂) := sorry
+
+
+def Ordering.grlex (m₁ m₂: Monomial n): Ordering :=
+  if m₁.snd = m₂.snd then Ordering.eq
+  else if Order.grlex m₁ m₂ then Ordering.gt
+  else Ordering.lt
+
+
+theorem lex_le_refl : ∀ (a : Monomial n), Order.lex a a := by
+  intro a
+  simp [Order.lex]
+
+  
+theorem lex_le_trans : ∀ (a b c : Monomial n), Order.lex a b → Order.lex b c → Order.lex a c := by
+  intros a b c h₁ h₂
+  sorry  
+  
+theorem lex_le_antisymm : ∀ (a b : Monomial n), Order.lex a b → Order.lex b a → a = b := by
+  intros a b h₁ h₂
+  sorry
+
+theorem lex_le_total : ∀ (a b : Monomial n), Order.lex a b ∨ Order.lex b a := by
+  intros a b
+  sorry
+
+instance LexOrder: LinearOrder (Monomial n) where
+  le m₁ m₂ := Order.lex m₁ m₂
+  le_refl := lex_le_refl
+  le_trans := lex_le_trans
+  le_antisymm := lex_le_antisymm
+  le_total := lex_le_total
+  decidable_le := sorry
+  decidable_eq := sorry
+
 
 end algebra

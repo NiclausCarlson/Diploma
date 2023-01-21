@@ -1,10 +1,8 @@
 import Std.Data.HashMap
 import Std.Data.RBMap
 
-import Diploma.Computational
 import Mathlib.Algebra.Field.Defs
 
-open computational
 open Std.RBSet
 open List
 
