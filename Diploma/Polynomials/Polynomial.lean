@@ -13,6 +13,9 @@ abbrev Polynomial (n: Nat) (cmp: (Monomial n) → (Monomial n) → Ordering) := 
 instance: OfNat (Polynomial n cmp) m where
   ofNat := Std.RBSet.single (m, (get_variables n))
 
+def ofRat (n: Nat) (cmp: (Monomial n) → (Monomial n) → Ordering) (m : Rat) : Polynomial n cmp := 
+  Std.RBSet.single (m, (get_variables n))
+
 def Polynomial.add (p₁ p₂: Polynomial n cmp) : Polynomial n cmp := 
   Std.RBSet.mergeWith (fun x y => (x.fst + y.fst, x.snd)) p₁ p₂
 
@@ -43,5 +46,38 @@ def Polynomial.mul (p₁ p₂: Polynomial n cmp) : Polynomial n cmp := monomials
 instance: HMul (Polynomial n cmp) (Polynomial n cmp) (Polynomial n cmp) where
   hMul p₁ p₂ := Polynomial.mul p₁ p₂
 
+instance: HSub (Polynomial n cmp) (Polynomial n cmp) (Polynomial n cmp) where
+  hSub p₁ p₂ := p₁ + ((ofRat n cmp (-1)) * p₂)
+
+section ToString
+
+private def Variables.toStringImpl (vars: Variables n) : String := impl vars.toList 0
+where 
+  impl (l: List Nat) (pos: Nat) : String :=
+    match l with
+      | []   => ""
+      | [ch] => get_var pos ch 
+      | ch::chs => (get_var pos ch) ++ impl chs (pos + 1)
+  get_var (pos deg: Nat) : String :=
+    if deg == 0 then ""
+    else (String.mk [(Char.ofNat (pos + 97))]) ++ "^" ++ (toString deg)
+
+instance: ToString (Variables n) := ⟨Variables.toStringImpl⟩
+
+instance: ToString (Monomial n) where
+  toString monom := toString monom.fst ++ toString monom.snd
+
+private def Monomial.toStringImpl (ms: List (Monomial n)): String := 
+  match ms with
+    | [] => ""
+    | [m] => toString m
+    | m::ms₁ => toString m ++ Monomial.toStringImpl ms₁
+
+instance: ToString (List (Monomial n)) := ⟨Monomial.toStringImpl⟩ 
+
+instance: ToString (Polynomial n cmp) where
+  toString p := toString p.toList
+
+end ToString
   
 end polynomial
