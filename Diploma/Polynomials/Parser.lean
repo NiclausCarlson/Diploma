@@ -1,9 +1,7 @@
 import Diploma.Polynomials.Polynomials
-import Diploma.Computational
 import Lean.Data.Parsec
 
 namespace polynomials
- open computational 
  open Lean Parsec
 
 def DegSymbol : Parsec Unit     := skipChar '^'
