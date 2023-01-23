@@ -39,14 +39,10 @@ theorem lex_le_refl : ∀ (a : Monomial n), Order.lex a a := by
 theorem lex_le_trans : ∀ (a b c : Monomial n), Order.lex a b → Order.lex b c → Order.lex a c := by
   simp [Order.lex]
   intros _ a _ b _ c h₁ h₂
-  split at h₁
-  split at h₂
-  split
-  simp
+  split at h₁; split at h₂
+  split; simp
   sorry
-  split
-  simp
-  simp [Order.lex.diff, map₂]
+  split; simp; simp [Order.lex.diff, map₂]
   sorry
   sorry
 

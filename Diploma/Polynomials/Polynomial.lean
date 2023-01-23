@@ -16,12 +16,15 @@ instance: OfNat (Polynomial n cmp) m where
 def ofRat (n: Nat) (cmp: (Monomial n) → (Monomial n) → Ordering) (m : Rat) : Polynomial n cmp := 
   Std.RBSet.single (m, (get_variables n))
 
+def Polynomial.of_monomial (m: Monomial n) (cmp: (Monomial n) → (Monomial n) → Ordering): Polynomial n cmp := empty.insert m
+  where 
+    empty : Polynomial n cmp := {}
+
 def Polynomial.add (p₁ p₂: Polynomial n cmp) : Polynomial n cmp := 
   Std.RBSet.mergeWith (fun x y => (x.fst + y.fst, x.snd)) p₁ p₂
 
 instance: HAdd (Polynomial n cmp) (Polynomial n cmp) (Polynomial n cmp) where
   hAdd p₁ p₂ := Polynomial.add p₁ p₂  
-
 
 def Monomial.mul (m₁ m₂: Monomial n) : Monomial n :=
   (m₁.fst * m₂.fst, Variables.mul m₁.snd m₂.snd)
