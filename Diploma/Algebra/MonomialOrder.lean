@@ -11,19 +11,20 @@ open polynomial
 open Classical
 
 def Order.lex (vs₁ vs₂: Variables n): Prop := if vs₁ = vs₂ then True 
-                                            else cmp diff
+                                              else cmp diff
   where 
     diff : List Int := 
       (map₂ (fun x y => (Int.ofNat x) - (Int.ofNat y)) vs₁ vs₂).toList
     cmp (l: List Int): Prop :=
       match l with
-        | [] => True
-        | [x] => if x > 0 then True else False
+        | []    => true
+        | [x]   => x > 0
         | x::xs => if x = 0 then cmp xs
-                   else if x > 0 then True
-                   else False
+                   else x > 0 
 
-instance (vs₁ vs₂: Variables n): Decidable (Order.lex vs₁ vs₂) := by sorry
+instance (vs₁ vs₂: Variables n): Decidable (Order.lex vs₁ vs₂) := by 
+  simp [Order.lex]
+  sorry
   
 
 def Ordering.lex (m₁ m₂: Monomial n): Ordering := 
