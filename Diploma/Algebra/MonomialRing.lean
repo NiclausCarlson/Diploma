@@ -6,7 +6,6 @@ import Std.Data.RBMap
 namespace algebra
 open polynomial
 
--- TODO: nonempty polynomials
 instance: CommRing (Polynomial n cmp) where
    zero := 0
    one  := 1

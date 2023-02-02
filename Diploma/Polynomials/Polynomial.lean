@@ -8,6 +8,8 @@ namespace polynomial
 
 open Rat
 
+def NameShift := 97
+
 abbrev Polynomial (n: Nat) (cmp: (Monomial n) → (Monomial n) → Ordering) := Std.RBSet (Monomial n) cmp
 
 instance: OfNat (Polynomial n cmp) m where
@@ -63,12 +65,13 @@ where
       | ch::chs => (get_var pos ch) ++ impl chs (pos + 1)
   get_var (pos deg: Nat) : String :=
     if deg == 0 then ""
-    else (String.mk [(Char.ofNat (pos + 97))]) ++ "^" ++ (toString deg)
+    else (String.mk [(Char.ofNat (pos + NameShift))]) ++ "^" ++ (toString deg)
 
 instance: ToString (Variables n) := ⟨Variables.toStringImpl⟩
 
 instance: ToString (Monomial n) where
-  toString monom := toString monom.fst ++ toString monom.snd
+  toString monom := if monom.fst == 1 then toString monom.snd
+                    else toString monom.fst ++ toString monom.snd
 
 private def Monomial.toStringImpl (ms: List (Monomial n)): String := 
   match ms with

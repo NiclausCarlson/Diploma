@@ -22,10 +22,8 @@ def Order.lex (vs₁ vs₂: Variables n): Prop := if vs₁ = vs₂ then True
         | x::xs => if x = 0 then cmp xs
                    else x > 0 
 
-instance (vs₁ vs₂: Variables n): Decidable (Order.lex vs₁ vs₂) := by 
-  simp [Order.lex]
-  sorry
-  
+instance: DecidableRel (Order.lex : Variables n → Variables n → Prop) :=
+  fun v₁ v₂ => sorry
 
 def Ordering.lex (m₁ m₂: Monomial n): Ordering := 
   if m₁.snd = m₂.snd then Ordering.eq
