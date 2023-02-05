@@ -4,14 +4,14 @@ import Mathlib.Init.Algebra.Order
 
 import Diploma.Polynomials.PolynomialCommon
 
-namespace algebra
 
 open Vector
 open polynomial
 open Classical
 
+namespace algebra
 
-protected def Order.lex_list (v₁ v₂: List Nat) (h: v₁.length = v₂.length) : Prop := 
+def Order.lex_list (v₁ v₂: List Nat) (h: v₁.length = v₂.length) : Prop := 
   match v₁, v₂ with
     | [], [] => True
     | [x], [y] => x < y
@@ -32,6 +32,7 @@ def Ordering.lex (m₁ m₂: Monomial n): Ordering :=
 theorem lex_le_refl : ∀ (a : Variables n), Order.lex a a := by
   intro a
   simp [Order.lex, toList]
+  simp [Order.lex_list]
   sorry
   
   
@@ -39,31 +40,18 @@ theorem lex_le_refl : ∀ (a : Variables n), Order.lex a a := by
 theorem lex_le_trans : ∀ (a b c : Variables n), Order.lex a b → Order.lex b c → Order.lex a c := by
   simp [Order.lex]
   intros a b c h₁ h₂
-  split at h₁; split at h₂
-  split; simp
-  sorry
-  split; simp; simp [Order.lex.diff, map₂]
-  sorry
   sorry
   
 
 theorem lex_le_antisymm : ∀ (a b : Variables n), Order.lex a b → Order.lex b a → a = b := by
   simp [Order.lex]
   intros a b h₁ h₂
-  split at h₁
-  split at h₂
-  sorry
-  sorry
-  split at h₂
-  sorry
   sorry
   
 
 theorem lex_le_total : ∀ (a b : Variables n), Order.lex a b ∨ Order.lex b a := by
   simp [Order.lex]
   intros a b
-  split; simp
-  split; simp
   sorry
   
 
