@@ -10,17 +10,15 @@ open Vector
 open polynomial
 open Classical
 
-def Order.lex (vs₁ vs₂: Variables n): Prop := if vs₁ = vs₂ then True 
-                                              else cmp diff
-  where 
-    diff : List Int := 
-      (map₂ (fun x y => (Int.ofNat x) - (Int.ofNat y)) vs₁ vs₂).toList
-    cmp (l: List Int): Prop :=
-      match l with
-        | []    => true
-        | [x]   => x > 0
-        | x::xs => if x = 0 then cmp xs
-                   else x > 0 
+
+protected def Order.lex_list (v₁ v₂: List Nat) (h: v₁.length = v₂.length) : Prop := 
+  match v₁, v₂ with
+    | [], [] => True
+    | [x], [y] => x < y
+    | x::xs, y::ys => if x = y then Order.lex_list xs ys (by simp[List.length] at h; exact h)
+                      else x < y
+
+def Order.lex (v₁ v₂: Variables n): Prop := Order.lex_list v₁.toList v₂.toList (by simp)
 
 instance: DecidableRel (Order.lex : Variables n → Variables n → Prop) :=
   fun v₁ v₂ => sorry
@@ -33,7 +31,9 @@ def Ordering.lex (m₁ m₂: Monomial n): Ordering :=
 
 theorem lex_le_refl : ∀ (a : Variables n), Order.lex a a := by
   intro a
-  simp [Order.lex]
+  simp [Order.lex, toList]
+  sorry
+  
   
   
 theorem lex_le_trans : ∀ (a b c : Variables n), Order.lex a b → Order.lex b c → Order.lex a c := by
