@@ -11,12 +11,14 @@ open Classical
 
 namespace algebra
 
-def Order.lex (v₁ v₂ : Variables n): Prop :=
+def Order.lex_impl (v₁ v₂ : Vector Nat n): Prop :=
   match v₁, v₂ with
-    | ⟨[], _⟩   , ⟨[], _⟩   => True
-    | ⟨[x], _⟩  , ⟨[y], _⟩  => x < y
-    | ⟨x::_, _⟩ , ⟨y::_, _⟩ => if x = y then Order.lex v₁.tail v₂.tail
-                               else x < y 
+    | ⟨[], _⟩  , ⟨[], _⟩   => True
+    | ⟨[x], _⟩ , ⟨[y], _⟩  => x <= y
+    | ⟨x::_, _⟩, ⟨y::_, _⟩ => x <= y ∧ Order.lex_impl v₁.tail v₂.tail 
+
+def Order.lex (v₁ v₂ : Variables n): Prop := Order.lex_impl v₁ v₂
+
 
 instance: DecidableRel (Order.lex : Variables n → Variables n → Prop) :=
   fun v₁ v₂ => sorry
@@ -29,12 +31,8 @@ def Ordering.lex (m₁ m₂: Monomial n): Ordering :=
 
 theorem lex_le_refl : ∀ (a : Variables n), Order.lex a a := by
   intro a
-  cases a with
-    | mk l p => cases l with
-                  | nil => simp [Order.lex]
-                  | cons a => sorry
-
-  
+  rw [Order.lex, Order.lex_impl]
+  sorry
   
 theorem lex_le_trans : ∀ (a b c : Variables n), Order.lex a b → Order.lex b c → Order.lex a c := by
   intros a b c h₁ h₂
