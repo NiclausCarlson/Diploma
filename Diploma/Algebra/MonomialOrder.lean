@@ -11,14 +11,12 @@ open Classical
 
 namespace algebra
 
-def Order.lex_list (v₁ v₂: List Nat) (h: v₁.length = v₂.length) : Prop := 
+def Order.lex (v₁ v₂ : Variables n): Prop :=
   match v₁, v₂ with
-    | [], [] => True
-    | [x], [y] => x < y
-    | x::xs, y::ys => if x = y then Order.lex_list xs ys (by simp[List.length] at h; exact h)
-                      else x < y
-
-def Order.lex (v₁ v₂: Variables n): Prop := Order.lex_list v₁.toList v₂.toList (by simp)
+    | ⟨[], _⟩   , ⟨[], _⟩   => True
+    | ⟨[x], _⟩  , ⟨[y], _⟩  => x < y
+    | ⟨x::_, _⟩ , ⟨y::_, _⟩ => if x = y then Order.lex v₁.tail v₂.tail
+                               else x < y 
 
 instance: DecidableRel (Order.lex : Variables n → Variables n → Prop) :=
   fun v₁ v₂ => sorry
@@ -31,26 +29,24 @@ def Ordering.lex (m₁ m₂: Monomial n): Ordering :=
 
 theorem lex_le_refl : ∀ (a : Variables n), Order.lex a a := by
   intro a
-  simp [Order.lex, toList]
-  simp [Order.lex_list]
-  sorry
-  
+  cases a with
+    | mk l p => cases l with
+                  | nil => simp [Order.lex]
+                  | cons a => sorry
+
   
   
 theorem lex_le_trans : ∀ (a b c : Variables n), Order.lex a b → Order.lex b c → Order.lex a c := by
-  simp [Order.lex]
   intros a b c h₁ h₂
   sorry
   
 
 theorem lex_le_antisymm : ∀ (a b : Variables n), Order.lex a b → Order.lex b a → a = b := by
-  simp [Order.lex]
   intros a b h₁ h₂
   sorry
   
 
 theorem lex_le_total : ∀ (a b : Variables n), Order.lex a b ∨ Order.lex b a := by
-  simp [Order.lex]
   intros a b
   sorry
   
