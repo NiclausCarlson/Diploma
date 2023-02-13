@@ -31,13 +31,29 @@ def Ordering.lex (m₁ m₂: Monomial n): Ordering :=
 
 theorem lex_le_refl : ∀ (a : Variables n), Order.lex a a := by
   intro a
-  rw [Order.lex, Order.lex_impl]
-  sorry
-  
+  let rec aux (v: Variables n) : Order.lex v v := by
+    match v with 
+      | ⟨[], p⟩ => rw [Order.lex, Order.lex_impl]
+                   split
+                   simp
+                   sorry
+                   sorry                                   
+      | ⟨[x], _⟩ => sorry
+      | ⟨x::xs, _⟩ => sorry
+  exact aux a
+
 theorem lex_le_trans : ∀ (a b c : Variables n), Order.lex a b → Order.lex b c → Order.lex a c := by
   intros a b c h₁ h₂
+  rw [Order.lex, Order.lex_impl]
+  rw [Order.lex, Order.lex_impl] at h₁ h₂
+  split
+  split at h₁
+  split at h₂
+  exact h₁
+  exact h₁
+  exact h₁
   sorry
-  
+
 
 theorem lex_le_antisymm : ∀ (a b : Variables n), Order.lex a b → Order.lex b a → a = b := by
   intros a b h₁ h₂
@@ -56,7 +72,6 @@ instance LexOrder: LinearOrder (Variables n) where
   le_antisymm := lex_le_antisymm
   le_total := lex_le_total
   decidable_le := sorry
-  decidable_eq := sorry
 
 
 def Order.grlex (vs₁ vs₂: Variables n): Prop := 

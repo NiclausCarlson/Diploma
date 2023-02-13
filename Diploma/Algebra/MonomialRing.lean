@@ -6,6 +6,11 @@ import Std.Data.RBMap
 namespace algebra
 open polynomial
 
+theorem t_add: ∀ (a : Polynomial n cmp), 0 + a = a := by
+   intros a
+   cases a with
+      | mk t p => sorry 
+
 instance: CommRing (Polynomial n cmp) where
    zero := 0
    one  := 1
