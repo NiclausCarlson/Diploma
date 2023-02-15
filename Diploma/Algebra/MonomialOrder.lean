@@ -15,19 +15,10 @@ def Order.lex_impl (v₁ v₂ : Vector Nat n): Prop :=
   match v₁, v₂ with
     | ⟨[], _⟩  , ⟨[], _⟩   => True
     | ⟨[x], _⟩ , ⟨[y], _⟩  => x <= y
-    | ⟨x::_, _⟩, ⟨y::_, _⟩ => x <= y ∧ Order.lex_impl v₁.tail v₂.tail 
+    | ⟨x::_, _⟩, ⟨y::_, _⟩ => if x = y then Order.lex_impl v₁.tail v₂.tail 
+                              else x <= y
 
 def Order.lex (v₁ v₂ : Variables n): Prop := Order.lex_impl v₁ v₂
-
-
-instance: DecidableRel (Order.lex : Variables n → Variables n → Prop) :=
-  fun v₁ v₂ => sorry
-
-def Ordering.lex (m₁ m₂: Monomial n): Ordering := 
-  if m₁.snd = m₂.snd then Ordering.eq
-  else if Order.lex m₁.snd m₂.snd then Ordering.gt
-  else Ordering.lt
-
 
 theorem lex_le_refl : ∀ (a : Variables n), Order.lex a a := by
   intro a
@@ -65,13 +56,32 @@ theorem lex_le_total : ∀ (a b : Variables n), Order.lex a b ∨ Order.lex b a 
   sorry
   
 
-instance LexOrder: LinearOrder (Variables n) where
-  le vs₁ vs₂ := Order.lex vs₁ vs₂
-  le_refl := lex_le_refl
-  le_trans := lex_le_trans
-  le_antisymm := lex_le_antisymm
-  le_total := lex_le_total
-  decidable_le := sorry
+noncomputable instance LexOrder: LinearOrder (Variables n) where
+  le           := Order.lex 
+  le_refl      := lex_le_refl
+  le_trans     := lex_le_trans
+  le_antisymm  := lex_le_antisymm
+  le_total     := lex_le_total
+  decidable_le := by infer_instance
+
+instance: DecidableRel (Order.lex : Variables n → Variables n → Prop) :=
+  fun v₁ v₂ => by 
+                let rec aux (m: Nat) (a b: Vector Nat m) : Decidable (Order.lex_impl a b) := by
+                  rw [Order.lex_impl]
+                  match a, b with
+                    | ⟨[], _⟩, ⟨[], _⟩       => exact isTrue (by simp)                         
+                    | ⟨[x], _⟩, ⟨[y], _⟩     => apply Nat.decLe
+                    | ⟨x::xs, _⟩, ⟨y::ys, _⟩ => split
+                                                exact isTrue (by simp)
+                                                apply Nat.decLe
+                                                sorry
+                exact aux n v₁ v₂
+
+
+def Ordering.lex (m₁ m₂: Monomial n): Ordering := 
+  if m₁.snd = m₂.snd then Ordering.eq
+  else if Order.lex m₁.snd m₂.snd then Ordering.gt
+  else Ordering.lt
 
 
 def Order.grlex (vs₁ vs₂: Variables n): Prop := 
