@@ -22,38 +22,67 @@ def Order.lex (v₁ v₂ : Variables n): Prop := Order.lex_impl v₁ v₂
 
 theorem lex_le_refl : ∀ (a : Variables n), Order.lex a a := by
   intro a
-  let rec aux (v: Variables n) : Order.lex v v := by
+  let rec aux (m: Nat) (v: Variables m) : Order.lex_impl v v := by
     match v with 
-      | ⟨[], p⟩ => rw [Order.lex, Order.lex_impl]
+      | ⟨[], p⟩ => rw [Order.lex_impl]
                    split
-                   simp
-                   sorry
-                   sorry                                   
-      | ⟨[x], _⟩ => sorry
-      | ⟨x::xs, _⟩ => sorry
-  exact aux a
+                   simp at *
+                   simp at p
+                   simp at *
+                   simp at *                                   
+      | ⟨[x], _⟩ => rw [Order.lex_impl]
+                    split
+                    simp
+                    simp at *
+                    simp at *
+                    simp [Nat.le_refl]
+                    sorry
+                    split
+                    simp at *
+                    apply aux (m-1) (tail ⟨[x], _⟩)
+                    sorry
+      | ⟨x::xs, _⟩ => rw [Order.lex_impl]
+                      split
+                      simp
+                      sorry
+                      split
+                      apply aux (m-1) (tail ⟨x::xs, _⟩)
+                      sorry
+
+  exact aux n a
 
 theorem lex_le_trans : ∀ (a b c : Variables n), Order.lex a b → Order.lex b c → Order.lex a c := by
-  intros a b c h₁ h₂
-  rw [Order.lex, Order.lex_impl]
-  rw [Order.lex, Order.lex_impl] at h₁ h₂
-  split
-  split at h₁
-  split at h₂
-  exact h₁
-  exact h₁
-  exact h₁
   sorry
-
 
 theorem lex_le_antisymm : ∀ (a b : Variables n), Order.lex a b → Order.lex b a → a = b := by
   intros a b h₁ h₂
   sorry
   
-
 theorem lex_le_total : ∀ (a b : Variables n), Order.lex a b ∨ Order.lex b a := by
-  intros a b
-  sorry
+  intros v₁ v₂
+  let rec aux (m: Nat) (a b: Vector Nat m) : Order.lex_impl a b ∨ Order.lex_impl b a := by
+    match a, b with
+      | ⟨[], p⟩  , ⟨[], q⟩   => rw [Order.lex_impl]
+                                split
+                                simp
+                                simp at *
+                                split
+                                simp
+                                simp at *
+                                simp
+                                simp at *
+      | ⟨[x], p⟩ , ⟨[y], q⟩  => rw [Order.lex_impl]
+                                split
+                                simp
+                                simp at *
+                                simp at p q
+                                sorry
+                                simp at *
+                                split
+                                sorry
+                                sorry
+      | ⟨x::_, _⟩, ⟨y::_, _⟩ => sorry
+  exact aux n v₁ v₂
   
 
 noncomputable instance LexOrder: LinearOrder (Variables n) where
@@ -74,7 +103,9 @@ instance: DecidableRel (Order.lex : Variables n → Variables n → Prop) :=
                     | ⟨x::xs, _⟩, ⟨y::ys, _⟩ => split
                                                 exact isTrue (by simp)
                                                 apply Nat.decLe
-                                                sorry
+                                                simp at *
+                                                simp [apply_ite]
+                                                sorry                            
                 exact aux n v₁ v₂
 
 
