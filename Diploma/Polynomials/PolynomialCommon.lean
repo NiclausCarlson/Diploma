@@ -12,4 +12,7 @@ def Variables.mul (v₁ v₂: Variables n): Variables n :=
 
 abbrev Monomial (n: Nat) := Rat × (Variables n) 
 
+instance : Inhabited (Monomial n) where
+  default := (0, get_variables n)
+  
 end polynomial

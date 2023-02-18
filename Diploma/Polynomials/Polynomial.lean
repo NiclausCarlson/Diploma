@@ -60,11 +60,12 @@ private def Variables.toStringImpl (vars: Variables n) : String := impl vars.toL
 where 
   impl (l: List Nat) (pos: Nat) : String :=
     match l with
-      | []   => ""
-      | [ch] => get_var pos ch 
+      | []      => ""
+      | [ch]    => get_var pos ch 
       | ch::chs => (get_var pos ch) ++ impl chs (pos + 1)
   get_var (pos deg: Nat) : String :=
     if deg == 0 then ""
+    else if deg == 1 then (String.mk [(Char.ofNat (pos + NameShift))])
     else (String.mk [(Char.ofNat (pos + NameShift))]) ++ "^" ++ (toString deg)
 
 instance: ToString (Variables n) := ⟨Variables.toStringImpl⟩
@@ -75,14 +76,29 @@ instance: ToString (Monomial n) where
 
 private def Monomial.toStringImpl (ms: List (Monomial n)): String := 
   match ms with
-    | [] => ""
-    | [m] => toString m
+    | []     => ""
+    | [m]    => toString m
     | m::ms₁ => toString m ++ Monomial.toStringImpl ms₁
 
 instance: ToString (List (Monomial n)) := ⟨Monomial.toStringImpl⟩ 
 
+private def MonomialsListToString (l: List (Monomial n)) : String :=
+    match l with
+      | []    => ""
+      | [x]   => toString x
+      | x::xs => toString x ++ (get_sign xs) ++ (MonomialsListToString xs)
+  where
+    get_sign (xs: List (Monomial n)) : String :=
+      match xs with
+        | []   => ""
+        | [y]  => sign y
+        | y::_ => sign y  
+    sign (x: Monomial n) : String :=
+      if x.fst >= 0 then "+"
+      else ""
+
 instance: ToString (Polynomial n cmp) where
-  toString p := toString p.toList
+  toString p := MonomialsListToString p.toList
 
 end ToString
   

@@ -1,6 +1,7 @@
 import Diploma.Polynomials.Polynomial
 
 import Mathlib.Init.Algebra.Order
+import Mathlib.Tactic.LibrarySearch
 
 import Diploma.Polynomials.PolynomialCommon
 
@@ -62,7 +63,7 @@ theorem lex_le_total : ∀ (a b : Variables n), Order.lex a b ∨ Order.lex b a 
   intros v₁ v₂
   let rec aux (m: Nat) (a b: Vector Nat m) : Order.lex_impl a b ∨ Order.lex_impl b a := by
     match a, b with
-      | ⟨[], p⟩  , ⟨[], q⟩   => rw [Order.lex_impl]
+      | ⟨[], p⟩, ⟨[], q⟩     => rw [Order.lex_impl]
                                 split
                                 simp
                                 simp at *
@@ -71,7 +72,7 @@ theorem lex_le_total : ∀ (a b : Variables n), Order.lex a b ∨ Order.lex b a 
                                 simp at *
                                 simp
                                 simp at *
-      | ⟨[x], p⟩ , ⟨[y], q⟩  => rw [Order.lex_impl]
+      | ⟨[x], p⟩, ⟨[y], q⟩   => rw [Order.lex_impl]
                                 split
                                 simp
                                 simp at *
