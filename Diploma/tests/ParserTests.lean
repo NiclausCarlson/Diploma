@@ -15,8 +15,7 @@ private def parseSign! (s: String) : Int :=
 #eval AssertEq (toString (parseSign! "-")) "-1"
 #eval AssertEq (toString (parseSign! "+")) "1"
 #eval AssertEq (toString (parseSign! ""))  "0"
-#eval AssertEq (toString (parseSign! " "))  "1"
-
+#eval AssertEq (toString (parseSign! " ")) "1"
 
 
 --# Test parse variable
@@ -35,11 +34,6 @@ instance : ToString Variable where
 
 
 --# Test monomial parsing
-private def parseMonomial! (s: String) : Monomial Dimension :=
-  match Monom s.mkIterator with
-    | Parsec.ParseResult.success _ res => res
-    | Parsec.ParseResult.error it err  => panic! s!"offset {it.i.byteIdx}: {err}"
-
 #eval AssertEq (toString (parseMonomial! "0"))   "0"
 #eval AssertEq (toString (parseMonomial! "5"))   "5"
 #eval AssertEq (toString (parseMonomial! "51"))  "51"
@@ -65,10 +59,10 @@ private def parseMonomial! (s: String) : Monomial Dimension :=
 
 
 --# Test polynomial parsing
-#eval AssertEq (toString (parse! "0"))  "0"
-#eval AssertEq (toString (parse! "5"))  "5"
-#eval AssertEq (toString (parse! "51")) "51"
-#eval AssertEq (toString (parse! "-5")) "-5"
+#eval AssertEq (toString (parse! "0"))   "0"
+#eval AssertEq (toString (parse! "5"))   "5"
+#eval AssertEq (toString (parse! "51"))  "51"
+#eval AssertEq (toString (parse! "-5"))  "-5"
 #eval AssertEq (toString (parse! "-51")) "-51"
 
 #eval AssertEq (toString (parse! "a"))      "a"
@@ -85,8 +79,8 @@ private def parseMonomial! (s: String) : Monomial Dimension :=
 #eval AssertEq (toString (parse! "-12a^12")) "-12a^12"
 #eval AssertEq (toString (parse! "-123a"))   "-123a"
 
-#eval AssertEq (toString (parse! "12a^3+ab")) "12a^3+ab"
+#eval AssertEq (toString (parse! "12a^3+ab"))          "12a^3+ab"
 #eval AssertEq (toString (parse! "12a^3b^5-a^4b^7+3")) "-a^4b^7+12a^3b^5+3"
-#eval AssertEq (toString (parse! "a^3b^5-a^4b^7+3")) "-a^4b^7+a^3b^5+3"
+#eval AssertEq (toString (parse! "a^3b^5-a^4b^7+3"))   "-a^4b^7+a^3b^5+3"
 
 #eval AssertEq (toString (parse! "     12a^3b^5 -       a^4b^7 +    3")) "-a^4b^7+12a^3b^5+3"

@@ -11,13 +11,13 @@ def Dimension := 3
 
 private def POrdImpl (v₁ v₂ : Vector Nat n): Bool :=
   match v₁, v₂ with
-    | ⟨[], _⟩  , ⟨[], _⟩   => True
+    | ⟨[], _⟩  , ⟨[], _⟩   => true
     | ⟨[x], _⟩ , ⟨[y], _⟩  => x <= y
     | ⟨x::_, _⟩, ⟨y::_, _⟩ => if x = y then POrdImpl v₁.tail v₂.tail 
                               else x <= y
 
 def POrd (m₁ m₂: Monomial n): Ordering := 
-  if m₁.snd = m₂.snd then Ordering.eq
+  if m₁.snd == m₂.snd then Ordering.eq
   else if POrdImpl m₁.snd m₂.snd then Ordering.gt
   else Ordering.lt
 
@@ -90,7 +90,7 @@ def Polynom : Parsec (Polynomial Dimension POrd) := do
 
 def parse (s: String) : Except String (Polynomial Dimension POrd) :=
   match Polynom s.mkIterator with
-    | Parsec.ParseResult.success _ res => Except.ok res
+    | Parsec.ParseResult.success _ res => Except.ok (Simplify res)
     | Parsec.ParseResult.error it err  => Except.error s!"offset {it.i.byteIdx}: {err}"
 
 def parse! (s: String) : Polynomial Dimension POrd :=
