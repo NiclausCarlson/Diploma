@@ -43,17 +43,17 @@ def toVariables (vars: Array Variable) (n: Nat): Variables n :=
       | v::vs => setI v.name v.deg (impl vs res)
 
 open ParseResult in
+open String.Iterator in
 @[inline]
-private def stayCharImpl : Parsec Char := λ it =>
-  if it.hasNext then success it it.next.curr else error it unexpectedEndOfInput
+private def getCurr : Parsec Char := λ it =>
+  if ¬(atEnd it) then success it (curr it) else error it unexpectedEndOfInput
 
-@[inline]
-private def stayChar (c : Char) : Parsec Char := attempt do
-  if (←stayCharImpl) = c then pure c else fail s!"expected: '{c}'"
+def Zero : Parsec String := Parsec.pure "0"
+def One  : Parsec String := Parsec.pure "1"
 
-def Zero : Parsec String   := Parsec.pure "0"
-def One  : Parsec String   := Parsec.pure "1"
-def Deg  : Parsec String   := skipChar '^' *> ((many1Chars digit) <|> One)
+def Number: Parsec String := many1Chars digit
+
+def Deg  : Parsec String   := (skipChar '^' *> Number) <|> One
 def Var  : Parsec Variable := do
                                 let name ← asciiLetter
                                 let deg  ← String.toNat! <$> Deg
@@ -66,29 +66,30 @@ def Plus  : Parsec Char := pchar '+'
 def Minus : Parsec Char := pchar '-'
 
 def Sign : Parsec Int := do
-                          let sign ← Minus <|> Plus <|> pure '1'
+                          let sign ← Minus <|> Plus <|> getCurr
                           if sign == '-' then return -1
                           else return 1  
 
-def Coeff : Parsec Int := do
-                           let sign   ← Sign 
-                           let number ← String.toInt! <$> ((many1Chars digit) <|> One)
-                           return sign * number
+def Coeff : Parsec String := do 
+                              let digits ← manyChars digit
+                              if digits.isEmpty then return "1"
+                              else return digits  
 
-def MonomialParser : Parsec (Monomial Dimension) := do
-  let coeff ← Coeff
+def Monom : Parsec (Monomial Dimension) := do
+  let sign  ← ws *> Sign
+  let coeff ← ws *> String.toInt! <$> (Coeff <|> One)
   let vars  ← many Var
-  return (coeff, toVariables vars Dimension)
+  return (sign * coeff, toVariables vars Dimension)
 
-def PolynomialParser : Parsec (Polynomial Dimension POrd) := do
-  let monomial  ← MonomialParser
-  let monomials ← many MonomialParser
+def Polynom : Parsec (Polynomial Dimension POrd) := do
+  let monomial  ← Monom
+  let monomials ← many Monom
   return (Polynomial.of_monomial monomial POrd) +                    
-         (List.foldl (fun x (y: Monomial Dimension) => 
-                     x + (Polynomial.of_monomial y POrd)) 0 monomials.toList)
+         (Array.foldl (fun x (y: Monomial Dimension) => 
+                          x + (Polynomial.of_monomial y POrd)) 0 monomials)
 
 def parse (s: String) : Except String (Polynomial Dimension POrd) :=
-  match PolynomialParser s.mkIterator with
+  match Polynom s.mkIterator with
     | Parsec.ParseResult.success _ res => Except.ok res
     | Parsec.ParseResult.error it err  => Except.error s!"offset {it.i.byteIdx}: {err}"
 

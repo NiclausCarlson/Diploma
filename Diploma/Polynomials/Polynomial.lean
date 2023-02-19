@@ -65,13 +65,16 @@ where
       | ch::chs => (get_var pos ch) ++ impl chs (pos + 1)
   get_var (pos deg: Nat) : String :=
     if deg == 0 then ""
-    else if deg == 1 then (String.mk [(Char.ofNat (pos + NameShift))])
-    else (String.mk [(Char.ofNat (pos + NameShift))]) ++ "^" ++ (toString deg)
+    else if deg == 1 then mk_str pos
+    else (mk_str pos) ++ "^" ++ (toString deg)
+  mk_str (pos: Nat) : String :=
+    String.mk [(Char.ofNat (pos + NameShift))]
 
 instance: ToString (Variables n) := ⟨Variables.toStringImpl⟩
 
 instance: ToString (Monomial n) where
   toString monom := if monom.fst == 1 then toString monom.snd
+                    else if monom.fst == -1 then "-" ++ toString monom.snd
                     else toString monom.fst ++ toString monom.snd
 
 private def Monomial.toStringImpl (ms: List (Monomial n)): String := 
