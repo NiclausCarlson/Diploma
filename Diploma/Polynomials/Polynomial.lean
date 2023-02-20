@@ -66,6 +66,23 @@ instance: HMul (Polynomial n cmp) (Polynomial n cmp) (Polynomial n cmp) where
 instance: HSub (Polynomial n cmp) (Polynomial n cmp) (Polynomial n cmp) where
   hSub p₁ p₂ := p₁ + ((ofRat n cmp (-1)) * p₂)
 
+--# Degs
+def Polynomial.multideg (p: Polynomial n cmp): Variables n := 
+  if p.size != 0 then p.max!.snd
+  else get_variables n 
+
+def Polynomial.lc (p: Polynomial n cmp): Rat :=
+  if p.size != 0 then p.max!.fst
+  else 0
+
+def Polynomial.lm (p: Polynomial n cmp): Monomial n :=
+  if p.size != 0 then (1, p.max!.snd)
+  else (1, get_variables n) 
+
+def Polynomial.lt (p: Polynomial n cmp): Monomial n :=
+  if p.size != 0 then p.max!
+  else (1, get_variables n)
+
 section ToString
 
 private def Variables.toStringImpl (vars: Variables n) : String := impl vars.toList 0
