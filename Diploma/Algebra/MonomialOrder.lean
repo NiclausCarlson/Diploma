@@ -53,11 +53,33 @@ theorem lex_le_refl : ∀ (a : Variables n), Order.lex a a := by
   exact aux n a
 
 theorem lex_le_trans : ∀ (a b c : Variables n), Order.lex a b → Order.lex b c → Order.lex a c := by
-  sorry
+  intros v₁ v₂ v₃ h₁ h₂
+  let rec aux (m: Nat) (a b c: Variables m) 
+              (ab : Order.lex_impl a b) (bc : Order.lex_impl b c) : Order.lex_impl a c := by 
+    match a, b, c with
+      | ⟨[], p⟩,    ⟨[], q⟩,    ⟨[], l⟩    => rw [Order.lex_impl]
+                                              split
+                                              simp
+                                              simp at *
+                                              split
+                                              simp at *
+                                              simp at *
+      | ⟨[x], p⟩,   ⟨[y], q⟩,   ⟨[z], l⟩   => rw [Order.lex_impl]
+                                              split
+                                              simp
+                                              sorry
+                                              sorry
+      | ⟨x::xs, p⟩, ⟨y::ys, q⟩, ⟨z::zs, l⟩ => sorry
+  exact aux n v₁ v₂ v₃ h₁ h₂
 
 theorem lex_le_antisymm : ∀ (a b : Variables n), Order.lex a b → Order.lex b a → a = b := by
-  intros a b h₁ h₂
-  sorry
+  intros v₁ v₂ h₁ h₂
+  let rec aux (m: Nat) (a b: Vector Nat m) (ab: Order.lex_impl a b) (ba: Order.lex_impl b a): a = b := by 
+    match a, b with
+      | ⟨[], p⟩, ⟨[], q⟩     => simp 
+      | ⟨[x], p⟩, ⟨[y], q⟩   => sorry
+      | ⟨x::_, _⟩, ⟨y::_, _⟩ => sorry
+  exact aux n v₁ v₂ h₁ h₂ 
   
 theorem lex_le_total : ∀ (a b : Variables n), Order.lex a b ∨ Order.lex b a := by
   intros v₁ v₂
