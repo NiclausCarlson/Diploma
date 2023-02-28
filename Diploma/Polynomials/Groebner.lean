@@ -5,33 +5,33 @@ open Nat
 
 --# Degs
 def Polynomial.multideg (p: Polynomial n cmp): Variables n := 
-  if p.size != 0 then p.max!.snd
+  if p.size != 0 then p.min!.snd
   else get_variables n 
 
 def Polynomial.lc (p: Polynomial n cmp): Rat :=
-  if p.size != 0 then p.max!.fst
+  if p.size != 0 then p.min!.fst
   else 0
 
 def Polynomial.lm (p: Polynomial n cmp): Monomial n :=
-  if p.size != 0 then (1, p.max!.snd)
+  if p.size != 0 then (1, p.min!.snd)
   else (1, get_variables n) 
 
 def Polynomial.lt (p: Polynomial n cmp): Monomial n :=
-  if p.size != 0 then p.max!
+  if p.size != 0 then p.min!
   else (1, get_variables n)
 
 def Polynomial.Lt (p: Polynomial n cmp): Polynomial n cmp :=
-  if p.size != 0 then Polynomial.single p.max!
+  if p.size != 0 then Polynomial.single p.min!
   else Polynomial.single (1, get_variables n)
 
---# is m₁ div m₂
-def is_monomials_div (m₁ m₂: Monomial n) : Bool := impl n m₁.snd m₂.snd
+-- is m₁ divides to m₂
+def Monomial.is_div (m₁ m₂: Monomial n) : Bool := impl n m₁.snd m₂.snd
 where 
   impl (m: Nat) (v₁ v₂: Vector Nat m) : Bool :=
     match v₁, v₂ with
     | ⟨[], _⟩   , ⟨[], _⟩    => true
-    | ⟨[x], _⟩  , ⟨[y], _⟩   => y >= x
-    | ⟨x::xs, p⟩, ⟨y::ys, q⟩ => y >= x ∧ impl (m-1) ⟨xs, congrArg pred p⟩ ⟨ys, congrArg pred q⟩
+    | ⟨[x], _⟩  , ⟨[y], _⟩   => x >= y
+    | ⟨x::xs, p⟩, ⟨y::ys, q⟩ => x >= y ∧ impl (m - 1) ⟨xs, congrArg pred p⟩ ⟨ys, congrArg pred q⟩
 
 open Vector in
 private def Variables.div (v₁ v₂: Variables n) : Variables n := map₂ (fun x y: Nat => x - y) v₁ v₂
@@ -43,11 +43,11 @@ structure ReduceResult (n: Nat) (cmp: Monomial n → Monomial n → Ordering) wh
 
 --# Reduce p₁ by p₂
 def reduce_lt (p₁ p₂: Polynomial n cmp): Option (ReduceResult n cmp) := 
-  if is_monomials_div p₁.lt p₂.lt then some (impl (Polynomial.single (Monomial.div p₁.lt p₂.lt)))
+  if p₁.lt.is_div p₂.lt then some (impl (Polynomial.single (p₁.lt.div p₂.lt)))
   else none
   where
     impl (p: Polynomial n cmp): ReduceResult n cmp := {
-        reduced := p₂ - p * p₁,
+        reduced := p₁ - p * p₂,
         reducer := p
       }
 
@@ -63,9 +63,9 @@ def divide_many (divisible: Polynomial n cmp) (dividers: List (Polynomial n cmp)
         else match ps with
               | []    => step
               | [a]   => match reduce_lt a p with
-                          | none     => impl (p - a.Lt) [] {p := step.p - a.Lt, r := step.r + a.Lt}
+                          | none     => impl (p - a.Lt)  [] {p := step.p - a.Lt, r := step.r + a.Lt}
                           | some res => impl res.reduced [] {p := step.p + res.reducer, r := step.r}
               | a::as => match reduce_lt a p with
-                          | none     => impl (p - a.Lt) as {p := step.p - a.Lt, r := step.r + a.Lt}
+                          | none     => impl (p - a.Lt)  as {p := step.p - a.Lt, r := step.r + a.Lt}
                           | some res => impl res.reduced as {p := step.p + res.reducer, r := step.r}
 end polynomial

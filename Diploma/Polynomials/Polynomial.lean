@@ -21,14 +21,12 @@ instance: OfNat (Monomial n) m where
 instance: OfNat (Polynomial n cmp) m where
   ofNat := Std.RBSet.single (m, (get_variables n))
 
-def Simplify (p: Polynomial n cmp) : Polynomial n cmp :=
-  if p.size > 1 ∧ check_coeff (p.find? 0) then p.erase (fun x => cmp 0 x)
-  else p
+def Polynomial.Simplify (p: Polynomial n cmp) : Polynomial n cmp := 
+  check_non_empty (Std.RBSet.filter p (fun x => x.fst != 0))
   where 
-    check_coeff (om: Option (Monomial n)): Bool := 
-      match om with
-      | none   => false
-      | some m => m.fst == 0
+    check_non_empty (p: Polynomial n cmp): Polynomial n cmp :=
+      if p.isEmpty then 0
+      else p
 
 def ofRat (n: Nat) (cmp: Monomial n → Monomial n → Ordering) (m : Rat) : Polynomial n cmp := 
   Std.RBSet.single (m, get_variables n)
@@ -87,9 +85,12 @@ where
 
 instance: ToString (Variables n) := ⟨Variables.toStringImpl⟩
 
+private def Monomial.is_empty (m: Monomial n): Bool :=
+  m.snd.toList.foldl (fun x y => x ∧ y == 0) true
+
 instance: ToString (Monomial n) where
-  toString monom := if monom.fst == 1 then toString monom.snd
-                    else if monom.fst == -1 then "-" ++ toString monom.snd
+  toString monom := if monom.fst == 1 ∧ !monom.is_empty then toString monom.snd
+                    else if monom.fst == -1 ∧ !monom.is_empty then "-" ++ toString monom.snd
                     else toString monom.fst ++ toString monom.snd
 
 private def Monomial.toStringImpl (ms: List (Monomial n)): String := 

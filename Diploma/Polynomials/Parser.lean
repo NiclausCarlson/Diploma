@@ -90,7 +90,7 @@ def Polynom : Parsec (Polynomial Dimension POrd) := do
 
 def parse (s: String) : Except String (Polynomial Dimension POrd) :=
   match Polynom s.mkIterator with
-    | Parsec.ParseResult.success _ res => Except.ok (Simplify res)
+    | Parsec.ParseResult.success _ res => Except.ok res.Simplify
     | Parsec.ParseResult.error it err  => Except.error s!"offset {it.i.byteIdx}: {err}"
 
 def parse! (s: String) : Polynomial Dimension POrd :=
