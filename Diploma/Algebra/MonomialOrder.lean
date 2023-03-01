@@ -9,6 +9,7 @@ import Diploma.Polynomials.PolynomialCommon
 open Vector
 open polynomial
 open Classical
+open Nat
 
 namespace algebra
 
@@ -23,33 +24,34 @@ def Order.lex (v₁ v₂ : Variables n): Prop := Order.lex_impl v₁ v₂
 
 theorem lex_le_refl : ∀ (a : Variables n), Order.lex a a := by
   intro a
-  let rec aux (m: Nat) (v: Variables m) : Order.lex_impl v v := by
+  let rec aux (m: Nat) (v: Variables m) : Order.lex_impl v v := by 
     match v with 
-      | ⟨[], p⟩ => rw [Order.lex_impl]
-                   split
-                   simp at *
-                   simp at p
-                   simp at *
-                   simp at *                                   
-      | ⟨[x], _⟩ => rw [Order.lex_impl]
-                    split
-                    simp
-                    simp at *
-                    simp at *
-                    simp [Nat.le_refl]
-                    sorry
-                    split
-                    simp at *
-                    apply aux (m-1) (tail ⟨[x], _⟩)
-                    sorry
+      | ⟨[], p⟩    => rw [Order.lex_impl]
+                      split
+                      simp at *
+                      simp at p
+                      simp at *
+                      simp at *                                   
       | ⟨x::xs, _⟩ => rw [Order.lex_impl]
                       split
                       simp
-                      sorry
+                      simp at *
+                      simp at *
+                      simp [Nat.le_refl]
+                      rename_i x₁ _ x₂ _ h₁ h₂
+                      have h₃ := Eq.symm h₁.left
+                      have h₄ := Eq.symm h₂.left
+                      rw [h₃, h₄]
+                      simp [Nat.le_refl]
                       split
+                      simp at *
                       apply aux (m-1) (tail ⟨x::xs, _⟩)
-                      sorry
-
+                      simp at *
+                      rename_i x₁ t₁ _ x₂ t₂ _ h h_neq h₁ h₂
+                      have h₃ := Eq.symm h₁.left
+                      have h₄ := Eq.symm h₂.left
+                      rw [h₃, h₄]
+                      simp [Nat.le_refl]
   exact aux n a
 
 theorem lex_le_trans : ∀ (a b c : Variables n), Order.lex a b → Order.lex b c → Order.lex a c := by
@@ -64,12 +66,20 @@ theorem lex_le_trans : ∀ (a b c : Variables n), Order.lex a b → Order.lex b 
                                               split
                                               simp at *
                                               simp at *
-      | ⟨[x], p⟩,   ⟨[y], q⟩,   ⟨[z], l⟩   => rw [Order.lex_impl]
+      | ⟨x::xs, p⟩, ⟨y::ys, q⟩, ⟨z::zs, l⟩ => rw [Order.lex_impl]
                                               split
-                                              simp
+                                              simp at *
+                                              rw [Order.lex_impl] at ab
+                                              rw [Order.lex_impl] at bc
+                                              split at ab
+                                              split at bc
+                                              simp at *
+                                              rename_i x₁ _ x₂ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ h₁ h₂
                                               sorry
                                               sorry
-      | ⟨x::xs, p⟩, ⟨y::ys, q⟩, ⟨z::zs, l⟩ => sorry
+                                              sorry
+                                              sorry
+                                              sorry
   exact aux n v₁ v₂ v₃ h₁ h₂
 
 theorem lex_le_antisymm : ∀ (a b : Variables n), Order.lex a b → Order.lex b a → a = b := by
@@ -77,8 +87,16 @@ theorem lex_le_antisymm : ∀ (a b : Variables n), Order.lex a b → Order.lex b
   let rec aux (m: Nat) (a b: Vector Nat m) (ab: Order.lex_impl a b) (ba: Order.lex_impl b a): a = b := by 
     match a, b with
       | ⟨[], p⟩, ⟨[], q⟩     => simp 
-      | ⟨[x], p⟩, ⟨[y], q⟩   => sorry
-      | ⟨x::_, _⟩, ⟨y::_, _⟩ => sorry
+      | ⟨x::_, p⟩, ⟨y::_, q⟩ => rw [Order.lex_impl] at ab
+                                rw [Order.lex_impl] at ba
+                                simp at *
+                                split at ab
+                                split at ba
+                                sorry
+                                sorry
+                                sorry
+                                sorry
+                                sorry
   exact aux n v₁ v₂ h₁ h₂ 
   
 theorem lex_le_total : ∀ (a b : Variables n), Order.lex a b ∨ Order.lex b a := by
@@ -94,7 +112,7 @@ theorem lex_le_total : ∀ (a b : Variables n), Order.lex a b ∨ Order.lex b a 
                                 simp at *
                                 simp
                                 simp at *
-      | ⟨[x], p⟩, ⟨[y], q⟩   => rw [Order.lex_impl]
+      | ⟨x::_, p⟩, ⟨y::_, q⟩ => rw [Order.lex_impl]
                                 split
                                 simp
                                 simp at *
@@ -104,7 +122,6 @@ theorem lex_le_total : ∀ (a b : Variables n), Order.lex a b ∨ Order.lex b a 
                                 split
                                 sorry
                                 sorry
-      | ⟨x::_, _⟩, ⟨y::_, _⟩ => sorry
   exact aux n v₁ v₂
   
 
