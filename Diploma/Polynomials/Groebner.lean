@@ -46,9 +46,11 @@ def reduce_lt (p₁ p₂: Polynomial n cmp): Option (ReduceResult n cmp) :=
   if p₁.lt.is_div p₂.lt then some (impl (Polynomial.single (p₁.lt.div p₂.lt)))
   else none
   where
-    impl (p: Polynomial n cmp): ReduceResult n cmp := {
-        reduced := p₁ - p * p₂,
-        reducer := p
+    impl (p: Polynomial n cmp): ReduceResult n cmp := 
+      let reducer := p * p₂
+      {
+        reduced := p₁ - reducer,
+        reducer := reducer
       }
 
 structure DivisionResult (n: Nat) (cmp: Monomial n → Monomial n → Ordering) where
@@ -61,11 +63,9 @@ def divide_many (divisible: Polynomial n cmp) (dividers: List (Polynomial n cmp)
     impl (p: Polynomial n cmp) (ps: List (Polynomial n cmp)) (step: DivisionResult n cmp): DivisionResult n cmp :=
         if p == 0 then step
         else match ps with
-              | []    => step
-              | [a]   => match reduce_lt a p with
-                          | none     => impl (p - a.Lt)  [] {p := step.p - a.Lt, r := step.r + a.Lt}
-                          | some res => impl res.reduced [] {p := step.p + res.reducer, r := step.r}
-              | a::as => match reduce_lt a p with
-                          | none     => impl (p - a.Lt)  as {p := step.p - a.Lt, r := step.r + a.Lt}
+              | []    => impl p ps step
+              | a::as => match reduce_lt p a with
+                          | none     => impl (p - a.Lt)  as {p := step.p, r := step.r + a.Lt}
                           | some res => impl res.reduced as {p := step.p + res.reducer, r := step.r}
+
 end polynomial

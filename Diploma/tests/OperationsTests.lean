@@ -92,27 +92,38 @@ private def reduce_lt_check (p₁ p₂: String) (expected_reduced: String) (expe
                     | Except.ok _ => AssertTrue (res.reducer == r) s!"expected reducer {toString r} actual {toString res.reducer}"
                     | Except.error err => Except.error err
 
-#eval reduce_lt_check "a" "a" "0a" "1"
-#eval reduce_lt_check "2a" "a" "0a" "2"
-#eval reduce_lt_check "ab" "a" "0ab" "b"
-#eval reduce_lt_check "2ab" "a" "0ab" "2b"
+#eval reduce_lt_check "a" "a" "0a" "a"
+#eval reduce_lt_check "a^2" "a" "0a" "a^2"
+#eval reduce_lt_check "2a" "a" "0a" "2a"
+#eval reduce_lt_check "ab" "a" "0ab" "ab"
+#eval reduce_lt_check "2ab" "a" "0ab" "2ab"
 
-#eval (parse! "2ab+c").lt
-#eval reduce_lt_check "2ab+c" "a" "c" "2b"
+#eval reduce_lt_check "2ab+c" "a" "c" "2ab"
+#eval reduce_lt_check "2a^2b+c" "a" "c" "2a^2b"
+#eval reduce_lt_check "2a^2bc+c" "a" "c" "2a^2bc"
+#eval reduce_lt_check "2a^2b^4c+a+b+c" "a" "a+b+c" "2a^2b^4c"
+#eval reduce_lt_check "3a^2b^4c+a+b+c" "ab" "a+b+c" "3a^2b^4c"
+#eval reduce_lt_check "3a^2b^4c+a" "ab^3" "a" "3a^2b^4c"
+#eval reduce_lt_check "ab^2+1" "ab+1" "-b+1" "ab^2+b"
+#eval reduce_lt_check "-b+1" "b+1" "2" "-b-1"
+#eval reduce_lt_check "2" "ab-1" "" ""
 
-
+--# Test div
 private def parse_list (ps: List String): List (Polynomial Dimension POrd) := ps.map parse!
 def div (p: String) (ps: List String): DivisionResult Dimension POrd := 
   divide_many (parse! p) (parse_list ps)
 
-private def check_div (p: String) (ps: List String) (quotient: String) (remainder: String): Except String String :=
+private def check_div (p: String) (ps: List String) (poly: String) (remainder: String): Except String String :=
   let res := div p ps
-  let q   := parse! quotient
+  let p   := parse! poly
   let r   := parse! remainder
-  match AssertTrue (res.p == q) s!"expected quotient {toString q} actual {toString res.p}" with
+  match AssertTrue (res.p == p) s!"expected poly {toString p} actual {toString res.p}" with
     | Except.ok _ =>  AssertTrue (res.r == r) s!"expected remainder {toString r} actual {toString res.r}" 
     | Except.error err => Except.error err
---# Test div
 
-#eval check_div "a^2" ["a"] "a" "0"
-#eval check_div "a^2b+ab^2+b^2" ["b^2-1", "ab-1"] "0" "0"
+#eval check_div "a^2" ["a"] "a^2" "0"
+#eval check_div "ab^2+1" ["ab+1"] "ab^2+b" "0"
+#eval check_div "ab^2+1" ["ab+1", "b+1"] "ab^2-1" "2"
+#eval check_div "a^2b+ab^2+b^2" ["ab-1", "b^2-1"] "2a" "a+b+1"
+
+#eval (parse! "b+1").Lt
