@@ -86,19 +86,27 @@ theorem lex_le_antisymm : ∀ (a b : Variables n), Order.lex a b → Order.lex b
   intros v₁ v₂ h₁ h₂
   let rec aux (m: Nat) (a b: Vector Nat m) (ab: Order.lex_impl a b) (ba: Order.lex_impl b a): a = b := by 
     match a, b with
-      | ⟨[], p⟩, ⟨[], q⟩     => simp 
-      | ⟨x::_, p⟩, ⟨y::_, q⟩ => rw [Order.lex_impl] at ab
-                                rw [Order.lex_impl] at ba
-                                simp at *
-                                split at ab
-                                split at ba
-                                sorry
-                                sorry
-                                sorry
-                                sorry
-                                sorry
+      | ⟨[], p⟩, ⟨[], q⟩       => simp 
+      | ⟨[x], p⟩, ⟨[y], q⟩     => rw [Order.lex_impl] at ab
+                                  rw [Order.lex_impl] at ba
+                                  simp at *
+                                  have x_eq_y := Nat.le_antisymm ab ba
+                                  rw [x_eq_y]
+      | ⟨x::xs, p⟩, ⟨y::ys, q⟩ => rw [Order.lex_impl] at ab
+                                  rw [Order.lex_impl] at ba
+                                  simp at *
+                                  split at ab
+                                  split at ba
+                                  rename_i heq₁ heq₂
+                                  rw [heq₂, heq₁]
+                                  rename_i x₁ _ y₁ _ heq₁ heq₂
+                                  rw [heq₂, heq₁]
+                                  sorry
+                                  sorry
+                                  sorry
+                                  sorry
   exact aux n v₁ v₂ h₁ h₂ 
-  
+
 theorem lex_le_total : ∀ (a b : Variables n), Order.lex a b ∨ Order.lex b a := by
   intros v₁ v₂
   let rec aux (m: Nat) (a b: Vector Nat m) : Order.lex_impl a b ∨ Order.lex_impl b a := by
@@ -112,6 +120,28 @@ theorem lex_le_total : ∀ (a b : Variables n), Order.lex a b ∨ Order.lex b a 
                                 simp at *
                                 simp
                                 simp at *
+      | ⟨[x], p⟩, ⟨[y], q⟩   => rw [Order.lex_impl]
+                                split
+                                simp
+                                simp at *
+                                rename_i heq₁ heq₂
+                                rw [heq₁, heq₂] 
+                                rw [Order.lex_impl]
+                                split
+                                apply Or.intro_right
+                                simp
+                                rename_i heq₃ heq₄
+                                simp at heq₃ heq₄
+                                rw [heq₃, heq₄]
+                                apply Nat.le_total
+                                rename_i heq₁ heq₂ _ _ _ _ _ _ _ _ heq₃ heq₄
+                                simp at heq₃ heq₄
+                                rw [Order.lex_impl]
+                                sorry
+                                simp at *
+                                split
+                                sorry
+                                sorry
       | ⟨x::_, p⟩, ⟨y::_, q⟩ => rw [Order.lex_impl]
                                 split
                                 simp
