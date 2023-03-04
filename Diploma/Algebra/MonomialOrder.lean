@@ -13,11 +13,16 @@ open Nat
 
 namespace algebra
 
+private def Order.ble_lex_impl (v₁ v₂ : Vector Nat n): Bool :=
+  match v₁, v₂ with
+    | ⟨[], _⟩  , ⟨[], _⟩   => true
+    | ⟨x::_, _⟩, ⟨y::_, _⟩ => if x == y then ble_lex_impl v₁.tail v₂.tail 
+                              else x <= y
+
 def Order.lex_impl (v₁ v₂ : Vector Nat n): Prop :=
   match v₁, v₂ with
     | ⟨[], _⟩  , ⟨[], _⟩   => True
-    | ⟨[x], _⟩ , ⟨[y], _⟩  => x <= y
-    | ⟨x::_, _⟩, ⟨y::_, _⟩ => if x = y then Order.lex_impl v₁.tail v₂.tail 
+    | ⟨x::_, _⟩, ⟨y::_, _⟩ => if x = y then lex_impl v₁.tail v₂.tail 
                               else x <= y
 
 def Order.lex (v₁ v₂ : Variables n): Prop := Order.lex_impl v₁ v₂
@@ -162,6 +167,54 @@ noncomputable instance LexOrder: LinearOrder (Variables n) where
   le_antisymm  := lex_le_antisymm
   le_total     := lex_le_total
   decidable_le := by infer_instance
+
+theorem order_lex_ble_order_lex (h: Eq (Order.ble_lex_impl v₁ v₂) true): Order.lex v₁ v₂ := by
+  let rec aux (m: Nat) (a b: Vector Nat m) (h: Eq (Order.ble_lex_impl a b) true): Order.lex a b := by
+    rw [Order.lex]
+    rw [Order.lex_impl]
+    match a, b with
+      | ⟨[], _⟩  , ⟨[], _⟩     => simp
+      | ⟨x::xs, _⟩, ⟨y::ys, _⟩ => split
+                                  simp
+                                  split
+                                  rw [Order.ble_lex_impl] at h
+                                  simp at h
+                                  split at h
+                                  exact aux (m-1) (tail ⟨x::xs, _⟩) (tail ⟨y::ys, _⟩) h
+                                  simp at *
+                                  rename_i heq₁ hneq heq₂ heq₃
+                                  have eq₁ := heq₂.left
+                                  have eq₂ := heq₃.left
+                                  rw [eq₁, eq₂] at hneq
+                                  contradiction                                  
+                                  rename_i heq₁ heq₂ hneq₁ 
+                                  rw [Order.ble_lex_impl] at h
+                                  split at h
+                                  simp at *
+                                  split at h
+                                  rename_i heq₃ heq₄ hneq₂
+                                  simp at heq₁ heq₂ heq₃ heq₄ hneq₂
+                                  have eq₁ := heq₁.left
+                                  have eq₂ := heq₂.left
+                                  have eq₃ := heq₃.left
+                                  have eq₄ := heq₄.left
+                                  rw [eq₁] at eq₃
+                                  rw [eq₂] at eq₄
+                                  rw [eq₃, eq₄] at hneq₁
+                                  contradiction
+                                  simp at h
+                                  rename_i heq₁ heq₂ _ _ _ _ _ _ _ _ _ _ _ heq₃ heq₄ _ 
+                                  simp at heq₁ heq₂ heq₃ heq₄
+                                  have eq₁ := heq₁.left
+                                  have eq₂ := heq₂.left
+                                  have eq₃ := heq₃.left
+                                  have eq₄ := heq₄.left
+                                  rw [eq₁] at eq₃
+                                  rw [eq₂] at eq₄
+                                  rw [eq₃, eq₄]
+                                  exact h                                
+  rename_i n
+  exact aux n v₁ v₂ h                                 
 
 instance: DecidableRel (Order.lex : Variables n → Variables n → Prop) :=
   fun v₁ v₂ => by 
