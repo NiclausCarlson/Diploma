@@ -35,7 +35,7 @@ theorem lex_le_refl : ∀ (a : Variables n), Order.lex a a := by
                       split
                       simp at *
                       simp at p
-                      simp at *
+                      simp at *                                   
                       simp at *                                   
       | ⟨x::xs, _⟩ => rw [Order.lex_impl]
                       split
@@ -168,7 +168,7 @@ noncomputable instance LexOrder: LinearOrder (Variables n) where
   le_total     := lex_le_total
   decidable_le := by infer_instance
 
-theorem order_lex_ble_order_lex (h: Eq (Order.ble_lex_impl v₁ v₂) true): Order.lex v₁ v₂ := by
+theorem Order.lex_true_of_ble_lex_true (h: Eq (Order.ble_lex_impl v₁ v₂) true): Order.lex v₁ v₂ := by
   let rec aux (m: Nat) (a b: Vector Nat m) (h: Eq (Order.ble_lex_impl a b) true): Order.lex a b := by
     rw [Order.lex]
     rw [Order.lex_impl]
@@ -216,21 +216,50 @@ theorem order_lex_ble_order_lex (h: Eq (Order.ble_lex_impl v₁ v₂) true): Ord
   rename_i n
   exact aux n v₁ v₂ h                                 
 
-instance: DecidableRel (Order.lex : Variables n → Variables n → Prop) :=
-  fun v₁ v₂ => by 
-                let rec aux (m: Nat) (a b: Vector Nat m) : Decidable (Order.lex_impl a b) := by
-                  rw [Order.lex_impl]
-                  match a, b with
-                    | ⟨[], _⟩, ⟨[], _⟩       => exact isTrue (by simp)                         
-                    | ⟨[x], _⟩, ⟨[y], _⟩     => apply Nat.decLe
-                    | ⟨x::xs, _⟩, ⟨y::ys, _⟩ => split
-                                                exact isTrue (by simp)
-                                                apply Nat.decLe
-                                                simp at *
-                                                simp [apply_ite]
-                                                sorry                            
-                exact aux n v₁ v₂
+theorem Order.ble_eq_true_of_lex (h: Order.lex_impl v₁ v₂) : Eq (Order.ble_lex_impl v₁ v₂) true := by
+  let rec aux (m: Nat) (a b: Vector Nat m) (h: Order.lex_impl a b): Eq (Order.ble_lex_impl a b) true := by 
+     match a, b with
+      | ⟨[], _⟩, ⟨[], _⟩       => rw [Order.ble_lex_impl]
+      | ⟨x::xs, _⟩, ⟨y::ys, _⟩ => rw [Order.ble_lex_impl]
+                                  split;rfl
+                                  split
+                                  rw [lex_impl] at h
+                                  simp at h
+                                  split at h
+                                  apply Order.ble_eq_true_of_lex h
+                                  rename_i heq₁ heq₂ neq eq
+                                  simp at heq₁ heq₂
+                                  have eq₁ := heq₁.left
+                                  have eq₂ := heq₂.left
+                                  simp at neq
+                                  rw [eq₁, eq₂] at eq
+                                  contradiction
+                                  rw [lex_impl] at h
+                                  simp at h
+                                  split at h
+                                  rename_i heq₁ heq₂ neq eq
+                                  simp at heq₁ heq₂
+                                  have eq₁ := heq₁.left
+                                  have eq₂ := heq₂.left
+                                  simp at neq
+                                  rw [eq₁, eq₂] at eq
+                                  contradiction
+                                  simp
+                                  rename_i heq₁ heq₂ _ _
+                                  simp at heq₁ heq₂
+                                  have eq₁ := Eq.symm heq₁.left
+                                  have eq₂ := Eq.symm heq₂.left
+                                  rwa [eq₁, eq₂]
+  rename_i n
+  exact aux n v₁ v₂ h 
+  
 
+theorem Order.lex_false_of_ble_lex_false (h: Not (Eq (Order.ble_lex_impl v₁ v₂) true)): Not (Order.lex v₁ v₂) :=
+  fun h' => absurd (Order.ble_eq_true_of_lex h') h
+
+instance Order.lex_decidable (v₁ v₂: Variables n): Decidable (Order.lex v₁ v₂) :=
+  dite (Eq (Order.ble_lex_impl v₁ v₂) true) (fun h => isTrue (Order.lex_true_of_ble_lex_true h))
+                                            (fun h => isFalse (Order.lex_false_of_ble_lex_false h))
 
 def Ordering.lex (m₁ m₂: Monomial n): Ordering := 
   if m₁.snd = m₂.snd then Ordering.eq
