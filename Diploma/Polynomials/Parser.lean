@@ -6,20 +6,9 @@ import Std.Data.List.Basic
 
 namespace polynomial
 open Lean Parsec
+open algebra
 
 def Dimension := 3
-
-private def POrdImpl (v₁ v₂ : Vector Nat n): Bool :=
-  match v₁, v₂ with
-    | ⟨[], _⟩  , ⟨[], _⟩   => true
-    | ⟨[x], _⟩ , ⟨[y], _⟩  => x <= y
-    | ⟨x::_, _⟩, ⟨y::_, _⟩ => if x = y then POrdImpl v₁.tail v₂.tail 
-                              else x <= y
-
-def POrd (m₁ m₂: Monomial n): Ordering := 
-  if m₁.snd == m₂.snd then Ordering.eq
-  else if POrdImpl m₁.snd m₂.snd then Ordering.gt
-  else Ordering.lt
 
 structure Variable where
   deg: Nat
@@ -81,19 +70,19 @@ def Monom : Parsec (Monomial Dimension) := do
   let vars  ← many Var
   return (sign * coeff, toVariables vars Dimension)
 
-def Polynom : Parsec (Polynomial Dimension POrd) := do
+def Polynom : Parsec (Polynomial Dimension Ordering.lex) := do
   let monomial  ← Monom
   let monomials ← many Monom
-  return (Polynomial.of_monomial monomial POrd) +                    
+  return (Polynomial.of_monomial monomial Ordering.lex) +                    
          (Array.foldl (fun x (y: Monomial Dimension) => 
-                          x + (Polynomial.of_monomial y POrd)) 0 monomials)
+                          x + (Polynomial.of_monomial y Ordering.lex)) 0 monomials)
 
-def parse (s: String) : Except String (Polynomial Dimension POrd) :=
+def parse (s: String) : Except String (Polynomial Dimension Ordering.lex) :=
   match Polynom s.mkIterator with
     | Parsec.ParseResult.success _ res => Except.ok res.Simplify
     | Parsec.ParseResult.error it err  => Except.error s!"offset {it.i.byteIdx}: {err}"
 
-def parse! (s: String) : Polynomial Dimension POrd :=
+def parse! (s: String) : Polynomial Dimension Ordering.lex :=
   match (parse s) with
     | .ok res  => res
     | .error err => panic! err

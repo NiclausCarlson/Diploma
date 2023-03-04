@@ -102,32 +102,29 @@ theorem lex_le_total : ∀ (a b : Variables n), Order.lex a b ∨ Order.lex b a 
                                 simp
                                 simp at *
                                 rename_i heq₁ heq₂
-                                rw [heq₁, heq₂] 
-                                rw [Order.lex_impl]
-                                split
-                                apply Or.intro_right
-                                simp
-                                rename_i heq₃ heq₄
-                                simp at heq₃ heq₄
-                                rw [heq₃, heq₄]
-                                apply Nat.le_total
-                                rename_i heq₁ heq₂ _ _ _ _ _ _ _ _ heq₃ heq₄
-                                simp at heq₃ heq₄
-                                rw [Order.lex_impl]
                                 sorry
-                                simp at *
-                                split
-                                sorry
-                                sorry
+                                -- rw [heq₁, heq₂] 
+                                -- rw [Order.lex_impl]
+                                -- split
+                                -- apply Or.intro_right
+                                -- simp
+                                -- rename_i heq₃ heq₄
+                                -- simp at heq₃ heq₄
+                                -- rw [heq₃, heq₄]
+                                -- apply Nat.le_total
+                                -- rename_i heq₁ heq₂ _ _ _ _ _ _ _ _ heq₃ heq₄
+                                -- simp at heq₃ heq₄
+                                -- rw [Order.lex_impl]
+                                -- sorry
+                                -- simp at *
+                                -- split
+                                -- sorry
+                                -- sorry
       | ⟨x::_, p⟩, ⟨y::_, q⟩ => rw [Order.lex_impl]
                                 split
                                 simp
                                 simp at *
                                 simp at p q
-                                sorry
-                                simp at *
-                                split
-                                sorry
                                 sorry
   exact aux n v₁ v₂
   

@@ -3,6 +3,7 @@ import Diploma.Polynomials.Parser
 import Diploma.Polynomials.Groebner
 
 open polynomial
+open algebra
 
 def sum (p₁ p₂: String): String :=
   toString (parse! p₁ + parse! p₂)
@@ -109,8 +110,8 @@ private def reduce_lt_check (p₁ p₂: String) (expected_reduced: String) (expe
 #eval reduce_lt_check "2" "ab-1" "" ""
 
 --# Test div
-private def parse_list (ps: List String): List (Polynomial Dimension POrd) := ps.map parse!
-def div (p: String) (ps: List String): DivisionResult Dimension POrd := 
+private def parse_list (ps: List String): List (Polynomial Dimension Ordering.lex) := ps.map parse!
+def div (p: String) (ps: List String): DivisionResult Dimension Ordering.lex := 
   divide_many (parse! p) (parse_list ps)
 
 private def check_div (p: String) (ps: List String) (poly: String) (remainder: String): Except String String :=
