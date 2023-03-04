@@ -36,7 +36,6 @@ theorem lex_le_refl : ∀ (a : Variables n), Order.lex a a := by
                       simp at *
                       simp at p
                       simp at *                                   
-                      simp at *                                   
       | ⟨x::xs, _⟩ => rw [Order.lex_impl]
                       split
                       simp
@@ -48,15 +47,7 @@ theorem lex_le_refl : ∀ (a : Variables n), Order.lex a a := by
                       have h₄ := Eq.symm h₂.left
                       rw [h₃, h₄]
                       simp [Nat.le_refl]
-                      split
-                      simp at *
                       apply aux (m-1) (tail ⟨x::xs, _⟩)
-                      simp at *
-                      rename_i x₁ t₁ _ x₂ t₂ _ h h_neq h₁ h₂
-                      have h₃ := Eq.symm h₁.left
-                      have h₄ := Eq.symm h₂.left
-                      rw [h₃, h₄]
-                      simp [Nat.le_refl]
   exact aux n a
 
 theorem lex_le_trans : ∀ (a b c : Variables n), Order.lex a b → Order.lex b c → Order.lex a c := by
@@ -67,9 +58,6 @@ theorem lex_le_trans : ∀ (a b c : Variables n), Order.lex a b → Order.lex b 
       | ⟨[], p⟩,    ⟨[], q⟩,    ⟨[], l⟩    => rw [Order.lex_impl]
                                               split
                                               simp
-                                              simp at *
-                                              split
-                                              simp at *
                                               simp at *
       | ⟨x::xs, p⟩, ⟨y::ys, q⟩, ⟨z::zs, l⟩ => rw [Order.lex_impl]
                                               split
@@ -82,9 +70,7 @@ theorem lex_le_trans : ∀ (a b c : Variables n), Order.lex a b → Order.lex b 
                                               rename_i x₁ _ x₂ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ h₁ h₂
                                               sorry
                                               sorry
-                                              sorry
-                                              sorry
-                                              sorry
+
   exact aux n v₁ v₂ v₃ h₁ h₂
 
 theorem lex_le_antisymm : ∀ (a b : Variables n), Order.lex a b → Order.lex b a → a = b := by
@@ -92,21 +78,12 @@ theorem lex_le_antisymm : ∀ (a b : Variables n), Order.lex a b → Order.lex b
   let rec aux (m: Nat) (a b: Vector Nat m) (ab: Order.lex_impl a b) (ba: Order.lex_impl b a): a = b := by 
     match a, b with
       | ⟨[], p⟩, ⟨[], q⟩       => simp 
-      | ⟨[x], p⟩, ⟨[y], q⟩     => rw [Order.lex_impl] at ab
-                                  rw [Order.lex_impl] at ba
-                                  simp at *
-                                  have x_eq_y := Nat.le_antisymm ab ba
-                                  rw [x_eq_y]
       | ⟨x::xs, p⟩, ⟨y::ys, q⟩ => rw [Order.lex_impl] at ab
                                   rw [Order.lex_impl] at ba
                                   simp at *
                                   split at ab
                                   split at ba
                                   rename_i heq₁ heq₂
-                                  rw [heq₂, heq₁]
-                                  rename_i x₁ _ y₁ _ heq₁ heq₂
-                                  rw [heq₂, heq₁]
-                                  sorry
                                   sorry
                                   sorry
                                   sorry
@@ -118,11 +95,6 @@ theorem lex_le_total : ∀ (a b : Variables n), Order.lex a b ∨ Order.lex b a 
     match a, b with
       | ⟨[], p⟩, ⟨[], q⟩     => rw [Order.lex_impl]
                                 split
-                                simp
-                                simp at *
-                                split
-                                simp
-                                simp at *
                                 simp
                                 simp at *
       | ⟨[x], p⟩, ⟨[y], q⟩   => rw [Order.lex_impl]
@@ -252,7 +224,6 @@ theorem Order.ble_eq_true_of_lex (h: Order.lex_impl v₁ v₂) : Eq (Order.ble_l
                                   rwa [eq₁, eq₂]
   rename_i n
   exact aux n v₁ v₂ h 
-  
 
 theorem Order.lex_false_of_ble_lex_false (h: Not (Eq (Order.ble_lex_impl v₁ v₂) true)): Not (Order.lex v₁ v₂) :=
   fun h' => absurd (Order.ble_eq_true_of_lex h') h
