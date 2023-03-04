@@ -58,16 +58,18 @@ structure DivisionResult (n: Nat) (cmp: Monomial n → Monomial n → Ordering) 
   r: Polynomial n cmp
 
 def divide_many (divisible: Polynomial n cmp) (dividers: List (Polynomial n cmp)): DivisionResult n cmp := 
-  impl divisible dividers {p:=0, r:=0}
+  if dividers == [] then {p:=0, r:=0}
+  else impl divisible dividers {p:=0, r:=0}
   where
     impl (p: Polynomial n cmp) (ps: List (Polynomial n cmp)) (step: DivisionResult n cmp): DivisionResult n cmp :=
         if p == 0 then step
-        else if ps == [] then step
         else match ps with
-              | []    => impl p ps step
+              | []    => let r := step.r + p.Lt
+                         let new_p := p - p.Lt
+                         impl new_p dividers {p := step.p, r := r}
               | a::as => match reduce_lt p a with
-                          | none     => impl (p - a.Lt)  as {p := step.p, r := step.r + a.Lt}
-                          | some res => impl res.reduced as {p := step.p + res.reducer, r := step.r}
+                          | none     => impl p as step
+                          | some res => impl res.reduced dividers {p := step.p + res.reducer, r := step.r}
     termination_by impl p ps psp => p == 0
     decreasing_by {
       simp_wf

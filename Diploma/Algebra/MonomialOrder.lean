@@ -62,8 +62,7 @@ theorem lex_le_trans : ∀ (a b c : Variables n), Order.lex a b → Order.lex b 
       | ⟨x::xs, p⟩, ⟨y::ys, q⟩, ⟨z::zs, l⟩ => rw [Order.lex_impl]
                                               split
                                               simp at *
-                                              rw [Order.lex_impl] at ab
-                                              rw [Order.lex_impl] at bc
+                                              rw [Order.lex_impl] at ab bc
                                               split at ab
                                               split at bc
                                               simp at *
@@ -78,8 +77,7 @@ theorem lex_le_antisymm : ∀ (a b : Variables n), Order.lex a b → Order.lex b
   let rec aux (m: Nat) (a b: Vector Nat m) (ab: Order.lex_impl a b) (ba: Order.lex_impl b a): a = b := by 
     match a, b with
       | ⟨[], p⟩, ⟨[], q⟩       => simp 
-      | ⟨x::xs, p⟩, ⟨y::ys, q⟩ => rw [Order.lex_impl] at ab
-                                  rw [Order.lex_impl] at ba
+      | ⟨x::xs, p⟩, ⟨y::ys, q⟩ => rw [Order.lex_impl] at ab ba
                                   simp at *
                                   split at ab
                                   split at ba
