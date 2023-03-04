@@ -62,10 +62,16 @@ def divide_many (divisible: Polynomial n cmp) (dividers: List (Polynomial n cmp)
   where
     impl (p: Polynomial n cmp) (ps: List (Polynomial n cmp)) (step: DivisionResult n cmp): DivisionResult n cmp :=
         if p == 0 then step
+        else if ps == [] then step
         else match ps with
               | []    => impl p ps step
               | a::as => match reduce_lt p a with
                           | none     => impl (p - a.Lt)  as {p := step.p, r := step.r + a.Lt}
                           | some res => impl res.reduced as {p := step.p + res.reducer, r := step.r}
-
+    termination_by impl p ps psp => p == 0
+    decreasing_by {
+      simp_wf
+      sorry
+    }
+-- ex https://leanprover-community.github.io/archive/stream/270676-lean4/topic/using.20higher-order.20functions.20on.20inductive.20types.3A.20termination.html
 end polynomial
