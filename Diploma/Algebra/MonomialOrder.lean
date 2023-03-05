@@ -78,17 +78,17 @@ theorem lex_le_trans : ∀ (a b c : Variables n), Order.lex a b → Order.lex b 
                                               simp at heq₃
                                               split at bc
                                               apply aux (m-1) (tail ⟨x::xs, p⟩) (tail ⟨y::ys, q⟩) (tail ⟨z::zs, l⟩) ab bc
-                                              repeat (first | simp at *
-                                                              rename_i eq₁ eq₂ _ _ _ _ _  _ _ _ hneq heq₁ heq₂ heq₃ heq₄ 
-                                                              have x_cross_one_eq_x := Eq.symm (heq₁.left)
-                                                              have y_cross_one_eq_y := Eq.symm (heq₂.left)
-                                                              have x_cross_eq_x     := Eq.symm (heq₃.left)
-                                                              have y_cross_eq_x     := Eq.symm (heq₄.left)
-                                                              rw [x_cross_eq_x, y_cross_eq_x] at hneq
-                                                              rw [x_cross_one_eq_x, y_cross_one_eq_y] at eq₂
-                                                              rw [eq₂] at eq₁
-                                                              contradiction
-                                                            | split at bc)
+                                              simp at *
+                                              rename_i eq₁ eq₂ _ _ _ _ _  _ _ _ hneq heq₁ heq₂ heq₃ heq₄ 
+                                              have x_cross_one_eq_x := Eq.symm (heq₁.left)
+                                              have y_cross_one_eq_y := Eq.symm (heq₂.left)
+                                              have x_cross_eq_x     := Eq.symm (heq₃.left)
+                                              have y_cross_eq_x     := Eq.symm (heq₄.left)
+                                              rw [x_cross_eq_x, y_cross_eq_x] at hneq
+                                              rw [x_cross_one_eq_x, y_cross_one_eq_y] at eq₂
+                                              rw [eq₂] at eq₁
+                                              contradiction
+                                              split at bc
                                               simp at *
                                               repeat (first | rename_i heq₁ heq₂ eq₁ neq₁ _ _ _ _ _ _ _ _ heq₃ heq₄ eq₂
                                                               simp at heq₁ heq₂ heq₃ heq₄
@@ -156,6 +156,7 @@ theorem lex_le_trans : ∀ (a b c : Variables n), Order.lex a b → Order.lex b 
                                               exact le_le                        
   exact aux n v₁ v₂ v₃ h₁ h₂
 
+theorem vec_eq_head_tail_eq (v₁ v₂: Vector Nat (succ m)) : v₁ = v₂ → head v₁ = head v₂ ∧ tail v₁= tail v₂ := by sorry   
 theorem lex_le_antisymm : ∀ (a b : Variables n), Order.lex a b → Order.lex b a → a = b := by
   intros v₁ v₂ h₁ h₂
   let rec aux (m: Nat) (a b: Vector Nat m) (ab: Order.lex_impl a b) (ba: Order.lex_impl b a): a = b := by 
@@ -165,10 +166,18 @@ theorem lex_le_antisymm : ∀ (a b : Variables n), Order.lex a b → Order.lex b
                                   simp at *
                                   split at ab
                                   split at ba
-                                  rename_i heq₁ heq₂
+                                  rename_i heq₁ heq₂ 
                                   sorry
-                                  sorry
-                                  sorry
+                                  rename_i eq neq
+                                  have seq := Eq.symm eq
+                                  contradiction
+                                  split at ba
+                                  rename_i neq eq
+                                  have seq := Eq.symm eq
+                                  contradiction
+                                  rename_i neq₁ neq₂
+                                  have eq := Nat.le_antisymm ab ba
+                                  contradiction
   exact aux n v₁ v₂ h₁ h₂ 
 
 theorem lex_le_total : ∀ (a b : Variables n), Order.lex a b ∨ Order.lex b a := by
