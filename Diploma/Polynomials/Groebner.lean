@@ -76,4 +76,15 @@ def divide_many (divisible: Polynomial n cmp) (dividers: List (Polynomial n cmp)
       sorry
     }
 -- ex https://leanprover-community.github.io/archive/stream/270676-lean4/topic/using.20higher-order.20functions.20on.20inductive.20types.3A.20termination.html
+
+def Monomial.lcm (m₁ m₂: Monomial n): Monomial n := ⟨1, Vector.map₂ (fun x y => max x y) m₁.snd m₂.snd⟩  
+def get_s_polynomial (p₁ p₂: Polynomial n cmp): Polynomial n cmp :=
+  let lcm := Monomial.lcm (p₁.lm) (p₂.lm)
+  (div_lcm_lt lcm p₁.lt) * p₁ - (div_lcm_lt lcm p₂.lt) * p₂
+where
+  div_lcm_lt (lcm lt: Monomial n): Polynomial n cmp := Polynomial.single (lcm.div lt)
+
+
+def build_groebner_basis (pl: List (Polynomial n cmp)): List (Polynomial n cmp) := sorry
+
 end polynomial
