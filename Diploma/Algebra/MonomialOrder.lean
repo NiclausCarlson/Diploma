@@ -59,17 +59,101 @@ theorem lex_le_trans : ∀ (a b c : Variables n), Order.lex a b → Order.lex b 
                                               split
                                               simp
                                               simp at *
-      | ⟨x::xs, p⟩, ⟨y::ys, q⟩, ⟨z::zs, l⟩ => rw [Order.lex_impl]
-                                              split
-                                              simp at *
+      | ⟨x::xs, p⟩, ⟨y::ys, q⟩, ⟨z::zs, l⟩ => rw [Order.lex_impl] 
                                               rw [Order.lex_impl] at ab bc
                                               split at ab
                                               split at bc
+                                              split <;> simp at *
+                                              split at bc
+                                              split
+                                              repeat (first 
+                                                | rename_i heq₁ heq₂ _ _ _ _ _ _ _ _ heq₃ heq₄ _ _
+                                                  rw [heq₂] at heq₃
+                                                  simp at heq₃ 
+                                                | split)
+                                              split at ab
+                                              split at bc
+                                              rename_i heq₁ heq₂ _ _ _ _ _ _ heq₃ heq₄
+                                              rw [heq₂] at heq₃
+                                              simp at heq₃
+                                              split at bc
+                                              apply aux (m-1) (tail ⟨x::xs, p⟩) (tail ⟨y::ys, q⟩) (tail ⟨z::zs, l⟩) ab bc
+                                              repeat (first | simp at *
+                                                              rename_i eq₁ eq₂ _ _ _ _ _  _ _ _ hneq heq₁ heq₂ heq₃ heq₄ 
+                                                              have x_cross_one_eq_x := Eq.symm (heq₁.left)
+                                                              have y_cross_one_eq_y := Eq.symm (heq₂.left)
+                                                              have x_cross_eq_x     := Eq.symm (heq₃.left)
+                                                              have y_cross_eq_x     := Eq.symm (heq₄.left)
+                                                              rw [x_cross_eq_x, y_cross_eq_x] at hneq
+                                                              rw [x_cross_one_eq_x, y_cross_one_eq_y] at eq₂
+                                                              rw [eq₂] at eq₁
+                                                              contradiction
+                                                            | split at bc)
                                               simp at *
-                                              rename_i x₁ _ x₂ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ h₁ h₂
-                                              sorry
-                                              sorry
-
+                                              repeat (first | rename_i heq₁ heq₂ eq₁ neq₁ _ _ _ _ _ _ _ _ heq₃ heq₄ eq₂
+                                                              simp at heq₁ heq₂ heq₃ heq₄
+                                                              have x_cross_one_eq_x := Eq.symm (heq₁.left)
+                                                              have y_cross_one_eq_y := Eq.symm (heq₂.left)
+                                                              have x_cross_eq_x     := Eq.symm (heq₃.left)
+                                                              have y_cross_eq_x     := Eq.symm (heq₄.left)
+                                                              rw [x_cross_eq_x, y_cross_eq_x] at eq₂
+                                                              rw [x_cross_one_eq_x, y_cross_one_eq_y] at neq₁
+                                                              rw [eq₂] at neq₁
+                                                              contradiction
+                                                            | split at bc)
+                                              rename_i heq₁ heq₂ eq₁ neq₁ _ _ _ _ _ _ _ _ heq₃ heq₄ neq₂ 
+                                              simp at heq₁ heq₂ heq₃ heq₄
+                                              have x_cross_one_eq_x := Eq.symm (heq₁.left)
+                                              have y_cross_one_eq_y := Eq.symm (heq₂.left)
+                                              have x_cross_eq_x     := Eq.symm (heq₃.left)
+                                              have y_cross_eq_x     := Eq.symm (heq₄.left)
+                                              rw [x_cross_eq_x, y_cross_eq_x] at neq₂ bc
+                                              rw [x_cross_one_eq_x, y_cross_one_eq_y] at neq₁ ab
+                                              rw [eq₁] at ab
+                                              have eq_eq := Nat.le_antisymm bc ab
+                                              contradiction 
+                                              split at ab
+                                              split at bc
+                                              simp at *
+                                              split at bc
+                                              simp at *
+                                              rename_i neq₁ eq₁ _ _ _ _ _ _ _ _ eq₂ heq₁ heq₂ heq₃ heq₄
+                                              have x_cross_one_eq_x := Eq.symm (heq₁.left)
+                                              have y_cross_one_eq_y := Eq.symm (heq₂.left)
+                                              have x_cross_eq_x     := Eq.symm (heq₃.left)
+                                              have y_cross_eq_x     := Eq.symm (heq₄.left)
+                                              rw [x_cross_one_eq_x, y_cross_one_eq_y] at eq₁
+                                              rw [x_cross_eq_x, y_cross_eq_x] at eq₂
+                                              rw [eq₂] at eq₁
+                                              contradiction
+                                              repeat (first | simp at *
+                                                              rename_i neq₁ eq₁ _ _ _ _ _ _ _ _ eq₂ heq₁ heq₂ heq₃ heq₄
+                                                              have x_cross_one_eq_x := Eq.symm (heq₁.left)
+                                                              have y_cross_one_eq_y := Eq.symm (heq₂.left)
+                                                              have x_cross_eq_x     := Eq.symm (heq₃.left)
+                                                              have y_cross_eq_x     := Eq.symm (heq₄.left)
+                                                              rw [x_cross_one_eq_x, y_cross_one_eq_y] at eq₁
+                                                              rw [x_cross_eq_x, y_cross_eq_x] at bc
+                                                              rw [eq₁]
+                                                              exact bc
+                                                            | split at bc)
+                                              simp at *
+                                              split at bc <;> (simp at *
+                                                               rename_i neq₁ neq₂ _ _ _ _ _ _ _ _ _ heq₁ heq₂ heq₃ heq₄
+                                                               have x_cross_one_eq_x := Eq.symm (heq₁.left)
+                                                               have y_cross_one_eq_y := Eq.symm (heq₂.left)
+                                                               have x_cross_eq_x     := Eq.symm (heq₃.left)
+                                                               have y_cross_eq_x     := Eq.symm (heq₄.left))
+                                              rename_i eq
+                                              rw [x_cross_one_eq_x, y_cross_one_eq_y] at neq₂ ab
+                                              rw [x_cross_eq_x, y_cross_eq_x] at eq
+                                              rw [eq] at ab
+                                              exact ab
+                                              rename_i neq₃
+                                              rw [x_cross_one_eq_x, y_cross_one_eq_y] at neq₂ ab
+                                              rw [x_cross_eq_x, y_cross_eq_x] at neq₃ bc
+                                              have le_le := Nat.le_trans ab bc
+                                              exact le_le                        
   exact aux n v₁ v₂ v₃ h₁ h₂
 
 theorem lex_le_antisymm : ∀ (a b : Variables n), Order.lex a b → Order.lex b a → a = b := by
