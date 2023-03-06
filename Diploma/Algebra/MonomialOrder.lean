@@ -225,15 +225,7 @@ theorem lex_le_total : ∀ (a b : Variables n), Order.lex a b ∨ Order.lex b a 
                                   rw [eq_1, eq_2]
                                   simp [Nat.le_total]
   exact aux n v₁ v₂
-  
 
-noncomputable instance LexOrder: LinearOrder (Variables n) where
-  le           := Order.lex 
-  le_refl      := lex_le_refl
-  le_trans     := lex_le_trans
-  le_antisymm  := lex_le_antisymm
-  le_total     := lex_le_total
-  decidable_le := by infer_instance
 
 theorem Order.lex_true_of_ble_lex_true (h: Eq (Order.ble_lex_impl v₁ v₂) true): Order.lex v₁ v₂ := by
   let rec aux (m: Nat) (a b: Vector Nat m) (h: Eq (Order.ble_lex_impl a b) true): Order.lex a b := by
@@ -326,6 +318,14 @@ theorem Order.lex_false_of_ble_lex_false (h: Not (Eq (Order.ble_lex_impl v₁ v�
 instance Order.lex_decidable (v₁ v₂: Variables n): Decidable (Order.lex v₁ v₂) :=
   dite (Eq (Order.ble_lex_impl v₁ v₂) true) (fun h => isTrue (Order.lex_true_of_ble_lex_true h))
                                             (fun h => isFalse (Order.lex_false_of_ble_lex_false h))
+
+instance LexOrder: LinearOrder (Variables n) where
+  le           := Order.lex 
+  le_refl      := lex_le_refl
+  le_trans     := lex_le_trans
+  le_antisymm  := lex_le_antisymm
+  le_total     := lex_le_total
+  decidable_le := Order.lex_decidable
 
 def Ordering.lex (m₁ m₂: Monomial n): Ordering := 
   if m₁.snd = m₂.snd then Ordering.eq
