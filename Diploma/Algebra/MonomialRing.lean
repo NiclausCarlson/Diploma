@@ -5,6 +5,23 @@ import Std.Data.RBMap
 
 namespace algebra
 open polynomial
+open Std.RBNode
+open Std.RBSet
+
+theorem t_zero_add: ∀ (a : Polynomial n cmp), Polynomial.add 0 a = a := by
+   intros a
+   let rec aux (p: Polynomial n cmp): Polynomial.add 0 p = p := by
+      match p with
+         | ⟨f, l⟩ => match f with 
+                      | nil => sorry -- newer true
+                      | node c nil r nil => simp [Polynomial.add, mergeWith, Std.RBSet.foldl]
+                                            split
+                                            simp [Std.RBSet.insert]
+                                            sorry
+                                            sorry          
+                      | node c u r v => sorry  
+ 
+   apply aux a
 
 instance: CommRing (Polynomial n cmp) where
    zero := 0
