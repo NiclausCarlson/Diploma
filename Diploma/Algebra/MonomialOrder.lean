@@ -14,6 +14,8 @@ open Nat
 
 namespace algebra
 
+section monomials_lex_order
+
 private def Order.ble_lex_impl (v₁ v₂ : Vector Nat n): Bool :=
   match v₁, v₂ with
     | ⟨[], _⟩  , ⟨[], _⟩   => true
@@ -330,20 +332,177 @@ def Ordering.lex (m₁ m₂: Monomial n): Ordering :=
   else if Order.lex m₁.snd m₂.snd then Ordering.gt
   else Ordering.lt
 
+end monomials_lex_order
 
-def Order.grlex (vs₁ vs₂: Variables n): Prop := 
-  if elem_sum vs₁ > elem_sum vs₂ then True
-  else if elem_sum vs₁ = elem_sum vs₂ then Order.lex vs₁ vs₂
+
+section monomials_grlex_order
+
+private def Order.bgrlex (vs₁ vs₂: Variables n): Bool :=
+  let sum₁ := elem_sum vs₁ 
+  let sum₂ := elem_sum vs₂   
+  if sum₁ > sum₂ then true
+  else if sum₁ = sum₂ then Order.lex vs₁ vs₂
+  else false
+  where
+    elem_sum (vs: Variables n): Nat :=
+      List.foldl (fun x y => x + y) 0 vs.toList
+
+def Order.grlex (vs₁ vs₂: Variables n): Prop :=
+  let sum₁ := elem_sum vs₁ 
+  let sum₂ := elem_sum vs₂   
+  if sum₁ > sum₂ then True
+  else if sum₁ = sum₂ then Order.lex vs₁ vs₂
   else False
   where
     elem_sum (vs: Variables n): Nat :=
       List.foldl (fun x y => x + y) 0 vs.toList
 
-instance (vs₁ vs₂: Variables n): Decidable (Order.grlex vs₁ vs₂) := sorry
+theorem grlex_le_refl: ∀ (a : Variables n), Order.grlex a a := by 
+  intros a
+  simp [Order.grlex]
+  apply lex_le_refl
+
+theorem grlex_le_trans : ∀ (a b c : Variables n), Order.grlex a b → Order.grlex b c → Order.grlex a c := by
+  intros a b c ab bc
+  simp [Order.grlex]
+  simp [Order.grlex] at ab bc
+  split <;> simp
+  split at ab
+  split at bc <;> split
+  rename_i nleq leq₁ leq₂ eq
+  rw [eq] at leq₁
+  simp at *
+  have asymm_leq₁ := Nat.lt_asymm leq₁
+  contradiction
+  rename_i nleq leq₁ leq₂ neq
+  have contr := Nat.lt_trans leq₂ leq₁
+  contradiction
+  split at bc
+  rename_i nleq₁ leq₁ nleq₂ eq₁ eq₂
+  rw [eq₂] at leq₁
+  repeat contradiction
+  split at bc
+  rename_i nleq₁ leq₁ nleq₂ neq₁ eq₂
+  rw [eq₂] at leq₁
+  repeat contradiction
+  split <;> (split at ab; split at bc)
+  rename_i nleq₁ nleq₂ eq₁ eq₂ leq
+  have seq := Eq.symm eq₂
+  rw [seq] at leq
+  contradiction
+  split at bc
+  rename_i nleq₁ nleq₂ eq₁ eq₂ neq₁ eq₃
+  simp at *
+  apply lex_le_trans
+  exact ab
+  exact bc
+  repeat contradiction
+  rename_i nleq₁ nleq₂ neq₁ eq leq
+  rw [eq] at nleq₁
+  contradiction
+  split at bc
+  rename_i nleq₁ nleq₂ neq eq₁ nleq₃ eq₂
+  rw [eq₁] at neq
+  repeat contradiction
+  
+theorem grlex_le_antisymm : ∀ (a b : Variables n), Order.grlex a b → Order.grlex b a → a = b := by 
+  intros a b ab ba
+  simp [Order.grlex] at ab ba
+  split at ab
+  split at ba
+  rename_i leq₁ leq₂
+  have asymm_leq₁ := Nat.lt_asymm leq₁
+  contradiction
+  split at ba
+  rename_i leq nleq eq
+  rw [eq] at leq
+  simp at leq
+  contradiction
+  split at ab
+  split at ba
+  rename_i nleq eq leq
+  have symm := Eq.symm eq
+  rw [symm] at leq
+  simp at leq
+  split at ba
+  apply lex_le_antisymm 
+  exact ab
+  exact ba
+  repeat contradiction
+
+theorem grlex_le_total : ∀ (a b : Variables n), Order.grlex a b ∨ Order.grlex b a := by 
+  intros a b
+  simp [Order.grlex]
+  split <;> simp
+  split <;> repeat (first | split | simp)
+  simp [lex_le_total] 
+  rename_i nleq₁ eq nleq₂ neq
+  have contr := Eq.symm eq 
+  contradiction
+  rename_i nleq₁ neq nleq₂ eq
+  have contr := Eq.symm eq 
+  contradiction
+  simp
+  rename_i nleq₁ neq nleq₂ eq
+  simp at *
+  have contr := Nat.le_antisymm nleq₁ nleq₂
+  contradiction
+
+theorem grlex_true_of_ble_grlex_true (h: Eq (Order.bgrlex v₁ v₂) true): Order.grlex v₁ v₂ := by
+  simp [Order.grlex]
+  split
+  simp
+  split
+  simp [algebra.Order.bgrlex] at h
+  split at h
+  simp at h
+  rename_i eq
+  have le := Nat.le_of_eq eq
+  simp [le] at h
+  exact h
+  rename_i nleq eq _
+  contradiction
+  simp [algebra.Order.bgrlex] at h
+  split at h
+  contradiction
+  rename_i nleq neq₁ neq₂
+  have leq := Nat.le_of_not_lt nleq
+  exact h leq
+
+theorem grble_eq_true_of_grlex (h: Order.grlex v₁ v₂): Eq (Order.bgrlex v₁ v₂) true := by
+  simp [Order.grlex] at h
+  split at h
+  simp [algebra.Order.bgrlex]
+  split
+  rename_i h
+  have le := Nat.le_of_eq h
+  simp [h]
+  sorry
+  sorry
+  split at h
+  sorry
+  sorry
+
+theorem grlex_false_of_ble_grlex_false (h: Not (Eq (Order.bgrlex v₁ v₂) true)): Not (Order.grlex v₁ v₂) := 
+  fun h' => absurd (grble_eq_true_of_grlex h') h
+  
+instance Order.grlex_decidable (v₁ v₂: Variables n): Decidable (Order.grlex v₁ v₂) := 
+  dite (Eq (Order.bgrlex v₁ v₂) true) (fun h => isTrue (grlex_true_of_ble_grlex_true h))
+                                      (fun h => isFalse (grlex_false_of_ble_grlex_false h))
+  
+-- instance GrlexOrder: LinearOrder (Variables n) where
+--   le           := Order.grlex 
+--   le_refl      := grlex_le_refl
+--   le_trans     := grlex_le_trans
+--   le_antisymm  := grlex_le_antisymm
+--   le_total     := grlex_le_total
+--   decidable_le := Order.grlex_decidable
 
 def Ordering.grlex (m₁ m₂: Monomial n): Ordering :=
   if m₁.snd = m₂.snd then Ordering.eq
   else if Order.grlex m₁.snd m₂.snd then Ordering.gt
   else Ordering.lt
+
+end monomials_grlex_order
 
 end algebra
