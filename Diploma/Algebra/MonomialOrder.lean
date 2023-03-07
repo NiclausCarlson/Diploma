@@ -157,12 +157,6 @@ theorem lex_le_trans : ∀ (a b c : Variables n), Order.lex a b → Order.lex b 
                                               exact le_le                        
   exact aux n v₁ v₂ v₃ h₁ h₂
 
-theorem eq_head_tail (v₁ v₂ : Vector Nat n) (eq: v₁ = v₂) : v₁.tail = v₂.tail := 
-    by    
-      match v₁, v₂ with
-        | ⟨[], p⟩, ⟨[], q⟩       => simp 
-        | ⟨x::xs, p⟩, ⟨y::ys, q⟩ => sorry
-
 theorem lex_le_antisymm : ∀ (a b : Variables n), Order.lex a b → Order.lex b a → a = b := by
   intros v₁ v₂ h₁ h₂
   let rec aux (m: Nat) (a b: Vector Nat m) (ab: Order.lex_impl a b) (ba: Order.lex_impl b a): a = b := by 
@@ -172,8 +166,13 @@ theorem lex_le_antisymm : ∀ (a b : Variables n), Order.lex a b → Order.lex b
                                   simp at *
                                   split at ab
                                   split at ba
-                                  rename_i heq₁ heq₂ 
-                                  sorry
+                                  rename_i heq₁ heq₂
+                                  simp [Vector]
+                                  constructor
+                                  exact heq₁ 
+                                  have eq := aux (m-1) (tail ⟨x::xs, p⟩) (tail ⟨y::ys, q⟩) ab ba
+                                  simp [tail, Vector] at eq
+                                  exact eq
                                   rename_i eq neq
                                   have eq_symm := Eq.symm eq
                                   contradiction
@@ -225,7 +224,6 @@ theorem lex_le_total : ∀ (a b : Variables n), Order.lex a b ∨ Order.lex b a 
                                   rw [eq_1, eq_2]
                                   simp [Nat.le_total]
   exact aux n v₁ v₂
-
 
 theorem Order.lex_true_of_ble_lex_true (h: Eq (Order.ble_lex_impl v₁ v₂) true): Order.lex v₁ v₂ := by
   let rec aux (m: Nat) (a b: Vector Nat m) (h: Eq (Order.ble_lex_impl a b) true): Order.lex a b := by
