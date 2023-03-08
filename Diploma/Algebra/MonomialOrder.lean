@@ -477,11 +477,26 @@ theorem grble_eq_true_of_grlex (h: Order.grlex v₁ v₂): Eq (Order.bgrlex v₁
   rename_i h
   have le := Nat.le_of_eq h
   simp [h]
-  sorry
-  sorry
+  rename_i hle _ 
+  rw [Order.grlex.elem_sum, Order.grlex.elem_sum] at hle
+  rw [algebra.Order.bgrlex.elem_sum, algebra.Order.bgrlex.elem_sum] at h
+  rw [h] at hle
+  simp at hle
+  rename_i le neq
+  intros nleq
+  have le_contr := Nat.not_lt_of_le nleq
+  rw [Order.grlex.elem_sum, Order.grlex.elem_sum] at le
+  rw [algebra.Order.bgrlex.elem_sum, algebra.Order.bgrlex.elem_sum] at le_contr
+  contradiction
   split at h
-  sorry
-  sorry
+  simp [algebra.Order.bgrlex]
+  intros le
+  split
+  exact h
+  rename_i nlt eq neq
+  rw [Order.grlex.elem_sum, Order.grlex.elem_sum] at nlt eq
+  rw [algebra.Order.bgrlex.elem_sum, algebra.Order.bgrlex.elem_sum] at le neq
+  repeat contradiction
 
 theorem grlex_false_of_ble_grlex_false (h: Not (Eq (Order.bgrlex v₁ v₂) true)): Not (Order.grlex v₁ v₂) := 
   fun h' => absurd (grble_eq_true_of_grlex h') h
