@@ -4,9 +4,10 @@ import Diploma.Polynomials.Polynomial
 import Diploma.Algebra.MonomialOrder
 import Std.Data.List.Basic
 
-namespace polynomial
 open Lean Parsec
 open algebra
+
+namespace polynomial
 
 def Dimension := 3
 
@@ -111,8 +112,5 @@ def parse_polynomials! (s: String) (ord: Monomial Dimension → Monomial Dimensi
    match (parse_polynomials s ord) with
     | .ok res  => res
     | .error err => panic! err
-
-#eval toString (parse! "a " Ordering.lex)
-#eval toString (parse_polynomials! "15a+78; 8ab^8c+17+6;" Ordering.lex)
 
 end polynomial
