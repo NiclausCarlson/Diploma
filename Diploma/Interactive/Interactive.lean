@@ -12,6 +12,7 @@ section commands
 private def GroebnerCmd := "groebner"
 private def SimpCmd     := "simp"
 private def IsInCmd     := "is_in"
+private def Exit        := "exit"
 end commands
 
 
@@ -71,18 +72,17 @@ private def EvalSimp : Parsec String := do
   ws *> skipChar ':' *> ws
   return toString (Simp.mk ord_type.snd polynomials)
 
-def EvalCommand : Parsec String := do
+def Eval : Parsec (Option String) := do
   let command ← ws *> (pstring GroebnerCmd <|> pstring SimpCmd <|> pstring IsInCmd)
   if command == SimpCmd then EvalSimp
-  else if command == GroebnerCmd then sorry
-  else if command == IsInCmd then sorry
+ -- else if command == GroebnerCmd then sorry
+ -- else if command == IsInCmd then sorry
+  else if command == Exit then return none
   else fail s!"unsupported command {command}"
 
-def Eval: Parsec (Array String) := many EvalCommand
-
-def eval (s: String) : Except String (List String) :=
+def eval (s: String) : Except String (Option String) :=
   match Eval s.mkIterator with
-      | Parsec.ParseResult.success _ res => Except.ok res.toList
+      | Parsec.ParseResult.success _ res => Except.ok res
       | Parsec.ParseResult.error it err  => Except.error s!"offset {it.i.byteIdx}: {err}"
   
 end interactive
