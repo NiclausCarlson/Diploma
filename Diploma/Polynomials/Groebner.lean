@@ -84,7 +84,37 @@ def get_s_polynomial (p₁ p₂: Polynomial n cmp): Polynomial n cmp :=
 where
   div_lcm_lt (lcm lt: Monomial n): Polynomial n cmp := Polynomial.single (lcm.div lt)
 
+private def step (p q: Polynomial n cmp) (ps: List (Polynomial n cmp)) : Bool × Polynomial n cmp := 
+  if p == q then (false, 0)
+  else
+    let div_result := divide_many (get_s_polynomial p q) ps
+    (div_result.r == 0, div_result.r)
 
-def build_groebner_basis (pl: List (Polynomial n cmp)): List (Polynomial n cmp) := sorry
+private def build (e: Polynomial n cmp) (ps: List (Polynomial n cmp)) (result: List (Polynomial n cmp)) : List (Polynomial n cmp) := 
+  match result with
+    | []    => result
+    | a::as => let s := step e a as 
+               if s.fst then [s.snd] ++ build e (ps ++ [s.snd]) as
+               else build e ps result
+termination_by build pl result => pl == []
+decreasing_by {
+  simp_wf
+  sorry
+}
+
+def build_groebner_basis (pl: List (Polynomial n cmp)): List (Polynomial n cmp) := 
+  match pl with
+    | []    => []
+    | a::as => impl as [a]
+  where 
+    impl (pl: List (Polynomial n cmp)) (result: List (Polynomial n cmp)): List (Polynomial n cmp) := 
+      match pl with
+        | []    => result 
+        | p::ps => impl (ps ++ (build p result ps)) (result ++ [p])
+    termination_by impl pl result => pl == []
+    decreasing_by {
+      simp_wf
+      sorry
+    }
 
 end polynomial
