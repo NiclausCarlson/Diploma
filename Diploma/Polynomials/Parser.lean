@@ -54,37 +54,65 @@ def Var  : Parsec Variable := do
 def Plus  : Parsec Char := pchar '+' 
 def Minus : Parsec Char := pchar '-'
 
-def Sign : Parsec Int := do
-                          let sign ← Minus <|> Plus <|> getCurr
-                          if sign == '-' then return -1
-                          else return 1  
-
-def Coeff : Parsec String := do 
-                              let digits ← manyChars digit
-                              if digits.isEmpty then return "1"
-                              else return digits  
+private def CharNone : Parsec (Option Char) := do return none  
+def Sign : Parsec (Option Char) := (Option.some <$> (Minus <|> Plus)) <|> CharNone
+                         
+def Coeff : Parsec (Option Int) := do 
+                                      let digits ← manyChars digit
+                                      if digits.isEmpty then return none
+                                      else return some (String.toInt! digits)  
+def SignToInt (sign: Option Char): Int := 
+   match sign with
+      | none => 1
+      | some val => if val == '-' then -1 else 1  
 
 def Monom : Parsec (Monomial Dimension) := do
   let sign  ← ws *> Sign
-  let coeff ← ws *> String.toInt! <$> (Coeff <|> One)
-  let vars  ← many Var
-  return (sign * coeff, toVariables vars Dimension)
+  let coeff ← ws *> Coeff
+  let vs  ← many Var
+  let sign_int := SignToInt sign
+  let vars := toVariables vs Dimension
+  match coeff with
+    | none     => if vs.isEmpty then fail s!"expected coeff or vars after sign {sign}"
+                  else return (sign_int, vars)
+    | some val => if vs.isEmpty then return (sign_int * val, vars)
+                  else return (sign_int * val, vars)
 
-def Polynom : Parsec (Polynomial Dimension Ordering.lex) := do
-  let monomial  ← Monom
-  let monomials ← many Monom
-  return (Polynomial.of_monomial monomial Ordering.lex) +                    
+def Polynom (ord: Monomial Dimension → Monomial Dimension → Ordering) : Parsec (Polynomial Dimension ord) := do
+  let monomial  ← Monom <* ws
+  let monomials ← many (Monom <* ws)
+  return (Polynomial.of_monomial monomial ord) +                    
          (Array.foldl (fun x (y: Monomial Dimension) => 
-                          x + (Polynomial.of_monomial y Ordering.lex)) 0 monomials)
+                          x + (Polynomial.of_monomial y ord)) 0 monomials)
 
-def parse (s: String) : Except String (Polynomial Dimension Ordering.lex) :=
-  match Polynom s.mkIterator with
+def parse (s: String) (ord: Monomial Dimension → Monomial Dimension → Ordering) : Except String (Polynomial Dimension ord) :=
+  match Polynom ord s.mkIterator with
     | Parsec.ParseResult.success _ res => Except.ok res.Simplify
     | Parsec.ParseResult.error it err  => Except.error s!"offset {it.i.byteIdx}: {err}"
 
-def parse! (s: String) : Polynomial Dimension Ordering.lex :=
-  match (parse s) with
+def parse! (s: String) (ord: Monomial Dimension → Monomial Dimension → Ordering) : Polynomial Dimension ord :=
+  match (parse s ord) with
     | .ok res  => res
     | .error err => panic! err
+
+def PolynomialWithSemilcon (ord: Monomial Dimension → Monomial Dimension → Ordering) : Parsec (Polynomial Dimension ord) := do
+  (Polynom ord <* ws) <* skipChar ';'
+
+def Polynomials (ord: Monomial Dimension → Monomial Dimension → Ordering) : Parsec (List (Polynomial Dimension ord)) := do 
+ let ps ← many (PolynomialWithSemilcon ord <* ws) 
+ return ps.toList
+
+def parse_polynomials (s: String) (ord: Monomial Dimension → Monomial Dimension → Ordering) : Except String (List (Polynomial Dimension ord)) :=
+  match Polynomials ord s.mkIterator with
+    | Parsec.ParseResult.success _ res => Except.ok res
+    | Parsec.ParseResult.error it err  => Except.error s!"offset {it.i.byteIdx}: {err}"
+
+def parse_polynomials! (s: String) (ord: Monomial Dimension → Monomial Dimension → Ordering) : List (Polynomial Dimension ord) :=
+   match (parse_polynomials s ord) with
+    | .ok res  => res
+    | .error err => panic! err
+
+#eval toString (parse! "a " Ordering.lex)
+#eval toString (parse_polynomials! "15a+78; 8ab^8c+17+6;" Ordering.lex)
 
 end polynomial

@@ -6,7 +6,7 @@ open polynomial
 open algebra
 
 def sum (p₁ p₂: String): String :=
-  toString (parse! p₁ + parse! p₂)
+  toString (parse_lex! p₁ + parse_lex! p₂)
  
 --# Test sum
 #eval AssertEq (sum "1" "0")                        "1"
@@ -28,7 +28,7 @@ def sum (p₁ p₂: String): String :=
 
 
 def sub (p₁ p₂: String): String :=
-  toString (parse! p₁ - parse! p₂)
+  toString (parse_lex! p₁ - parse_lex! p₂)
 
 --# Test sub
 #eval AssertEq (sub "1" "0")                        "1"
@@ -48,7 +48,7 @@ def sub (p₁ p₂: String): String :=
 
 
 def mul (p₁ p₂: String): String :=
-  toString (parse! p₁ * parse! p₂)
+  toString (parse_lex! p₁ * parse_lex! p₂)
 
 --# Test mul
 #eval AssertEq (mul "1" "0")                                  "0"
@@ -87,9 +87,9 @@ private def monomial_div_check(p₁ p₂: String) (is_divides: Bool) (expected: 
 
 
 private def reduce_lt_check (p₁ p₂: String) (expected_reduced: String) (expected_reducer: String): Except String String :=
-  let q   := parse! expected_reduced
-  let r   := parse! expected_reducer
-  match reduce_lt (parse! p₁) (parse! p₂) with
+  let q   := parse_lex! expected_reduced
+  let r   := parse_lex! expected_reducer
+  match reduce_lt (parse_lex! p₁) (parse_lex! p₂) with
     | none     => AssertTrue ((expected_reduced == "") ∧ (expected_reducer == "")) s!"expected values are no empty"
     | some res => match AssertTrue (res.reduced == q) 
                             s!"expected reduced {toString q} actual {toString res.reduced}" with
@@ -115,14 +115,14 @@ private def reduce_lt_check (p₁ p₂: String) (expected_reduced: String) (expe
 #eval reduce_lt_check "2" "b+1" "" ""
 
 --# Test div
-private def parse_list (ps: List String): List (Polynomial Dimension Ordering.lex) := ps.map parse!
+private def parse_list (ps: List String): List (Polynomial Dimension Ordering.lex) := ps.map parse_lex!
 def div (p: String) (ps: List String): DivisionResult Dimension Ordering.lex := 
-  divide_many (parse! p) (parse_list ps)
+  divide_many (parse_lex! p) (parse_list ps)
 
 private def check_div (p: String) (ps: List String) (poly: String) (remainder: String): Except String String :=
   let res := div p ps
-  let p   := parse! poly
-  let r   := parse! remainder
+  let p   := parse_lex! poly
+  let r   := parse_lex! remainder
   match AssertTrue (res.p == p) s!"expected poly {toString p} actual {toString res.p}" with
     | Except.ok _ =>  AssertTrue (res.r == r) s!"expected remainder {toString r} actual {toString res.r}" 
     | Except.error err => Except.error err

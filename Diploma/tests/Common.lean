@@ -15,10 +15,14 @@ def AssertTrue (b: Bool) (msg: Option String) : Except String String :=
 
 def ExpectTrue (b: Bool) : Except String String := AssertTrue b none
 
-open polynomial in
-open Lean Parsec in
+open polynomial
+open Lean Parsec 
+
 def parseMonomial! (s: String) : Monomial Dimension :=
   match Monom s.mkIterator with
     | Parsec.ParseResult.success _ res => res
     | Parsec.ParseResult.error it err  => panic! s!"offset {it.i.byteIdx}: {err}"
 
+open algebra
+def parse_lex!   (s: String) : Polynomial Dimension Ordering.lex   := parse! s Ordering.lex
+def parse_grlex! (s: String) : Polynomial Dimension Ordering.grlex := parse! s Ordering.grlex
