@@ -21,7 +21,8 @@ deriving instance Repr for Variable
 def setI {n: Nat} (i: Nat) (value: Nat): Vector Nat n → Vector Nat n
   | ⟨l, h⟩ => ⟨List.set l i value, by simp; exact h⟩ 
 
-def toInnerName (ch: Char) : Nat := ch.toNat - NameShift
+def toInnerName (ch: Char) : Option Nat := if NameShift > ch.toNat then none
+                                           else ch.toNat - NameShift
 
 def toVariables (vars: Array Variable) (n: Nat): Variables n := 
  impl vars.toList (get_variables n)
@@ -47,10 +48,10 @@ def Deg  : Parsec String   := (skipChar '^' *> Number) <|> One
 def Var  : Parsec Variable := do
                                 let name ← asciiLetter
                                 let deg  ← String.toNat! <$> Deg
-                                return {
-                                    deg := deg
-                                    name:= toInnerName name
-                                }
+                                let inner_name := toInnerName name
+                                match inner_name with
+                                  | none => fail s!"Unexpected letter {name}"
+                                  | some val => return { deg := deg, name:= val}
                               
 def Plus  : Parsec Char := pchar '+' 
 def Minus : Parsec Char := pchar '-'

@@ -9,7 +9,7 @@ namespace polynomial
 open Nat
 open Rat
 
-def NameShift := 97
+def NameShift := 120
 
 abbrev Polynomial (n: Nat) (cmp: Monomial n → Monomial n → Ordering) := Std.RBSet (Monomial n) cmp
 
