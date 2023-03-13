@@ -78,7 +78,8 @@ def divide_many (divisible: Polynomial n cmp) (dividers: List (Polynomial n cmp)
 -- ex https://leanprover-community.github.io/archive/stream/270676-lean4/topic/using.20higher-order.20functions.20on.20inductive.20types.3A.20termination.html
 
 def Monomial.lcm (m₁ m₂: Monomial n): Monomial n := ⟨1, Vector.map₂ (fun x y => max x y) m₁.snd m₂.snd⟩  
-def get_s_polynomial (p₁ p₂: Polynomial n cmp): Polynomial n cmp :=
+
+def build_s_polynomial (p₁ p₂: Polynomial n cmp): Polynomial n cmp :=
   let lcm := Monomial.lcm (p₁.lm) (p₂.lm)
   (div_lcm_lt lcm p₁.lt) * p₁ - (div_lcm_lt lcm p₂.lt) * p₂
 where
@@ -87,15 +88,15 @@ where
 private def step (p q: Polynomial n cmp) (ps: List (Polynomial n cmp)) : Bool × Polynomial n cmp := 
   if p == q then (false, 0)
   else
-    let div_result := divide_many (get_s_polynomial p q) ps
+    let div_result := divide_many (build_s_polynomial p q) ps
     (div_result.r == 0, div_result.r)
 
 private def build (e: Polynomial n cmp) (ps: List (Polynomial n cmp)) (result: List (Polynomial n cmp)) : List (Polynomial n cmp) := 
   match result with
     | []    => result
     | a::as => let s := step e a as 
-               if s.fst then [s.snd] ++ build e (ps ++ [s.snd]) as
-               else build e ps result
+               if s.fst then build e ps result
+               else [s.snd] ++ build e (ps ++ [s.snd]) as
 termination_by build pl result => pl == []
 decreasing_by {
   simp_wf

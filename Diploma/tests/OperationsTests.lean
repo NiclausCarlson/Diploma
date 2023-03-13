@@ -133,3 +133,36 @@ private def check_div (p: String) (ps: List String) (poly: String) (remainder: S
 #eval check_div "x+y" ["y"] "y" "x" 
 #eval check_div "x+y^2+y" ["xy-1", "y^2-1"] "y^2-1" "x+y+1"
 #eval check_div "x^2y+xy^2+y^2" ["xy-1", "y^2-1"] "x^2y+xy^2-x+y^2-y-1" "x+y+1"
+
+--# Test s_polynomials
+private def check_s_polynomial (p₁ p₂ expected: String) : Except String String :=
+  let parsed₁ := parse_lex! p₁
+  let parsed₂ := parse_lex! p₂
+  let s_p     := build_s_polynomial parsed₁ parsed₂
+  AssertEq (toString s_p) expected 
+
+private def check_s_polynomial_grlex (p₁ p₂ expected: String) : Except String String :=
+  let parsed₁ := parse_grlex! p₁
+  let parsed₂ := parse_grlex! p₂
+  let s_p     := build_s_polynomial parsed₁ parsed₂
+  AssertEq (toString s_p) expected 
+
+#eval check_s_polynomial "x" "x" "0"
+#eval check_s_polynomial "xy" "x" "0"
+#eval check_s_polynomial "xy^2" "x" "0"
+#eval check_s_polynomial "xy^2" "z" "0"
+#eval check_s_polynomial "xy^2+1" "z" "z"
+#eval check_s_polynomial  "xy^2+1" "x" "1"
+#eval check_s_polynomial "x^3y^2-x^2y^3+x" "3x^4y+y^2" "-x^3y^3+x^2-1/3y^3"
+  
+#eval check_s_polynomial_grlex "x^3-2xy" "x^2-2y^2+x" "-x^3y^3+x^2-1/3y^3"
+
+--#Test Groebner
+private def check_groebner (input expected: List String): Except String String := 
+  let parsed          := parse_list input
+  let parsed_expected := parse_list expected
+  let groebner := build_groebner_basis parsed
+  AssertTrue (groebner == parsed_expected) s!"expected {parsed_expected}; actual {groebner}"
+
+--#eval check_groebner ["x^3-2xy", "x^2-2y^2+x"] ["x^3-2xy", "x^2-2y^2", "-x^2", "-2xy", "-2y^2+x"]
+#eval check_groebner ["xy^2+1", "x"] []
