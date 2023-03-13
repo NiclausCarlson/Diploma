@@ -6,7 +6,6 @@ import Mathlib.Data.Vector.Basic
 
 import Diploma.Polynomials.PolynomialCommon
 
-
 open Vector
 open polynomial
 open Classical

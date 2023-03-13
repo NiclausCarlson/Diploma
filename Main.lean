@@ -12,6 +12,7 @@ partial def run (stdin: FS.Stream) : IO Unit := do
     | Except.ok res => match res with
                         | none => return
                         | some val => IO.println val  
+                                      run stdin
     | Except.error msg => IO.println msg; return
     
 def main : IO Unit := do

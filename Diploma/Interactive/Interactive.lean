@@ -9,17 +9,45 @@ open algebra
 namespace interactive
 
 section commands
+private def Help        := "help"
 private def GroebnerCmd := "groebner"
 private def SimpCmd     := "simp"
 private def IsInCmd     := "is_in"
 private def Exit        := "exit"
 end commands
 
+private structure HelpStruct where
+  mk ::
+  grammar: List String
+  commands: List String
+
+private def HelpImpl : HelpStruct := HelpStruct.mk
+  [
+    "Available [ord] - [lex], [grlex]",
+    "polynomial is a polynomial with integer coefficients",
+    "{polynomials} ::= polynomial;"
+  ]
+  [ 
+    "simp [ord]: {polynomials}; - simplifie polynomial system with selected ordering",
+    "is_in: polynomial; {polynomials}; - check is polynomial in <polynomials>",
+    "groebner [ord]: {polynomials}; - returns groebner basis of <polynomials>"
+  ]
+
+instance : ToString HelpStruct where
+  toString h := "Grammar:\n" ++
+                (List.foldl (fun s₁ s₂ => s₁ ++ "\n" ++ s₂) 
+                           ""
+                           (List.map (fun s => "*** " ++ s) h.grammar)) ++
+                           "\n------------------------------------------\n" ++
+                           "Commands:\n"++
+                (List.foldl (fun s₁ s₂ => s₁ ++ "\n" ++ s₂) 
+                           ""
+                           (List.map (fun s => "-- " ++ s) h.commands))  ++ "\n"          
 
 private def PolynomialsToString {cmp : Monomial Dimension → Monomial Dimension → Ordering} (ps: List (Polynomial Dimension cmp)): String :=
   match ps with
     | []    => ""
-    | a::as => toString a ++ "\n" ++ PolynomialsToString as
+    | a::as => " " ++ toString a ++ ";\n" ++ PolynomialsToString as
 
 private structure Groebner (cmp : Monomial Dimension → Monomial Dimension → Ordering) where
   mk ::
@@ -37,7 +65,7 @@ private structure Simp (cmp : Monomial Dimension → Monomial Dimension → Orde
   result : List (Polynomial Dimension cmp)
 
 instance {cmp : Monomial Dimension → Monomial Dimension → Ordering}: ToString (Simp cmp) where
-  toString s := s!"Ordering type: {s.ordering_type}; Result:\n[{PolynomialsToString s.result}]"
+  toString s := s!"[\n{PolynomialsToString s.result}]"
 
 private structure IsIn (cmp : Monomial Dimension → Monomial Dimension → Ordering) where
   mk ::
@@ -55,7 +83,7 @@ instance {cmp : Monomial Dimension → Monomial Dimension → Ordering}: ToStrin
 private def OrdType : Parsec ((Monomial Dimension → Monomial Dimension → Ordering) × String) := do
   let lex   := "lex"
   let grlex := "grlex"
-  skipChar '[' 
+  ws *> skipChar '[' 
   let name ← ws *> (pstring lex <|> pstring grlex) 
   ws *> skipChar ']' 
   if name == lex then return (Ordering.lex, lex)
@@ -69,12 +97,19 @@ private def EvalSimp : Parsec String := do
   let ord_type ← OrdType
   ws *> skipChar ':' *> ws
   let polynomials ← PolynomialBlock ord_type.fst
-  ws *> skipChar ':' *> ws
+  ws *> skipChar ';' *> ws
   return toString (Simp.mk ord_type.snd polynomials)
 
+private def Commands: Parsec String := 
+  pstring Help        <|>
+  pstring GroebnerCmd <|> 
+  pstring SimpCmd     <|>
+  pstring IsInCmd
+
 def Eval : Parsec (Option String) := do
-  let command ← ws *> (pstring GroebnerCmd <|> pstring SimpCmd <|> pstring IsInCmd)
-  if command == SimpCmd then EvalSimp
+  let command ← ws *> Commands
+  if command == Help then return toString HelpImpl
+  else if command == SimpCmd then EvalSimp
  -- else if command == GroebnerCmd then sorry
  -- else if command == IsInCmd then sorry
   else if command == Exit then return none
