@@ -152,10 +152,11 @@ private def check_s_polynomial_grlex (p₁ p₂ expected: String) : Except Strin
 #eval check_s_polynomial "xy^2" "x" "0"
 #eval check_s_polynomial "xy^2" "z" "0"
 #eval check_s_polynomial "xy^2+1" "z" "z"
-#eval check_s_polynomial  "xy^2+1" "x" "1"
+#eval check_s_polynomial "xy^2+1" "x" "1"
 #eval check_s_polynomial "x^3y^2-x^2y^3+x" "3x^4y+y^2" "-x^3y^3+x^2-1/3y^3"
-  
-#eval check_s_polynomial_grlex "x^3-2xy" "x^2-2y^2+x" "-x^3y^3+x^2-1/3y^3"
+
+#eval check_s_polynomial_grlex "x^3y^2-x^2y^3+x" "3x^4y+y^2" "-x^3y^3-1/3y^3+x^2"
+#eval check_s_polynomial_grlex "x^3-2xy" "x^2-2y^2+x" "-x^2"
 
 --#Test Groebner
 private def check_groebner (input expected: List String): Except String String := 

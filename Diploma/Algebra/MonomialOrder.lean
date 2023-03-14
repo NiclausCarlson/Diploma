@@ -339,7 +339,7 @@ section monomials_grlex_order
 private def Order.bgrlex (vs₁ vs₂: Variables n): Bool :=
   let sum₁ := elem_sum vs₁ 
   let sum₂ := elem_sum vs₂   
-  if sum₁ > sum₂ then true
+  if sum₁ < sum₂ then true
   else if sum₁ = sum₂ then Order.lex vs₁ vs₂
   else false
   where
@@ -349,7 +349,7 @@ private def Order.bgrlex (vs₁ vs₂: Variables n): Bool :=
 def Order.grlex (vs₁ vs₂: Variables n): Prop :=
   let sum₁ := elem_sum vs₁ 
   let sum₂ := elem_sum vs₂   
-  if sum₁ > sum₂ then True
+  if sum₁ < sum₂ then True
   else if sum₁ = sum₂ then Order.lex vs₁ vs₂
   else False
   where
@@ -374,7 +374,7 @@ theorem grlex_le_trans : ∀ (a b c : Variables n), Order.grlex a b → Order.gr
   have asymm_leq₁ := Nat.lt_asymm leq₁
   contradiction
   rename_i nleq leq₁ leq₂ neq
-  have contr := Nat.lt_trans leq₂ leq₁
+  have contr := Nat.lt_trans leq₁ leq₂ 
   contradiction
   split at bc
   rename_i nleq₁ leq₁ nleq₂ eq₁ eq₂
@@ -455,9 +455,11 @@ theorem grlex_true_of_ble_grlex_true (h: Eq (Order.bgrlex v₁ v₂) true): Orde
   simp [algebra.Order.bgrlex] at h
   split at h
   simp at h
-  rename_i eq
-  have le := Nat.le_of_eq eq
-  simp [le] at h
+  simp at *
+  rw [Order.grlex.elem_sum, Order.grlex.elem_sum] at *
+  rw [algebra.Order.bgrlex.elem_sum, algebra.Order.bgrlex.elem_sum] at *
+  rename_i hh
+  simp [hh] at h
   exact h
   rename_i nleq eq _
   contradiction

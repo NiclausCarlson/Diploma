@@ -82,3 +82,8 @@ instance : ToString Variable where
 #eval AssertEq (toString (parse_lex! "x^3y^5-x^4y^7+3"))   "-x^4y^7+x^3y^5+3"
 
 #eval AssertEq (toString (parse_lex! "     12x^3y^5 -       x^4y^7 +    3")) "-x^4y^7+12x^3^5+3"
+
+#eval AssertEq (toString (parse_grlex! "x^3y^20-x^4y^7+3")) "x^3y^20-x^4y^7+3"
+#eval AssertEq (toString (parse_grlex! "x^3y^2-x^3yz+3"))   "x^3y^2-x^3yz+3"
+#eval AssertEq (toString (parse_grlex! "-x^3yz+x^3y^2+3"))  "x^3y^2-x^3yz+3"
+#eval AssertEq (toString (parse_grlex! "x^2-2y^2+x"))       "x^2-2y^2+x"
