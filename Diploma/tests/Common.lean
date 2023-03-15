@@ -21,7 +21,7 @@ open Lean Parsec
 def parseMonomial! (s: String) : Monomial Dimension :=
   match Monom s.mkIterator with
     | Parsec.ParseResult.success _ res => res
-    | Parsec.ParseResult.error it err  => panic! s!"offset {it.i.byteIdx}: {err}"
+    | Parsec.ParseResult.error it err  => panic! s!"Error at {s}; offset {it.i.byteIdx}: {err}"
 
 open algebra
 def parse_lex!   (s: String) : Polynomial Dimension Ordering.lex   := parse! s Ordering.lex

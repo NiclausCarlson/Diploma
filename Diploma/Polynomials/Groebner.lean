@@ -91,27 +91,25 @@ private def step (p q: Polynomial n cmp) (ps: List (Polynomial n cmp)) : Bool ×
     let div_result := divide_many (build_s_polynomial p q) ps
     (div_result.r == 0, div_result.r)
 
-private def build (e: Polynomial n cmp) (ps: List (Polynomial n cmp)) (result: List (Polynomial n cmp)) : List (Polynomial n cmp) := 
-  match result with
-    | []    => result
-    | a::as => let s := step e a as 
-               if s.fst then build e ps result
-               else [s.snd] ++ build e (ps ++ [s.snd]) as
+def build (e: Polynomial n cmp) (ps: List (Polynomial n cmp)) (dividers: List (Polynomial n cmp)) : List (Polynomial n cmp) := 
+  match ps with
+    | []    => []
+    | a::as => let s := step e a dividers 
+               if s.fst then build e as dividers 
+               else [s.snd] ++ (build e (as ++ [s.snd]) (dividers ++ [s.snd]))
 termination_by build pl result => pl == []
 decreasing_by {
   simp_wf
   sorry
 }
 
-def build_groebner_basis (pl: List (Polynomial n cmp)): List (Polynomial n cmp) := 
-  match pl with
-    | []    => []
-    | a::as => impl as [a]
+def build_groebner_basis (pl: List (Polynomial n cmp)): List (Polynomial n cmp) := impl pl pl
   where 
-    impl (pl: List (Polynomial n cmp)) (result: List (Polynomial n cmp)): List (Polynomial n cmp) := 
+    impl (pl: List (Polynomial n cmp)) (dividers: List (Polynomial n cmp)): List (Polynomial n cmp) := 
       match pl with
-        | []    => result 
-        | p::ps => impl (ps ++ (build p result ps)) (result ++ [p])
+        | []    => dividers 
+        | p::ps => let res := build p ps dividers
+                   impl (ps ++ res) (dividers ++ res)
     termination_by impl pl result => pl == []
     decreasing_by {
       simp_wf

@@ -80,11 +80,10 @@ private def monomial_div_check(p₁ p₂: String) (is_divides: Bool) (expected: 
 #eval monomial_div_check "4x^3y^3z^8" "2xy^3z^6" true "2x^2z^2"
 #eval monomial_div_check "4x^3y^3z^8" "2xy^3z^6" true "2x^2z^2"
 
-#eval monomial_div_check "x"       "y"  false ""
-#eval monomial_div_check "4x^3y^3" "z"  false ""
-#eval monomial_div_check "4y^3"    "x"  false ""
-#eval monomial_div_check "4y^3"    "xy" false ""
-
+#eval monomial_div_check "x"       "y"  false "0"
+#eval monomial_div_check "4x^3y^3" "z"  false "0"
+#eval monomial_div_check "4y^3"    "x"  false "0"
+#eval monomial_div_check "4y^3"    "xy" false "0"
 
 private def reduce_lt_check (p₁ p₂: String) (expected_reduced: String) (expected_reducer: String): Except String String :=
   let q   := parse_lex! expected_reduced
@@ -156,14 +155,16 @@ private def check_s_polynomial_grlex (p₁ p₂ expected: String) : Except Strin
 #eval check_s_polynomial "x^3y^2-x^2y^3+x" "3x^4y+y^2" "-x^3y^3+x^2-1/3y^3"
 
 #eval check_s_polynomial_grlex "x^3y^2-x^2y^3+x" "3x^4y+y^2" "-x^3y^3-1/3y^3+x^2"
-#eval check_s_polynomial_grlex "x^3-2xy" "x^2-2y^2+x" "-x^2"
+#eval check_s_polynomial_grlex "x^3-2xy" "x^2y-2y^2+x" "-x^2"
 
---#Test Groebner
+--# Test Groebner
 private def check_groebner (input expected: List String): Except String String := 
   let parsed          := parse_list input
   let parsed_expected := parse_list expected
   let groebner := build_groebner_basis parsed
   AssertTrue (groebner == parsed_expected) s!"expected {parsed_expected}; actual {groebner}"
 
---#eval check_groebner ["x^3-2xy", "x^2-2y^2+x"] ["x^3-2xy", "x^2-2y^2", "-x^2", "-2xy", "-2y^2+x"]
-#eval check_groebner ["xy^2+1", "x"] []
+#eval build (parse_lex! "xy-y") (parse_list ["x"]) (parse_list ["xy-y", "x"])
+#eval check_groebner ["xy-y", "x"] ["xy-y", "x", "-y"]
+
+#eval check_groebner ["x^3-2xy", "x^2y-2y^2+x"] ["x^3-2xy", "x^2-2y^2", "-x^2", "-2xy", "-2y^2+x"]
