@@ -164,7 +164,27 @@ private def check_groebner (input expected: List String): Except String String :
   let groebner := build_groebner_basis parsed
   AssertTrue (groebner == parsed_expected) s!"expected {parsed_expected}; actual {groebner}"
 
-#eval build (parse_lex! "xy-y") (parse_list ["x"]) (parse_list ["xy-y", "x"])
 #eval check_groebner ["xy-y", "x"] ["xy-y", "x", "-y"]
+#eval check_groebner ["x+y-1", "y-z", "z-xy"] ["x+y-1", "y-z", "-xy+z", "z^2"]
 
-#eval check_groebner ["x^3-2xy", "x^2y-2y^2+x"] ["x^3-2xy", "x^2-2y^2", "-x^2", "-2xy", "-2y^2+x"]
+-- Demostration that "x+y-1", "y-z", "-xy+z", "z^2" is Groebner basis
+def f₁ := "x+y-1"
+def f₂ := "y-z"
+def f₃ := "-xy+z"
+def f₄ := "z^2"
+#eval build_s_polynomial (parse_lex! f₁) (parse_lex! f₂)
+#eval (div "xz+y^2-y" ["x+y-1", "y-z", "-xy+z"]).r -- zero
+#eval build_s_polynomial (parse_lex! f₁) (parse_lex! f₃)
+#eval (div "y^2-y+z" ["x+y-1", "y-z", "-xy+z", "z^2"]).r -- zero
+#eval build_s_polynomial (parse_lex! f₁) (parse_lex! f₄)
+#eval (div "yz^2-z^2" ["x+y-1", "y-z", "-xy+z", "z^2"]).r -- zero
+#eval build_s_polynomial (parse_lex! f₂) (parse_lex! f₃)
+#eval (div "-xz+z" ["x+y-1", "y-z", "-xy+z", "z^2"]).r -- zero
+#eval build_s_polynomial (parse_lex! f₂) (parse_lex! f₄)
+#eval (div "-z^3" ["x+y-1", "y-z", "-xy+z", "z^2"]).r -- zero
+#eval build_s_polynomial (parse_lex! f₃) (parse_lex! f₄)
+#eval (div "-z^3" ["x+y-1", "y-z", "-xy+z", "z^2"]).r -- zero
+
+#eval check_groebner ["x^2+xyz^4+y", "x+y+z"] ["x^2+xyz^4+y", "x+y+z", "-y^2z^4+y^2-yz^5+2yz+y+z^2"]
+#eval check_groebner ["x^2+xyz^4+y", "x+y+z"] ["x^2+xyz^4+y", "x+y+z", "-y^2z^4+y^2-yz^5+2yz+y+z^2"]
+#eval check_groebner ["17x^5y^8+4xyz^12", "xy^4z", "y-1"] ["17x^5y^8+4xyz^12", "xy^4z", "y-1", "4/17xz^13", "x^5+4/17xz^12", "4/17xz^12", "xz"]

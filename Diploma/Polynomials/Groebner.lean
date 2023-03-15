@@ -91,7 +91,7 @@ private def step (p q: Polynomial n cmp) (ps: List (Polynomial n cmp)) : Bool ×
     let div_result := divide_many (build_s_polynomial p q) ps
     (div_result.r == 0, div_result.r)
 
-def build (e: Polynomial n cmp) (ps: List (Polynomial n cmp)) (dividers: List (Polynomial n cmp)) : List (Polynomial n cmp) := 
+private def build (e: Polynomial n cmp) (ps: List (Polynomial n cmp)) (dividers: List (Polynomial n cmp)) : List (Polynomial n cmp) := 
   match ps with
     | []    => []
     | a::as => let s := step e a dividers 
