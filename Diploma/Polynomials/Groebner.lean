@@ -116,4 +116,12 @@ def build_groebner_basis (pl: List (Polynomial n cmp)): List (Polynomial n cmp) 
       sorry
     }
 
+def is_in (p: Polynomial n cmp) (ps: List (Polynomial n cmp)) : Bool := 
+  let basis := build_groebner_basis ps
+  let div_res := divide_many p basis
+  div_res.r == 0
+
+def is_in_basis (p: Polynomial n cmp) (groebner_basis: List (Polynomial n cmp)) : Bool :=
+  (divide_many p groebner_basis).r == 0
+
 end polynomial
