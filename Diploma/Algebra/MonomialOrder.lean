@@ -1,10 +1,9 @@
-import Diploma.Polynomials.Polynomial
-
 import Mathlib.Init.Algebra.Order
 import Mathlib.Tactic.LibrarySearch
 import Mathlib.Data.Vector.Basic
 
 import Diploma.Polynomials.PolynomialCommon
+import Diploma.Polynomials.Polynomial
 
 open Vector
 open polynomial
