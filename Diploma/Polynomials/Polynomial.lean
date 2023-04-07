@@ -1,4 +1,5 @@
 import Mathlib.Algebra.Field.Defs
+import Mathlib.Algebra.Algebra.Basic
 import Mathlib.Data.Vector
 import Std.Data.RBMap
 
@@ -66,6 +67,19 @@ instance: HMul (Polynomial n _cmp) (Polynomial n _cmp) (Polynomial n _cmp) where
 
 instance: HSub (Polynomial n _cmp) (Polynomial n _cmp) (Polynomial n _cmp) where
   hSub p₁ p₂ := p₁ + ((ofRat n _cmp (-1)) * p₂)
+
+
+section Eval
+
+def Polynomial.eval (p: Polynomial n _cmp) (v: Vector Rat n): Rat :=
+  p.foldl (fun res m => res + m.fst * (eval_subst m.snd v) 1) 0 
+where
+  eval_subst {m: Nat} (vars: Variables m) (v: Vector Rat m) (res: Rat): Rat := 
+    match vars, v with
+      | ⟨[], _⟩  , ⟨[], _⟩   => res
+      | ⟨x::_, _⟩, ⟨y::_, _⟩ => (eval_subst vars.tail v.tail (res * (y^x)))
+
+end Eval
 
 section ToString
 

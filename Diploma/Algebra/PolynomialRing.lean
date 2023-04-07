@@ -56,7 +56,7 @@ def buildVariablesImpl (f: Fin n →₀ ℕ) (idx: Nat) (h₁: idx < n) (res: Va
 def buildVariables (f: Fin n →₀ ℕ): Variables n := 
   if h: n > 0 then
     buildVariablesImpl f (n - 1) 
-                         (by cases n;contradiction;simp)
+                         (by cases n; contradiction; simp)
                          (get_variables n)
   else get_variables n
 

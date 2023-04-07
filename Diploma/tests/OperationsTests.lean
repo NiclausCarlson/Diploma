@@ -188,3 +188,15 @@ def f₄ := "z^2"
 #eval check_groebner ["x^2+xyz^4+y", "x+y+z"] ["x^2+xyz^4+y", "x+y+z", "-y^2z^4+y^2-yz^5+2yz+y+z^2"]
 #eval check_groebner ["x^2+xyz^4+y", "x+y+z"] ["x^2+xyz^4+y", "x+y+z", "-y^2z^4+y^2-yz^5+2yz+y+z^2"]
 #eval check_groebner ["17x^5y^8+4xyz^12", "xy^4z", "y-1"] ["17x^5y^8+4xyz^12", "xy^4z", "y-1", "4/17xz^13", "x^5+4/17xz^12", "4/17xz^12", "xz"]
+
+--# Test eval
+#eval (parse_lex! "x^2").eval ⟨[1, 0, 0], by rfl⟩                                == 1
+#eval (parse_lex! "x^2").eval ⟨[1, 4, 3], by rfl⟩                                == 1
+#eval (parse_lex! "x^2").eval ⟨[2, 0, 0], by rfl⟩                                == 4
+#eval (parse_lex! "x^2y").eval ⟨[2, 0, 0], by rfl⟩                               == 0
+#eval (parse_lex! "x^2y").eval ⟨[2, 1, 0], by rfl⟩                               == 4
+#eval (parse_lex! "x^2y^3").eval ⟨[2, 2, 0], by rfl⟩                             == 32
+#eval (parse_lex! "x^2y^3z^4").eval ⟨[2, 2, 5], by rfl⟩                          == 20000
+#eval (parse_lex! "5x^2y^3z^4").eval ⟨[2, 2, 5], by rfl⟩                         == 100000
+#eval (parse_lex! "5x^2y^3z^4 + x + y^3z^7 + x^3 + 27").eval ⟨[2, 2, 5], by rfl⟩ == 725037
+ 
