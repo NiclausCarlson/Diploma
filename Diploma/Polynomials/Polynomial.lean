@@ -65,9 +65,10 @@ def Polynomial.mul (p₁ p₂: Polynomial n _cmp) : Polynomial n _cmp := Simplif
 instance: HMul (Polynomial n _cmp) (Polynomial n _cmp) (Polynomial n _cmp) where
   hMul p₁ p₂ := Polynomial.mul p₁ p₂
 
-instance: HSub (Polynomial n _cmp) (Polynomial n _cmp) (Polynomial n _cmp) where
-  hSub p₁ p₂ := p₁ + ((ofRat n _cmp (-1)) * p₂)
+def Polynomial.invert_sign (p: Polynomial n _cmp): Polynomial n _cmp := (ofRat n _cmp (-1)) * p
 
+instance: HSub (Polynomial n _cmp) (Polynomial n _cmp) (Polynomial n _cmp) where
+  hSub p₁ p₂ := p₁ + p₂.invert_sign
 
 section Eval
 

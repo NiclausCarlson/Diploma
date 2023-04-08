@@ -1,30 +1,9 @@
 import Diploma.Polynomials.Polynomial
+import Diploma.Polynomials.DegsFunctions
 
 namespace polynomial
-open Nat
-
---# Degs
-def Polynomial.multideg (p: Polynomial n _cmp): Variables n := 
-  if p.size != 0 then p.min!.snd
-  else get_variables n 
-
-def Polynomial.lc (p: Polynomial n _cmp): Rat :=
-  if p.size != 0 then p.min!.fst
-  else 0
-
-def Polynomial.lm (p: Polynomial n _cmp): Monomial n :=
-  if p.size != 0 then (1, p.min!.snd)
-  else (1, get_variables n) 
-
-def Polynomial.lt (p: Polynomial n _cmp): Monomial n :=
-  if p.size != 0 then p.min!
-  else (1, get_variables n)
-
-def Polynomial.Lt (p: Polynomial n _cmp): Polynomial n _cmp :=
-  if p.size != 0 then Polynomial.single p.min!
-  else Polynomial.single (1, get_variables n)
-
 -- is m₁ divides to m₂
+open Nat in
 def Monomial.is_div (m₁ m₂: Monomial n) : Bool := impl n m₁.snd m₂.snd
 where 
   impl (m: Nat) (v₁ v₂: Vector Nat m) : Bool :=
@@ -41,7 +20,7 @@ structure ReduceResult (n: Nat) (_cmp: Monomial n → Monomial n → Ordering) w
   reduced: Polynomial n _cmp
   reducer: Polynomial n _cmp
 
---# Reduce p₁ by p₂
+-- Reduce p₁ by p₂
 def reduce_lt (p₁ p₂: Polynomial n _cmp): Option (ReduceResult n _cmp) := 
   if p₁.lt.is_div p₂.lt then some (impl (Polynomial.single (p₁.lt.div p₂.lt)))
   else none
@@ -75,7 +54,6 @@ def divide_many (divisible: Polynomial n _cmp) (dividers: List (Polynomial n _cm
       simp_wf
       sorry
     }
--- ex https://leanprover-community.github.io/archive/stream/270676-lean4/topic/using.20higher-order.20functions.20on.20inductive.20types.3A.20termination.html
 
 def Monomial.lcm (m₁ m₂: Monomial n): Monomial n := ⟨1, Vector.map₂ (fun x y => max x y) m₁.snd m₂.snd⟩  
 
