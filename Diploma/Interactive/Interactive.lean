@@ -74,6 +74,7 @@ private structure Groebner (cmp : Monomial Dimension → Monomial Dimension → 
 instance {cmp : Monomial Dimension → Monomial Dimension → Ordering}: ToString (Groebner cmp) where
   toString s := s!"groebner ⟨{PolynomialsToString s.input}⟩ [{s.ordering_type}] = ⟨{PolynomialsToString s.result}⟩"
 
+
 private def BuildGroebner: Parsec String := do
   let ord_type ← OrdType
   ws *> skipChar ':' *> ws

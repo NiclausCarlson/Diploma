@@ -75,7 +75,7 @@ def Monom : Parsec (Monomial Dimension) := do
   let sign_int := SignToInt sign
   let vars := toVariables vs Dimension
   match coeff with
-    | none     => if vs.isEmpty then fail s!"expected coeff or vars after sign {sign}"
+    | none     => if vs.isEmpty then fail s!"expected coeff or vars after sign `{sign}`"
                   else return (sign_int, vars)
     | some val => if vs.isEmpty then return (sign_int * val, vars)
                   else return (sign_int * val, vars)
