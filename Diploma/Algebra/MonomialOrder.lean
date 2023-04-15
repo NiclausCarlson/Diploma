@@ -12,6 +12,13 @@ open Nat
 
 namespace algebra
 
+section monomial_order
+
+class MonomialOrder (α: Variables n) extends LinearOrder (Variables n) := 
+  add_le_add := ∀ a b c: Variables n, a < b → Variables.mul a c < Variables.mul b c
+      
+end monomial_order
+
 section monomials_lex_order
 
 private def Order.ble_lex_impl (v₁ v₂ : Vector Nat n): Bool :=
@@ -225,6 +232,44 @@ theorem lex_le_total : ∀ (a b : Variables n), Order.lex a b ∨ Order.lex b a 
                                   simp [Nat.le_total]
   exact aux n v₁ v₂
 
+theorem empty_mul_empty_is_empty (a b: Variables 0) : Variables.mul a b = ⟨[], by rfl⟩ := by simp 
+
+theorem lex_add_le_add : ∀ a b c: Variables n, Order.lex a b → Order.lex (Variables.mul a c) (Variables.mul b c) := by
+  intros v₁ v₂ v₃
+  let rec aux (m: Nat) (a b c: Vector Nat m) : Order.lex_impl a b → Order.lex_impl (Variables.mul a c) (Variables.mul b c) := by
+   intros h 
+   match a, b, c with
+    | ⟨[], _⟩, ⟨[], _⟩, ⟨[], _⟩          => rw [Order.lex_impl ]
+                                            split
+                                            simp
+                                            split
+                                            repeat (rename_i prop₁ _ _ _ _ _ _ _ _ _ prop₄ _ _ _
+                                                    simp at prop₁ prop₄
+                                                    simp [Eq.symm prop₁] at prop₄)                                                                                  
+    | ⟨x::xs, p₁⟩, ⟨y::ys, p₂⟩, ⟨z::zs, p₃⟩ => rw [Order.lex_impl]
+                                               split
+                                               simp
+                                               split
+                                               apply aux (m-1) (tail ⟨x::xs, p₁⟩) (tail ⟨y::ys, p₂⟩) (tail ⟨z::zs, p₃⟩)
+                                               rw [Order.lex_impl] at h
+                                               split at h
+                                               rename_i prop₁ _ _ _ _ _ _ prop₂ _ _
+                                               simp at prop₁ prop₂
+                                               simp [Eq.symm prop₂] at prop₁
+                                               split at h
+                                               exact h
+                                               simp at *
+                                               rename_i var_mul₁ var_mul₂ _ _ _ _ _ _ _ _ eq neq heq₁ heq₂
+                                               simp [map₂, Variables.mul, List.zipWith] at var_mul₁
+                                               simp [map₂, Variables.mul] at var_mul₂
+                                               have eq₁ := heq₁.left 
+                                               have eq₂ := heq₂.left
+
+                                               sorry
+                                               sorry
+  apply aux n v₁ v₂ v₃
+
+
 theorem Order.lex_true_of_ble_lex_true (h: Eq (Order.ble_lex_impl v₁ v₂) true): Order.lex v₁ v₂ := by
   let rec aux (m: Nat) (a b: Vector Nat m) (h: Eq (Order.ble_lex_impl a b) true): Order.lex a b := by
     rw [Order.lex]
@@ -317,12 +362,13 @@ instance Order.lex_decidable (v₁ v₂: Variables n): Decidable (Order.lex v₁
   dite (Eq (Order.ble_lex_impl v₁ v₂) true) (fun h => isTrue (Order.lex_true_of_ble_lex_true h))
                                             (fun h => isFalse (Order.lex_false_of_ble_lex_false h))
 
-instance LexOrder: LinearOrder (Variables n) where
+instance LexOrder: MonomialOrder (α: Variables n) where
   le           := Order.lex 
   le_refl      := lex_le_refl
   le_trans     := lex_le_trans
   le_antisymm  := lex_le_antisymm
   le_total     := lex_le_total
+  add_le_add   := sorry
   decidable_le := Order.lex_decidable
 
 def Ordering.lex (m₁ m₂: Monomial n): Ordering := 
