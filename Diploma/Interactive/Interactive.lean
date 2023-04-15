@@ -18,7 +18,7 @@ private def Exit        := "exit"
 end commands
 
 private def PolynomialsToString {cmp : Monomial Dimension → Monomial Dimension → Ordering} (ps: List (Polynomial Dimension cmp)): String :=
-  List.foldl (fun x y => x ++ ";\n " ++ toString y) "" ps
+  List.foldl (fun x y => x ++ toString y ++ ";") "" ps
 
 private def OrdType : Parsec ((Monomial Dimension → Monomial Dimension → Ordering) × String) := do
   let lex   := "lex"
@@ -45,10 +45,11 @@ private def HelpImpl : HelpStruct := HelpStruct.mk
     "polynomial is a polynomial with integer coefficients",
     "{polynomials} ::= polynomial;"
   ]
-  [ 
+  [ "set_n Nat; - set dimension for next commands. Dimension by default is 3",
     "simp [ord]: {polynomials}; - simplifie polynomial system with selected ordering",
     "is_in: polynomial; {polynomials}; - check is polynomial in <polynomials>",
-    "groebner [ord]: {polynomials}; - returns groebner basis of <polynomials>"
+    "groebner [ord]: {polynomials}; - returns groebner basis of <polynomials>",
+    "exit - to exit"
   ]
 
 instance : ToString HelpStruct where
@@ -71,8 +72,7 @@ private structure Groebner (cmp : Monomial Dimension → Monomial Dimension → 
   result : List (Polynomial Dimension cmp)
 
 instance {cmp : Monomial Dimension → Monomial Dimension → Ordering}: ToString (Groebner cmp) where
-  toString s := s!"Groebner basis for ideal [{PolynomialsToString s.input}] \n
-                   with ordering [{s.ordering_type}] is [{PolynomialsToString s.result}]"
+  toString s := s!"groebner ⟨{PolynomialsToString s.input}⟩ [{s.ordering_type}] = ⟨{PolynomialsToString s.result}⟩"
 
 private def BuildGroebner: Parsec String := do
   let ord_type ← OrdType
@@ -88,7 +88,7 @@ private structure Simp (cmp : Monomial Dimension → Monomial Dimension → Orde
   result : List (Polynomial Dimension cmp)
 
 instance {cmp : Monomial Dimension → Monomial Dimension → Ordering}: ToString (Simp cmp) where
-  toString s := s!"[\n{PolynomialsToString s.result}]"
+  toString s := s!"[{PolynomialsToString s.result}]"
 
 private def EvalSimp : Parsec String := do
   let ord_type ← OrdType
@@ -110,10 +110,10 @@ private def IsInStr (b: Bool): String :=
   else "is not in"
 
 instance {cmp : Monomial Dimension → Monomial Dimension → Ordering}: ToString (IsIn cmp) where
-  toString s := s!"Polynomial: {s.polynomial} {IsInStr s.result} ideal [{PolynomialsToString s.ideal}]"
+  toString s := s!"{s.polynomial} {IsInStr s.result} ⟨{PolynomialsToString s.ideal}⟩"
 
 private def EvalIsIn: Parsec String := do
-  let p  ← Polynom Ordering.grlex
+  let p  ← PolynomialWithSemilcon Ordering.grlex <* ws
   let ps ← PolynomialsBlock Ordering.grlex
   let basis := build_groebner_basis ps
   return toString $ IsIn.mk p basis (is_in_basis p basis)
@@ -123,7 +123,9 @@ private def Commands: Parsec String :=
   pstring Help        <|>
   pstring GroebnerCmd <|> 
   pstring SimpCmd     <|>
-  pstring IsInCmd
+  pstring IsInCmd     <|>
+  pstring Exit        <|>
+  pure ""
 
 def Eval : Parsec (Option String) := do
   let command ← ws *> Commands
@@ -137,6 +139,6 @@ def Eval : Parsec (Option String) := do
 def eval (s: String) : Except String (Option String) :=
   match Eval s.mkIterator with
       | Parsec.ParseResult.success _ res => Except.ok res
-      | Parsec.ParseResult.error it err  => Except.error s!"offset {it.i.byteIdx}: {err}"
+      | Parsec.ParseResult.error _ err  => Except.error s!"{err}"
   
 end interactive

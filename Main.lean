@@ -13,9 +13,8 @@ partial def run (stdin: FS.Stream) : IO Unit := do
                         | none => return
                         | some val => IO.println val  
                                       run stdin
-    | Except.error msg => IO.println msg; return
+    | Except.error msg => IO.println msg; run stdin
     
 def main : IO Unit := do
  let stdin ← IO.getStdin
  run stdin
-
