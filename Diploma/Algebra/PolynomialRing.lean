@@ -64,3 +64,53 @@ def fromMvPolynomial (p: MvPolynomial (Fin n) Rat) (_cmp: Monomial n → Monomia
   Finset.fold (Polynomial.add)
               (zeroPolynomial n _cmp)
               (fun x => Polynomial.of_monomial ⟨coeff x p, buildVariables x⟩ _cmp) p.support
+
+axiom t_zero_add {n: Nat} {_cmp: Monomial n → Monomial n → Ordering} : ∀ (a : Polynomial n _cmp), 0 + a = a
+
+axiom t_add_comm {n: Nat} {_cmp: Monomial n → Monomial n → Ordering} : ∀ (p₁ p₂: Polynomial n _cmp), p₁ + p₂ = p₂ + p₁ 
+
+axiom t_add_assoc {n: Nat} {_cmp: Monomial n → Monomial n → Ordering} : ∀ (p₁ p₂ p₃: Polynomial n _cmp), p₁ + p₂ + p₃ = p₁ + (p₂ + p₃) 
+
+theorem t_add_zero : ∀ (a : Polynomial n _cmp), a + 0 = a := by
+  intros p
+  simp [t_add_comm p, t_zero_add]
+
+axiom t_zero_mul {n: Nat} {_cmp: Monomial n → Monomial n → Ordering}: ∀ (a : Polynomial n _cmp), 0 * a = 0
+  
+axiom t_mul_comm {n: Nat} {_cmp: Monomial n → Monomial n → Ordering} : ∀ (a b : Polynomial n _cmp), a * b = b * a
+  
+theorem t_mul_zero : ∀ (a : Polynomial n _cmp), a * 0 = 0 := by
+  intros p
+  simp [t_mul_comm p, t_zero_mul]
+
+axiom t_mul_assoc {n: Nat} {_cmp: Monomial n → Monomial n → Ordering} : ∀ (a b c : Polynomial n _cmp), a * b * c = a * (b * c) 
+
+axiom t_left_distrib {n: Nat} {_cmp: Monomial n → Monomial n → Ordering} : ∀ (a b c : Polynomial n _cmp), a * (b + c) = a * b + a * c
+
+axiom t_right_distrib {n: Nat} {_cmp: Monomial n → Monomial n → Ordering} : ∀ (a b c : Polynomial n _cmp), (a + b) * c = a * c + b * c
+
+axiom t_one_mul {n: Nat} {_cmp: Monomial n → Monomial n → Ordering} : ∀ (a : Polynomial n _cmp), 1 * a = a 
+
+theorem t_mul_one : ∀ (a : Polynomial n _cmp), a * 1 = a := by
+  intros p
+  simp [t_mul_comm p, t_one_mul]
+
+axiom t_add_left_neg {n: Nat} {_cmp: Monomial n → Monomial n → Ordering} : ∀ (a : Polynomial n _cmp), -a + a = 0
+
+instance: CommRing (Polynomial n _cmp) where
+  add p₁ p₂ := Polynomial.add p₁ p₂
+  zero_add := t_zero_add
+  add_comm := t_add_comm
+  add_assoc := t_add_assoc
+  add_zero := t_add_zero
+  mul := Polynomial.mul
+  zero_mul := t_zero_mul
+  mul_comm := t_mul_comm
+  mul_zero := t_mul_zero
+  mul_assoc := t_mul_assoc
+  left_distrib := t_left_distrib
+  right_distrib := t_right_distrib
+  one_mul := t_one_mul
+  mul_one := t_mul_one
+  neg p := p.invert_sign
+  add_left_neg := t_add_left_neg
