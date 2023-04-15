@@ -47,7 +47,7 @@ private def HelpImpl : HelpStruct := HelpStruct.mk
   ]
   [ "set_n Nat; - set dimension for next commands. Dimension by default is 3",
     "simp [ord]: {polynomials}; - simplifie polynomial system with selected ordering",
-    "is_in: polynomial; {polynomials}; - check is polynomial in <polynomials>",
+    "is_in polynomial; {polynomials}; - check is polynomial in <polynomials>",
     "groebner [ord]: {polynomials}; - returns groebner basis of <polynomials>",
     "exit - to exit"
   ]
