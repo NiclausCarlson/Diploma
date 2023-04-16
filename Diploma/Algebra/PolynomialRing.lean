@@ -95,7 +95,7 @@ theorem t_mul_one : ∀ (a : Polynomial n _cmp), a * 1 = a := by
   intros p
   simp [t_mul_comm p, t_one_mul]
 
-axiom t_add_left_neg {n: Nat} {_cmp: Monomial n → Monomial n → Ordering} : ∀ (a : Polynomial n _cmp), -a + a = 0
+axiom t_add_left_neg {n: Nat} {_cmp: Monomial n → Monomial n → Ordering} : ∀ (a : Polynomial n _cmp), a.invert_sign + a = 0
 
 instance: CommRing (Polynomial n _cmp) where
   add p₁ p₂ := Polynomial.add p₁ p₂

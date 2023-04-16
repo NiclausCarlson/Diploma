@@ -118,12 +118,14 @@ private def parse_list (ps: List String): List (Polynomial Dimension Ordering.le
 def div (p: String) (ps: List String): DivisionResult Dimension Ordering.lex := 
   divide_many (parse_lex! p) (parse_list ps)
 
-private def check_div (p: String) (ps: List String) (poly: String) (remainder: String): Except String String :=
-  let res := div p ps
+private def check_div (divisible: String) (ps: List String) (poly: String) (remainder: String): Except String String :=
+  let res := div divisible ps
   let p   := parse_lex! poly
   let r   := parse_lex! remainder
   match AssertTrue (res.p == p) s!"expected poly {toString p} actual {toString res.p}" with
-    | Except.ok _ =>  AssertTrue (res.r == r) s!"expected remainder {toString r} actual {toString res.r}" 
+    | Except.ok _ =>  match AssertTrue (res.r == r) s!"expected remainder {toString r} actual {toString res.r}" with
+                        | Except.ok _      => AssertTrue ((parse_lex! divisible) == (p + r)) s!"divisible ≠ p + r"
+                        | Except.error err => Except.error err
     | Except.error err => Except.error err
 
 #eval check_div "x^2" ["x"] "x^2" "0"
