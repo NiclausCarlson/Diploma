@@ -16,6 +16,12 @@ open Vector in
 private def Variables.div (v₁ v₂: Variables n) : Variables n := map₂ (fun x y: Nat => x - y) v₁ v₂
 def Monomial.div (m₁ m₂: Monomial n): Monomial n := (m₁.fst / m₂.fst, Variables.div m₁.snd m₂.snd)  
 
+def Monomial.mul_p (m: Monomial n) (p₂: Polynomial n _cmp): Polynomial n _cmp := p₁ * p₂
+where p₁ : Polynomial n _cmp := Polynomial.single m
+
+instance : HMul (Monomial n) (Polynomial n _cmp) (Polynomial n _cmp) where
+  hMul m p := m.mul_p p
+
 structure ReduceResult (n: Nat) (_cmp: Monomial n → Monomial n → Ordering) where
   reduced: Polynomial n _cmp
   reducer: Polynomial n _cmp
