@@ -3,7 +3,6 @@ import Mathlib.Tactic.LibrarySearch
 import Mathlib.Data.Vector.Basic
 
 import Diploma.Polynomials.PolynomialCommon
-import Diploma.Polynomials.Polynomial
 
 open Vector
 open polynomial
@@ -14,8 +13,8 @@ namespace algebra
 
 section monomial_order
 
-class MonomialOrder (α: Variables n) extends LinearOrder (Variables n) := 
-  add_le_add := ∀ a b c: Variables n, a < b → Variables.mul a c < Variables.mul b c
+class MonomialOrder (α : Type u) extends LinearOrder α -- := 
+-- add_le_add := ∀ a b c: Variables n, a < b → Variables.mul a c < Variables.mul b c
       
 end monomial_order
 
@@ -269,7 +268,6 @@ theorem lex_add_le_add : ∀ a b c: Variables n, Order.lex a b → Order.lex (Va
                                                sorry
   apply aux n v₁ v₂ v₃
 
-
 theorem Order.lex_true_of_ble_lex_true (h: Eq (Order.ble_lex_impl v₁ v₂) true): Order.lex v₁ v₂ := by
   let rec aux (m: Nat) (a b: Vector Nat m) (h: Eq (Order.ble_lex_impl a b) true): Order.lex a b := by
     rw [Order.lex]
@@ -362,22 +360,12 @@ instance Order.lex_decidable (v₁ v₂: Variables n): Decidable (Order.lex v₁
   dite (Eq (Order.ble_lex_impl v₁ v₂) true) (fun h => isTrue (Order.lex_true_of_ble_lex_true h))
                                             (fun h => isFalse (Order.lex_false_of_ble_lex_false h))
 
-instance LexOrder: MonomialOrder (α: Variables n) where
-  le           := Order.lex 
-  le_refl      := lex_le_refl
-  le_trans     := lex_le_trans
-  le_antisymm  := lex_le_antisymm
-  le_total     := lex_le_total
-  add_le_add   := sorry
-  decidable_le := Order.lex_decidable
-
 def Ordering.lex (m₁ m₂: Monomial n): Ordering := 
   if m₁.snd = m₂.snd then Ordering.eq
   else if Order.lex m₁.snd m₂.snd then Ordering.gt
   else Ordering.lt
 
 end monomials_lex_order
-
 
 section monomials_grlex_order
 
@@ -551,14 +539,6 @@ instance Order.grlex_decidable (v₁ v₂: Variables n): Decidable (Order.grlex 
   dite (Eq (Order.bgrlex v₁ v₂) true) (fun h => isTrue (grlex_true_of_ble_grlex_true h))
                                       (fun h => isFalse (grlex_false_of_ble_grlex_false h))
   
--- instance GrlexOrder: LinearOrder (Variables n) where
---   le           := Order.grlex 
---   le_refl      := grlex_le_refl
---   le_trans     := grlex_le_trans
---   le_antisymm  := grlex_le_antisymm
---   le_total     := grlex_le_total
---   decidable_le := Order.grlex_decidable
-
 def Ordering.grlex (m₁ m₂: Monomial n): Ordering :=
   if m₁.snd = m₂.snd then Ordering.eq
   else if Order.grlex m₁.snd m₂.snd then Ordering.gt
