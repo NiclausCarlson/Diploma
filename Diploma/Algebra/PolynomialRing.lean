@@ -6,7 +6,7 @@ import Mathlib.Data.Finset.Fold
 import Std.Data.List.Basic
 
 import Diploma.Polynomials.Polynomial
-import Diploma.Algebra.MonomialOrder
+import Diploma.Order.MonomialOrder
 
 open polynomial
 open List
@@ -27,23 +27,23 @@ def toMvMonomialImpl (vs: Vector Nat n) (idx: Nat) (real_n: Nat) : MvPolynomial 
 where
   get_p (idx: Fin real_n) (deg: Nat): MvPolynomial (Fin real_n) Rat := (X idx) ^ deg
 
-def toMvMonomial (m: Monomial n) : MvPolynomial (Fin n) Rat := (C m.fst) * (toMvMonomialImpl m.snd 0 n)
+def toMvMonomial (m: Monomial n ord) : MvPolynomial (Fin n) Rat := (C m.fst) * (toMvMonomialImpl m.snd 0 n)
 
-def toMvPolynomial (p: Polynomial n _cmp): MvPolynomial (Fin n) Rat :=
+def toMvPolynomial (p: Polynomial n ord _cmp): MvPolynomial (Fin n) Rat :=
   p.foldl (fun x y => x + toMvMonomial y) (zeroP n)
 
-private def zeroPolynomial (n: Nat) (_cmp: Monomial n → Monomial n → Ordering) : Polynomial n _cmp := 0
+private def zeroPolynomial (n: Nat) (_cmp: Monomial n ord → Monomial n ord → Ordering) : Polynomial n ord _cmp := 0
 
 -- We can't proof that, but we need that for Finset.fold
-instance: IsCommutative (Polynomial n _cmp) (Polynomial.add) where
+instance: IsCommutative (Polynomial n ord _cmp) (Polynomial.add) where
   comm := sorry
 
-instance: IsAssociative (Polynomial n _cmp) (Polynomial.add) where
+instance: IsAssociative (Polynomial n ord _cmp) (Polynomial.add) where
   assoc := sorry
 
 theorem gt_ne_zero (n: Nat) (h: n > 0): n ≠ 0 := by simp; cases n; contradiction; simp  
 
-def buildVariablesImpl (f: Fin n →₀ ℕ) (idx: Nat) (h₁: idx < n) (res: Variables n): Variables n :=
+def buildVariablesImpl (f: Fin n →₀ ℕ) (idx: Nat) (h₁: idx < n) (res: Variables n ord): Variables n ord :=
   let fin := ⟨idx, h₁⟩
   let updated := res.set fin (f.toFun fin)
   if h: idx > 0 then
@@ -53,51 +53,51 @@ def buildVariablesImpl (f: Fin n →₀ ℕ) (idx: Nat) (h₁: idx < n) (res: Va
     buildVariablesImpl f (idx - 1) prev_idx_less_n updated
   else updated
 
-def buildVariables (f: Fin n →₀ ℕ): Variables n := 
+def buildVariables (f: Fin n →₀ ℕ): Variables n ord:= 
   if h: n > 0 then
     buildVariablesImpl f (n - 1) 
                          (by cases n; contradiction; simp)
                          (get_variables n)
   else get_variables n
 
-def fromMvPolynomial (p: MvPolynomial (Fin n) Rat) (_cmp: Monomial n → Monomial n → Ordering): Polynomial n _cmp :=
+def fromMvPolynomial (p: MvPolynomial (Fin n) Rat) (_cmp: Monomial n ord → Monomial n ord → Ordering): Polynomial n ord _cmp :=
   Finset.fold (Polynomial.add)
               (zeroPolynomial n _cmp)
               (fun x => Polynomial.of_monomial ⟨coeff x p, buildVariables x⟩ _cmp) p.support
 
-axiom t_zero_add {n: Nat} {_cmp: Monomial n → Monomial n → Ordering} : ∀ (a : Polynomial n _cmp), 0 + a = a
+axiom t_zero_add {n: Nat} {ord: Type} {_cmp: Monomial n ord → Monomial n ord → Ordering} : ∀ (a : Polynomial n ord _cmp), 0 + a = a
 
-axiom t_add_comm {n: Nat} {_cmp: Monomial n → Monomial n → Ordering} : ∀ (p₁ p₂: Polynomial n _cmp), p₁ + p₂ = p₂ + p₁ 
+axiom t_add_comm {n: Nat} {ord: Type} {_cmp: Monomial n ord → Monomial n ord → Ordering} : ∀ (p₁ p₂: Polynomial n ord _cmp), p₁ + p₂ = p₂ + p₁ 
 
-axiom t_add_assoc {n: Nat} {_cmp: Monomial n → Monomial n → Ordering} : ∀ (p₁ p₂ p₃: Polynomial n _cmp), p₁ + p₂ + p₃ = p₁ + (p₂ + p₃) 
+axiom t_add_assoc {n: Nat} {ord: Type} {_cmp: Monomial n ord → Monomial n ord → Ordering} : ∀ (p₁ p₂ p₃: Polynomial n ord _cmp), p₁ + p₂ + p₃ = p₁ + (p₂ + p₃) 
 
-theorem t_add_zero : ∀ (a : Polynomial n _cmp), a + 0 = a := by
+theorem t_add_zero : ∀ (a : Polynomial n ord _cmp), a + 0 = a := by
   intros p
   simp [t_add_comm p, t_zero_add]
 
-axiom t_zero_mul {n: Nat} {_cmp: Monomial n → Monomial n → Ordering}: ∀ (a : Polynomial n _cmp), 0 * a = 0
+axiom t_zero_mul {n: Nat} {ord: Type} {_cmp: Monomial n ord → Monomial n ord→ Ordering}: ∀ (a : Polynomial n ord _cmp), 0 * a = 0
   
-axiom t_mul_comm {n: Nat} {_cmp: Monomial n → Monomial n → Ordering} : ∀ (a b : Polynomial n _cmp), a * b = b * a
+axiom t_mul_comm {n: Nat} {ord: Type} {_cmp: Monomial n ord → Monomial n ord → Ordering} : ∀ (a b : Polynomial n ord _cmp), a * b = b * a
   
-theorem t_mul_zero : ∀ (a : Polynomial n _cmp), a * 0 = 0 := by
+theorem t_mul_zero : ∀ (a : Polynomial n ord _cmp), a * 0 = 0 := by
   intros p
   simp [t_mul_comm p, t_zero_mul]
 
-axiom t_mul_assoc {n: Nat} {_cmp: Monomial n → Monomial n → Ordering} : ∀ (a b c : Polynomial n _cmp), a * b * c = a * (b * c) 
+axiom t_mul_assoc {n: Nat} {ord: Type} {_cmp: Monomial n ord → Monomial n ord → Ordering} : ∀ (a b c : Polynomial n ord _cmp), a * b * c = a * (b * c) 
 
-axiom t_left_distrib {n: Nat} {_cmp: Monomial n → Monomial n → Ordering} : ∀ (a b c : Polynomial n _cmp), a * (b + c) = a * b + a * c
+axiom t_left_distrib {n: Nat} {ord: Type} {_cmp: Monomial n ord → Monomial n ord → Ordering} : ∀ (a b c : Polynomial n ord _cmp), a * (b + c) = a * b + a * c
 
-axiom t_right_distrib {n: Nat} {_cmp: Monomial n → Monomial n → Ordering} : ∀ (a b c : Polynomial n _cmp), (a + b) * c = a * c + b * c
+axiom t_right_distrib {n: Nat} {ord: Type} {_cmp: Monomial n ord → Monomial n ord → Ordering} : ∀ (a b c : Polynomial n ord _cmp), (a + b) * c = a * c + b * c
 
-axiom t_one_mul {n: Nat} {_cmp: Monomial n → Monomial n → Ordering} : ∀ (a : Polynomial n _cmp), 1 * a = a 
+axiom t_one_mul {n: Nat} {ord: Type} {_cmp: Monomial n ord → Monomial n ord → Ordering} : ∀ (a : Polynomial n ord _cmp), 1 * a = a 
 
-theorem t_mul_one : ∀ (a : Polynomial n _cmp), a * 1 = a := by
+theorem t_mul_one : ∀ (a : Polynomial n ord _cmp), a * 1 = a := by
   intros p
   simp [t_mul_comm p, t_one_mul]
 
-axiom t_add_left_neg {n: Nat} {_cmp: Monomial n → Monomial n → Ordering} : ∀ (a : Polynomial n _cmp), a.invert_sign + a = 0
+axiom t_add_left_neg {n: Nat} {ord: Type} {_cmp: Monomial n ord → Monomial n ord → Ordering} : ∀ (a : Polynomial n ord _cmp), a.invert_sign + a = 0
 
-instance: CommRing (Polynomial n _cmp) where
+instance: CommRing (Polynomial n ord _cmp) where
   add p₁ p₂ := Polynomial.add p₁ p₂
   zero_add := t_zero_add
   add_comm := t_add_comm

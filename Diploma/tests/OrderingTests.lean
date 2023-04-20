@@ -1,6 +1,6 @@
 import Diploma.Polynomials.Parser
 import Diploma.tests.Common
-import Diploma.Algebra.MonomialOrder
+import Diploma.Order.MonomialOrder
 
 open polynomial
 open algebra

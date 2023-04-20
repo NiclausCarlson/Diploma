@@ -2,6 +2,7 @@ import Lean.Data.Parsec
 
 import Diploma.Polynomials.Parser
 import Diploma.Polynomials.Groebner
+import Diploma.Order.AvailableOrders
 
 open Lean Parsec 
 open polynomial
@@ -17,10 +18,10 @@ private def IsInCmd     := "is_in"
 private def Exit        := "exit"
 end commands
 
-private def PolynomialsToString {cmp : Monomial Dimension → Monomial Dimension → Ordering} (ps: List (Polynomial Dimension cmp)): String :=
+private def PolynomialsToString {cmp : Monomial Dimension order.Lex → Monomial Dimension order.Lex → Ordering} (ps: List (Polynomial Dimension order.Lex cmp)): String :=
   List.foldl (fun x y => x ++ toString y ++ ";") "" ps
 
-private def OrdType : Parsec ((Monomial Dimension → Monomial Dimension → Ordering) × String) := do
+private def OrdType : Parsec ((Monomial Dimension order.Lex → Monomial Dimension order.Lex → Ordering) × String) := do
   let lex   := "lex"
   let grlex := "grlex"
   ws *> skipChar '[' 
@@ -30,7 +31,7 @@ private def OrdType : Parsec ((Monomial Dimension → Monomial Dimension → Ord
   else if name == grlex then return (Ordering.grlex, grlex)
   else fail s!"Unknown ordering {name}"
 
-private def PolynomialsBlock (cmp: Monomial Dimension → Monomial Dimension → Ordering): Parsec (List (Polynomial Dimension cmp)) := 
+private def PolynomialsBlock (cmp: Monomial Dimension order.Lex → Monomial Dimension order.Lex → Ordering): Parsec (List (Polynomial Dimension order.Lex cmp)) := 
   skipChar '{' *> Polynomials cmp <* skipChar '}'
 
 --# Help command
@@ -65,13 +66,13 @@ instance : ToString HelpStruct where
 
 
 --# Groebner command
-private structure Groebner (cmp : Monomial Dimension → Monomial Dimension → Ordering) where
+private structure Groebner (cmp : Monomial Dimension ord → Monomial Dimension ord → Ordering) where
   mk ::
   ordering_type: String
-  input : List (Polynomial Dimension cmp)
-  result : List (Polynomial Dimension cmp)
+  input : List (Polynomial Dimension ord cmp)
+  result : List (Polynomial Dimension ord cmp)
 
-instance {cmp : Monomial Dimension → Monomial Dimension → Ordering}: ToString (Groebner cmp) where
+instance {cmp : Monomial Dimension ord → Monomial Dimension ord → Ordering}: ToString (Groebner cmp) where
   toString s := s!"groebner ⟨{PolynomialsToString s.input}⟩ [{s.ordering_type}] = ⟨{PolynomialsToString s.result}⟩"
 
 
@@ -83,12 +84,12 @@ private def BuildGroebner: Parsec String := do
 
 
 --# Simp command
-private structure Simp (cmp : Monomial Dimension → Monomial Dimension → Ordering) where
+private structure Simp (cmp : Monomial Dimension ord → Monomial Dimension ord → Ordering) where
   mk ::
   ordering_type: String
-  result : List (Polynomial Dimension cmp)
+  result : List (Polynomial Dimension ord cmp)
 
-instance {cmp : Monomial Dimension → Monomial Dimension → Ordering}: ToString (Simp cmp) where
+instance {cmp : Monomial Dimension ord → Monomial Dimension ord → Ordering}: ToString (Simp cmp) where
   toString s := s!"[{PolynomialsToString s.result}]"
 
 private def EvalSimp : Parsec String := do
@@ -100,17 +101,17 @@ private def EvalSimp : Parsec String := do
 
 
 --# Is in command 
-private structure IsIn (cmp : Monomial Dimension → Monomial Dimension → Ordering) where
+private structure IsIn (cmp : Monomial Dimension order.Lex → Monomial Dimension order.Lex → Ordering) where
   mk ::
-  polynomial: Polynomial Dimension cmp
-  ideal: List (Polynomial Dimension cmp)
+  polynomial: Polynomial Dimension order.Lex cmp
+  ideal: List (Polynomial Dimension order.Lex cmp)
   result: Bool
 
 private def IsInStr (b: Bool): String := 
   if b then "is in"
   else "is not in"
 
-instance {cmp : Monomial Dimension → Monomial Dimension → Ordering}: ToString (IsIn cmp) where
+instance {cmp : Monomial Dimension order.Lex → Monomial Dimension order.Lex → Ordering}: ToString (IsIn cmp) where
   toString s := s!"{s.polynomial} {IsInStr s.result} ⟨{PolynomialsToString s.ideal}⟩"
 
 private def EvalIsIn: Parsec String := do

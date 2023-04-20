@@ -1,8 +1,10 @@
 import Lean.Data.Parsec
 
+import Std.Data.List.Basic
+
 import Diploma.Polynomials.Polynomial
 import Diploma.Order.MonomialOrder
-import Std.Data.List.Basic
+import Diploma.Order.AvailableOrders
 
 open Lean Parsec
 open algebra
@@ -24,10 +26,10 @@ def setI {n: Nat} (i: Nat) (value: Nat): Vector Nat n → Vector Nat n
 def toInnerName (ch: Char) : Option Nat := if NameShift > ch.toNat then none
                                            else ch.toNat - NameShift
 
-def toVariables (vars: Array Variable) (n: Nat): Variables n := 
+def toVariables (vars: Array Variable) (n: Nat): Variables n order.Lex := 
  impl vars.toList (get_variables n)
  where
-  impl (arr: List Variable) (res: Variables n): Variables n := 
+  impl (arr: List Variable) (res: Variables n order.Lex): Variables n order.Lex := 
     match arr with
       | []    => res
       | [v]   => setI v.name v.deg res
@@ -68,7 +70,7 @@ def SignToInt (sign: Option Char): Int :=
       | none => 1
       | some val => if val == '-' then -1 else 1  
 
-def Monom : Parsec (Monomial Dimension) := do
+def Monom : Parsec (Monomial Dimension order.Lex) := do
   let sign  ← ws *> Sign
   let coeff ← ws *> Coeff
   let vs  ← many Var
@@ -80,37 +82,40 @@ def Monom : Parsec (Monomial Dimension) := do
     | some val => if vs.isEmpty then return (sign_int * val, vars)
                   else return (sign_int * val, vars)
 
-def Polynom (ord: Monomial Dimension → Monomial Dimension → Ordering) : Parsec (Polynomial Dimension ord) := do
+def Polynom (_cmp: Monomial Dimension order.Lex → Monomial Dimension order.Lex → Ordering) : Parsec (Polynomial Dimension order.Lex _cmp) := do
   let monomial  ← Monom <* ws
   let monomials ← many (Monom <* ws)
-  return (Polynomial.of_monomial monomial ord) +                    
-         (Array.foldl (fun x (y: Monomial Dimension) => 
-                          x + (Polynomial.of_monomial y ord)) 0 monomials)
+  return (Polynomial.of_monomial monomial _cmp) +                    
+         (Array.foldl (fun x (y: Monomial Dimension order.Lex) => 
+                          x + (Polynomial.of_monomial y _cmp)) 0 monomials)
 
-def parse (s: String) (ord: Monomial Dimension → Monomial Dimension → Ordering) : Except String (Polynomial Dimension ord) :=
-  match Polynom ord s.mkIterator with
+def parse (s: String) (_cmp: Monomial Dimension order.Lex → Monomial Dimension order.Lex → Ordering) : Except String (Polynomial Dimension order.Lex _cmp) :=
+  match Polynom _cmp s.mkIterator with
     | Parsec.ParseResult.success _ res => Except.ok res.Simplify
     | Parsec.ParseResult.error it err  => Except.error s!"offset {it.i.byteIdx}: {err}"
 
-def parse! (s: String) (ord: Monomial Dimension → Monomial Dimension → Ordering) : Polynomial Dimension ord :=
-  match (parse s ord) with
+instance: Inhabited (Polynomial Dimension order.Lex _cmp) where
+default := {}
+
+def parse! (s: String) (_cmp: Monomial Dimension order.Lex → Monomial Dimension order.Lex → Ordering) : Polynomial Dimension order.Lex _cmp :=
+  match (parse s _cmp) with
     | .ok res  => res
     | .error err => panic! err
 
-def PolynomialWithSemilcon (ord: Monomial Dimension → Monomial Dimension → Ordering) : Parsec (Polynomial Dimension ord) := do
-  (Polynom ord <* ws) <* skipChar ';'
+def PolynomialWithSemilcon (_cmp: Monomial Dimension order.Lex → Monomial Dimension order.Lex → Ordering) : Parsec (Polynomial Dimension order.Lex _cmp) := do
+  (Polynom _cmp <* ws) <* skipChar ';'
 
-def Polynomials (ord: Monomial Dimension → Monomial Dimension → Ordering) : Parsec (List (Polynomial Dimension ord)) := do 
- let ps ← many (PolynomialWithSemilcon ord <* ws) 
+def Polynomials (_cmp: Monomial Dimension order.Lex → Monomial Dimension order.Lex → Ordering) : Parsec (List (Polynomial Dimension order.Lex _cmp)) := do 
+ let ps ← many (PolynomialWithSemilcon _cmp <* ws) 
  return ps.toList
 
-def parse_polynomials (s: String) (ord: Monomial Dimension → Monomial Dimension → Ordering) : Except String (List (Polynomial Dimension ord)) :=
-  match Polynomials ord s.mkIterator with
+def parse_polynomials (s: String) (_cmp: Monomial Dimension order.Lex → Monomial Dimension order.Lex → Ordering) : Except String (List (Polynomial Dimension order.Lex _cmp)) :=
+  match Polynomials _cmp s.mkIterator with
     | Parsec.ParseResult.success _ res => Except.ok res
     | Parsec.ParseResult.error it err  => Except.error s!"offset {it.i.byteIdx}: {err}"
 
-def parse_polynomials! (s: String) (ord: Monomial Dimension → Monomial Dimension → Ordering) : List (Polynomial Dimension ord) :=
-   match (parse_polynomials s ord) with
+def parse_polynomials! (s: String) (_cmp: Monomial Dimension order.Lex → Monomial Dimension order.Lex → Ordering) : List (Polynomial Dimension order.Lex _cmp) :=
+   match (parse_polynomials s _cmp) with
     | .ok res  => res
     | .error err => panic! err
 

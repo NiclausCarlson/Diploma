@@ -1,4 +1,5 @@
 import Diploma.Order.MonomialOrder
+import Diploma.Order.AvailableOrders
 import Std.Data.RBMap
 
 open polynomial
@@ -6,9 +7,7 @@ open polynomial
 
 namespace algebra
 
-class Lex (α : Type u) extends MonomialOrder α
-
-instance LexOrder: Lex (Variables n) where
+instance LexOrder: MonomialOrder (Variables n order.Lex) where
   le           := Order.lex 
   le_refl      := lex_le_refl
   le_trans     := lex_le_trans
@@ -17,28 +16,24 @@ instance LexOrder: Lex (Variables n) where
 --  add_le_add   := sorry
   decidable_le := Order.lex_decidable
 
-class GrLex (α : Type u) extends MonomialOrder α
+instance GrlexOrder: MonomialOrder (Variables n order.GrLex) where
+  le           := Order.grlex 
+  le_refl      := grlex_le_refl
+  le_trans     := grlex_le_trans
+  le_antisymm  := grlex_le_antisymm
+  le_total     := grlex_le_total
+--  add_le_add   := sorry
+  decidable_le := Order.grlex_decidable
 
---instance GrlexOrder: GrLex (Variables n) where
---  le           := Order.grlex 
---  le_refl      := grlex_le_refl
---  le_trans     := grlex_le_trans
---  le_antisymm  := grlex_le_antisymm
---  le_total     := grlex_le_total
-----  add_le_add   := sorry
---  decidable_le := Order.grlex_decidable
---
 end algebra
 
 namespace ordering
 
-def m_cmp [algebra.MonomialOrder $ Variables n] (m₁ m₂: Monomial n): Ordering := 
+def m_cmp [algebra.MonomialOrder $ Variables n ord] (m₁ m₂: Monomial n ord): Ordering := 
   if m₁.snd = m₂.snd then Ordering.eq
   else if m₁.snd < m₂.snd then Ordering.gt
   else Ordering.lt
 
-abbrev Polynomial (n: Nat) [algebra.MonomialOrder $ Variables n] := Std.RBSet (Monomial n) m_cmp
-
-def p (m: Monomial n) [algebra.Lex $ Variables n]: Polynomial n := Std.RBSet.single m
+abbrev Polynomial (n: Nat) [algebra.MonomialOrder $ Variables n ord] := Std.RBSet (Monomial n ord) m_cmp
 
 end ordering

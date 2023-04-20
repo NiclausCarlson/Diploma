@@ -31,20 +31,21 @@ def sub (p₁ p₂: String): String :=
   toString (parse_lex! p₁ - parse_lex! p₂)
 
 --# Test sub
-#eval AssertEq (sub "1" "0")                        "1"
-#eval AssertEq (sub "0" "1")                        "-1"
-#eval AssertEq (sub "0" "2")                        "-2"
-#eval AssertEq (sub "2" "0")                        "2"
-#eval AssertEq (sub "2" "2")                        "0"
-#eval AssertEq (sub "x" "0")                        "x"
-#eval AssertEq (sub "x" "x")                        "0"
-#eval AssertEq (sub "3x" "3x")                      "0"
-#eval AssertEq (sub "2x" "x")                       "x"
-#eval AssertEq (sub "x^4" "x")                      "x^4-x"
-#eval AssertEq (sub "3x^4" "x")                     "3x^4-x"
-#eval AssertEq (sub "3x^4" "x^4")                   "2x^4"
-#eval AssertEq (sub "3x^4y^2" "x^4")                "3x^4y^2-x^4"
-#eval AssertEq (sub "3x^4y^2+x^4y^2+10z" "x^4+15z") "4x^4y^2-x^4-5z"
+#eval AssertEq (sub "1" "0")                          "1"
+#eval AssertEq (sub "0" "1")                          "-1"
+#eval AssertEq (sub "0" "2")                          "-2"
+#eval AssertEq (sub "2" "0")                          "2"
+#eval AssertEq (sub "2" "2")                          "0"
+#eval AssertEq (sub "x" "0")                          "x"
+#eval AssertEq (sub "x" "x")                          "0"
+#eval AssertEq (sub "3x" "3x")                        "0"
+#eval AssertEq (sub "2x" "x")                         "x"
+#eval AssertEq (sub "x^4" "x")                        "x^4-x"
+#eval AssertEq (sub "3x^4" "x")                       "3x^4-x"
+#eval AssertEq (sub "3x^4" "x^4")                     "2x^4"
+#eval AssertEq (sub "3x^4y^2" "x^4")                  "3x^4y^2-x^4"
+#eval AssertEq (sub "3x^4y^2+x^4y^2+10z" "x^4+15z")   "4x^4y^2-x^4-5z"
+#eval AssertEq (sub "3x^4y^2+x^4y^2+10z+1" "x^4+15z") "4x^4y^2-x^4-5z+1"
 
 
 def mul (p₁ p₂: String): String :=
@@ -114,7 +115,7 @@ private def reduce_lt_check (p₁ p₂: String) (expected_reduced: String) (expe
 #eval reduce_lt_check "2" "y+1" "" ""
 
 --# Test div
-private def parse_list (ps: List String): List (Polynomial Dimension Ordering.lex) := ps.map parse_lex!
+private def parse_list (ps: List String): List (Polynomial Dimension order.Lex Ordering.lex) := ps.map parse_lex!
 def div (p: String) (ps: List String): DivisionResult Dimension Ordering.lex := 
   divide_many (parse_lex! p) (parse_list ps)
 

@@ -18,11 +18,11 @@ def ExpectTrue (b: Bool) : Except String String := AssertTrue b none
 open polynomial
 open Lean Parsec 
 
-def parseMonomial! (s: String) : Monomial Dimension :=
+def parseMonomial! (s: String) : Monomial Dimension order.Lex :=
   match Monom s.mkIterator with
     | Parsec.ParseResult.success _ res => res
     | Parsec.ParseResult.error it err  => panic! s!"Error at {s}; offset {it.i.byteIdx}: {err}"
 
 open algebra
-def parse_lex!   (s: String) : Polynomial Dimension Ordering.lex   := parse! s Ordering.lex
-def parse_grlex! (s: String) : Polynomial Dimension Ordering.grlex := parse! s Ordering.grlex
+def parse_lex!   (s: String) : Polynomial Dimension order.Lex Ordering.lex   := parse! s Ordering.lex
+def parse_grlex! (s: String) : Polynomial Dimension order.Lex Ordering.grlex := parse! s Ordering.grlex
