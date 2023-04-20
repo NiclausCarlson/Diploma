@@ -4,84 +4,84 @@ import Mathlib.Data.Vector
 import Std.Data.RBMap
 
 import Diploma.Polynomials.PolynomialCommon
+import Diploma.Order.MonomialOrderInterface
 
 namespace polynomial
 
-open Nat
-open Rat
+open Nat Rat algebra
 
 def NameShift := 120
 
-def Polynomial (n: Nat) (ord: Type) (cmp: Monomial n ord → Monomial n ord → Ordering) := Std.RBSet (Monomial n ord) cmp
+def Polynomial (n: Nat) (ord: Type) [MonomialOrder $ Variables n ord] := Std.RBSet (Monomial n ord) ordering.m_cmp
 
-def AsRBSet (p: Polynomial n ord _cmp) : Std.RBSet (Monomial n ord) _cmp := p
+def AsRBSet [MonomialOrder $ Variables n ord] (p: Polynomial n ord) : Std.RBSet (Monomial n ord) ordering.m_cmp:= p
 
-def Polynomial.single (m: Monomial n ord): Polynomial n ord _cmp := Std.RBSet.single m 
+def Polynomial.single [MonomialOrder $ Variables n ord] (m: Monomial n ord): Polynomial n ord := Std.RBSet.single m 
 
 instance: OfNat (Monomial n ord) m where
   ofNat := ⟨m, get_variables n⟩  
 
-instance: OfNat (Polynomial n ord _cmp) m where
+instance [MonomialOrder $ Variables n ord]: OfNat (Polynomial n ord) m where
   ofNat := Std.RBSet.single (m, (get_variables n))
 
-instance: EmptyCollection (Polynomial n ord _cmp) where
+instance [MonomialOrder $ Variables n ord]: EmptyCollection (Polynomial n ord) where
   emptyCollection := Std.RBSet.empty
 
-instance: BEq (Polynomial n ord _cmp) where
+instance [MonomialOrder $ Variables n ord]: BEq (Polynomial n ord) where
   beq p₁ p₂ := if AsRBSet p₁ == AsRBSet 0 ∧ AsRBSet p₂ == AsRBSet 0 then p₁.max!.fst == p₂.max!.fst
                else  AsRBSet p₁ == AsRBSet p₂
 
-def Polynomial.Simplify (p: Polynomial n ord _cmp) : Polynomial n ord _cmp := 
+def Polynomial.Simplify [MonomialOrder $ Variables n ord] (p: Polynomial n ord) : Polynomial n ord := 
   check_non_empty (Std.RBSet.filter p (fun x => x.fst != 0))
   where 
-    check_non_empty (p: Polynomial n ord _cmp): Polynomial n ord _cmp :=
+    check_non_empty (p: Polynomial n ord): Polynomial n ord :=
       if p.isEmpty then 0
       else p
 
-def ofRat (n: Nat) (cmp: Monomial n ord → Monomial n ord → Ordering) (m : Rat) : Polynomial n ord cmp := 
+def ofRat (n: Nat) (ord: Type) (m : Rat) [MonomialOrder $ Variables n ord] : Polynomial n ord := 
   Std.RBSet.single (m, get_variables n)
 
-def Polynomial.of_monomial (m: Monomial n ord) (cmp: Monomial n ord → Monomial n ord → Ordering): Polynomial n ord cmp := empty.insert m
+def Polynomial.of_monomial (m: Monomial n ord) [MonomialOrder $ Variables n ord]: Polynomial n ord := empty.insert m
   where 
-    empty : Polynomial n ord cmp := {}
+    empty : Polynomial n ord := {}
 
-def Polynomial.add (p₁ p₂: Polynomial n ord _cmp) : Polynomial n ord _cmp := 
+def Polynomial.add [MonomialOrder $ Variables n ord] (p₁ p₂: Polynomial n ord) : Polynomial n ord := 
   Simplify (Std.RBSet.mergeWith (fun x y => (x.fst + y.fst, x.snd)) p₁ p₂)
 
-instance: HAdd (Polynomial n ord _cmp) (Polynomial n ord _cmp) (Polynomial n ord _cmp) where
+instance [MonomialOrder $ Variables n ord]: HAdd (Polynomial n ord) (Polynomial n ord) (Polynomial n ord) where
   hAdd p₁ p₂ := Polynomial.add p₁ p₂  
 
 def Monomial.mul (m₁ m₂: Monomial n ord) : Monomial n ord :=
   (m₁.fst * m₂.fst, Variables.mul m₁.snd m₂.snd)
 
-def Polynomial.mul_monomial (p : Polynomial n ord _cmp) (m: Monomial n ord) : Polynomial n ord _cmp :=
+def Polynomial.mul_monomial [MonomialOrder $ Variables n ord] (p : Polynomial n ord) (m: Monomial n ord) : Polynomial n ord :=
   monomials_mul p.toList m
   where 
-    monomials_mul (monomials: List (Monomial n ord)) (m: Monomial n ord) : Polynomial n ord _cmp :=
+    monomials_mul (monomials: List (Monomial n ord)) (m: Monomial n ord) : Polynomial n ord :=
       match monomials with
         | []     => 0
         | [m₁]   => Std.RBSet.single (Monomial.mul m₁ m)
         | m₁::ms => Polynomial.add (Std.RBSet.single (Monomial.mul m₁ m)) (monomials_mul ms m)
 
-def Polynomial.mul (p₁ p₂: Polynomial n ord _cmp) : Polynomial n ord _cmp := Simplify (monomials_mul p₁.toList p₂) 
+def Polynomial.mul [MonomialOrder $ Variables n ord] (p₁ p₂: Polynomial n ord) : Polynomial n ord := Simplify (monomials_mul p₁.toList p₂) 
   where 
-    monomials_mul (monomials: List (Monomial n ord)) (p: Polynomial n ord _cmp): Polynomial n ord _cmp :=
+    monomials_mul (monomials: List (Monomial n ord)) (p: Polynomial n ord): Polynomial n ord :=
       match monomials with
         | []    => p
         | [m]   => Polynomial.mul_monomial p m
         | m::ms => Polynomial.add (Polynomial.mul_monomial p m) (monomials_mul ms p)
 
-instance: HMul (Polynomial n ord _cmp) (Polynomial n ord _cmp) (Polynomial n ord _cmp) where
+instance [MonomialOrder $ Variables n ord]: HMul (Polynomial n ord) (Polynomial n ord) (Polynomial n ord) where
   hMul p₁ p₂ := Polynomial.mul p₁ p₂
 
-def Polynomial.invert_sign (p: Polynomial n ord _cmp): Polynomial n ord _cmp := (ofRat n _cmp (-1)) * p
+def Polynomial.invert_sign [MonomialOrder $ Variables n ord] (p: Polynomial n ord): Polynomial n ord := (ofRat n ord (-1)) * p
 
-instance: HSub (Polynomial n ord _cmp) (Polynomial n ord _cmp) (Polynomial n ord _cmp) where
+instance [MonomialOrder $ Variables n ord]: HSub (Polynomial n ord) (Polynomial n ord) (Polynomial n ord) where
   hSub p₁ p₂ := p₁ + p₂.invert_sign
 
 section Eval
 
-def Polynomial.eval (p: Polynomial n ord _cmp) (v: Vector Rat n): Rat :=
+def Polynomial.eval [MonomialOrder $ Variables n ord] (p: Polynomial n ord) (v: Vector Rat n): Rat :=
   p.foldl (fun res m => res + m.fst * (eval_subst m.snd v) 1) 0 
 where
   eval_subst {m: Nat} (vars: Variables m ord) (v: Vector Rat m) (res: Rat): Rat := 
@@ -140,7 +140,7 @@ private def MonomialsListToString (l: List (Monomial n ord)) : String :=
       if x.fst >= 0 then "+"
       else ""
 
-instance: ToString (Polynomial n ord _cmp) where
+instance [MonomialOrder $ Variables n ord]: ToString (Polynomial n ord) where
   toString p := MonomialsListToString p.toList
 
 end ToString

@@ -19,10 +19,10 @@ open polynomial
 open Lean Parsec 
 
 def parseMonomial! (s: String) : Monomial Dimension order.Lex :=
-  match Monom s.mkIterator with
+  match Monom order.Lex s.mkIterator with
     | Parsec.ParseResult.success _ res => res
     | Parsec.ParseResult.error it err  => panic! s!"Error at {s}; offset {it.i.byteIdx}: {err}"
 
 open algebra
-def parse_lex!   (s: String) : Polynomial Dimension order.Lex Ordering.lex   := parse! s Ordering.lex
-def parse_grlex! (s: String) : Polynomial Dimension order.Lex Ordering.grlex := parse! s Ordering.grlex
+def parse_lex!   (s: String) : Polynomial Dimension order.Lex   := parse! s order.Lex
+def parse_grlex! (s: String) : Polynomial Dimension order.GrLex := parse! s order.GrLex

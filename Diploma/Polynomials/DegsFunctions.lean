@@ -1,24 +1,25 @@
 import Diploma.Polynomials.Polynomial
 
 namespace polynomial
+open algebra
 
-def Polynomial.multideg (p: Polynomial n ord _cmp): Variables n ord := 
+def Polynomial.multideg [MonomialOrder $ Variables n ord] (p: Polynomial n ord): Variables n ord := 
   if p.size != 0 then p.min!.snd
   else get_variables n 
 
-def Polynomial.lc (p: Polynomial n ord _cmp): Rat :=
+def Polynomial.lc [MonomialOrder $ Variables n ord] (p: Polynomial n ord): Rat :=
   if p.size != 0 then p.min!.fst
   else 0
 
-def Polynomial.lm (p: Polynomial n ord _cmp): Monomial n ord :=
+def Polynomial.lm [MonomialOrder $ Variables n ord] (p: Polynomial n ord): Monomial n ord :=
   if p.size != 0 then (1, p.min!.snd)
   else (1, get_variables n) 
 
-def Polynomial.lt (p: Polynomial n ord _cmp): Monomial n ord :=
+def Polynomial.lt [MonomialOrder $ Variables n ord] (p: Polynomial n ord): Monomial n ord :=
   if p.size != 0 then p.min!
   else (1, get_variables n)
 
-def Polynomial.Lt (p: Polynomial n ord _cmp): Polynomial n ord _cmp :=
+def Polynomial.Lt [MonomialOrder $ Variables n ord] (p: Polynomial n ord): Polynomial n ord :=
   if p.size != 0 then Polynomial.single p.min!
   else Polynomial.single (1, get_variables n)
 

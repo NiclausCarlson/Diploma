@@ -14,6 +14,7 @@ open Vector
 open MvPolynomial
 
 noncomputable section 
+open algebra
 
 def zeroP (n: Nat): MvPolynomial (Fin n) Rat := 0 
 def oneP (n: Nat): MvPolynomial (Fin n) Rat := 1 
@@ -29,16 +30,16 @@ where
 
 def toMvMonomial (m: Monomial n ord) : MvPolynomial (Fin n) Rat := (C m.fst) * (toMvMonomialImpl m.snd 0 n)
 
-def toMvPolynomial (p: Polynomial n ord _cmp): MvPolynomial (Fin n) Rat :=
+def toMvPolynomial [MonomialOrder $ Variables n ord] (p: Polynomial n ord): MvPolynomial (Fin n) Rat :=
   p.foldl (fun x y => x + toMvMonomial y) (zeroP n)
 
-private def zeroPolynomial (n: Nat) (_cmp: Monomial n ord → Monomial n ord → Ordering) : Polynomial n ord _cmp := 0
+private def zeroPolynomial (n: Nat) (ord: Type) [MonomialOrder $ Variables n ord]: Polynomial n ord := 0
 
 -- We can't proof that, but we need that for Finset.fold
-instance: IsCommutative (Polynomial n ord _cmp) (Polynomial.add) where
+instance [MonomialOrder $ Variables n ord]: IsCommutative (Polynomial n ord) (Polynomial.add) where
   comm := sorry
 
-instance: IsAssociative (Polynomial n ord _cmp) (Polynomial.add) where
+instance [MonomialOrder $ Variables n ord]: IsAssociative (Polynomial n ord) (Polynomial.add) where
   assoc := sorry
 
 theorem gt_ne_zero (n: Nat) (h: n > 0): n ≠ 0 := by simp; cases n; contradiction; simp  
@@ -53,51 +54,51 @@ def buildVariablesImpl (f: Fin n →₀ ℕ) (idx: Nat) (h₁: idx < n) (res: Va
     buildVariablesImpl f (idx - 1) prev_idx_less_n updated
   else updated
 
-def buildVariables (f: Fin n →₀ ℕ): Variables n ord:= 
+def buildVariables (f: Fin n →₀ ℕ) (ord: Type) [MonomialOrder $ Variables n ord]: Variables n ord:= 
   if h: n > 0 then
     buildVariablesImpl f (n - 1) 
                          (by cases n; contradiction; simp)
                          (get_variables n)
   else get_variables n
 
-def fromMvPolynomial (p: MvPolynomial (Fin n) Rat) (_cmp: Monomial n ord → Monomial n ord → Ordering): Polynomial n ord _cmp :=
-  Finset.fold (Polynomial.add)
-              (zeroPolynomial n _cmp)
-              (fun x => Polynomial.of_monomial ⟨coeff x p, buildVariables x⟩ _cmp) p.support
+--def fromMvPolynomial (p: MvPolynomial (Fin n) Rat) (ord: Type) [MonomialOrder $ Variables n ord]: Polynomial n ord :=
+--  Finset.fold (Polynomial.add)
+--              (zeroPolynomial n ord)
+--              (fun x => Polynomial.of_monomial ⟨coeff x p, buildVariables x ord⟩) p.support
 
-axiom t_zero_add {n: Nat} {ord: Type} {_cmp: Monomial n ord → Monomial n ord → Ordering} : ∀ (a : Polynomial n ord _cmp), 0 + a = a
+axiom t_zero_add {n: Nat} {ord: Type} [MonomialOrder $ Variables n ord] : ∀ (a : Polynomial n ord), 0 + a = a
 
-axiom t_add_comm {n: Nat} {ord: Type} {_cmp: Monomial n ord → Monomial n ord → Ordering} : ∀ (p₁ p₂: Polynomial n ord _cmp), p₁ + p₂ = p₂ + p₁ 
+axiom t_add_comm {n: Nat} {ord: Type} [MonomialOrder $ Variables n ord] : ∀ (p₁ p₂: Polynomial n ord), p₁ + p₂ = p₂ + p₁ 
 
-axiom t_add_assoc {n: Nat} {ord: Type} {_cmp: Monomial n ord → Monomial n ord → Ordering} : ∀ (p₁ p₂ p₃: Polynomial n ord _cmp), p₁ + p₂ + p₃ = p₁ + (p₂ + p₃) 
+axiom t_add_assoc {n: Nat} {ord: Type} [MonomialOrder $ Variables n ord] : ∀ (p₁ p₂ p₃: Polynomial n ord), p₁ + p₂ + p₃ = p₁ + (p₂ + p₃) 
 
-theorem t_add_zero : ∀ (a : Polynomial n ord _cmp), a + 0 = a := by
+theorem t_add_zero [MonomialOrder $ Variables n ord]: ∀ (a : Polynomial n ord), a + 0 = a := by
   intros p
   simp [t_add_comm p, t_zero_add]
 
-axiom t_zero_mul {n: Nat} {ord: Type} {_cmp: Monomial n ord → Monomial n ord→ Ordering}: ∀ (a : Polynomial n ord _cmp), 0 * a = 0
+axiom t_zero_mul {n: Nat} {ord: Type} [MonomialOrder $ Variables n ord]: ∀ (a : Polynomial n ord), 0 * a = 0
   
-axiom t_mul_comm {n: Nat} {ord: Type} {_cmp: Monomial n ord → Monomial n ord → Ordering} : ∀ (a b : Polynomial n ord _cmp), a * b = b * a
+axiom t_mul_comm {n: Nat} {ord: Type} [MonomialOrder $ Variables n ord] : ∀ (a b : Polynomial n ord), a * b = b * a
   
-theorem t_mul_zero : ∀ (a : Polynomial n ord _cmp), a * 0 = 0 := by
+theorem t_mul_zero [MonomialOrder $ Variables n ord]: ∀ (a : Polynomial n ord), a * 0 = 0 := by
   intros p
   simp [t_mul_comm p, t_zero_mul]
 
-axiom t_mul_assoc {n: Nat} {ord: Type} {_cmp: Monomial n ord → Monomial n ord → Ordering} : ∀ (a b c : Polynomial n ord _cmp), a * b * c = a * (b * c) 
+axiom t_mul_assoc {n: Nat} {ord: Type} [MonomialOrder $ Variables n ord] : ∀ (a b c : Polynomial n ord), a * b * c = a * (b * c) 
 
-axiom t_left_distrib {n: Nat} {ord: Type} {_cmp: Monomial n ord → Monomial n ord → Ordering} : ∀ (a b c : Polynomial n ord _cmp), a * (b + c) = a * b + a * c
+axiom t_left_distrib {n: Nat} {ord: Type} [MonomialOrder $ Variables n ord] : ∀ (a b c : Polynomial n ord), a * (b + c) = a * b + a * c
 
-axiom t_right_distrib {n: Nat} {ord: Type} {_cmp: Monomial n ord → Monomial n ord → Ordering} : ∀ (a b c : Polynomial n ord _cmp), (a + b) * c = a * c + b * c
+axiom t_right_distrib {n: Nat} {ord: Type} [MonomialOrder $ Variables n ord] : ∀ (a b c : Polynomial n ord), (a + b) * c = a * c + b * c
 
-axiom t_one_mul {n: Nat} {ord: Type} {_cmp: Monomial n ord → Monomial n ord → Ordering} : ∀ (a : Polynomial n ord _cmp), 1 * a = a 
+axiom t_one_mul {n: Nat} {ord: Type} [MonomialOrder $ Variables n ord] : ∀ (a : Polynomial n ord), 1 * a = a 
 
-theorem t_mul_one : ∀ (a : Polynomial n ord _cmp), a * 1 = a := by
+theorem t_mul_one [MonomialOrder $ Variables n ord]: ∀ (a : Polynomial n ord), a * 1 = a := by
   intros p
   simp [t_mul_comm p, t_one_mul]
 
-axiom t_add_left_neg {n: Nat} {ord: Type} {_cmp: Monomial n ord → Monomial n ord → Ordering} : ∀ (a : Polynomial n ord _cmp), a.invert_sign + a = 0
+axiom t_add_left_neg {n: Nat} {ord: Type} [MonomialOrder $ Variables n ord]: ∀ (a : Polynomial n ord), a.invert_sign + a = 0
 
-instance: CommRing (Polynomial n ord _cmp) where
+instance [MonomialOrder $ Variables n ord]: CommRing (Polynomial n ord) where
   add p₁ p₂ := Polynomial.add p₁ p₂
   zero_add := t_zero_add
   add_comm := t_add_comm

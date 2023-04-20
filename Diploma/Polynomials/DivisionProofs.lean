@@ -4,18 +4,18 @@ import Diploma.Algebra.PolynomialRing
 open polynomial
 
 namespace prooved_division
+open algebra
 
-
-def build_division_remainder (divisible: Polynomial n ord _cmp) (dividers: List (Polynomial n ord _cmp)): Polynomial n ord _cmp := 
+def build_division_remainder [MonomialOrder $ Variables n ord] (divisible: Polynomial n ord) (dividers: List (Polynomial n ord)): Polynomial n ord := 
   if dividers == [] then divisible
   else if dividers.any (fun p => p == 0) then divisible
   else impl divisible dividers 0 0 (by simp) 
   where 
-    impl (p: Polynomial n ord _cmp)
-         (ps: List (Polynomial n ord _cmp)) 
-         (quotient: Polynomial n ord _cmp)
-         (remainder: Polynomial n ord _cmp)
-         (sum_eq : divisible = p + quotient + remainder) : Polynomial n ord _cmp :=
+    impl (p: Polynomial n ord)
+         (ps: List (Polynomial n ord)) 
+         (quotient: Polynomial n ord)
+         (remainder: Polynomial n ord)
+         (sum_eq : divisible = p + quotient + remainder) : Polynomial n ord :=
       if p == 0 then remainder
       else match ps with
                | []    => impl (p - p.Lt) dividers quotient 
@@ -51,7 +51,7 @@ def build_division_remainder (divisible: Polynomial n ord _cmp) (dividers: List 
        sorry
      }
  
-def divide_many (divisible: Polynomial n ord _cmp) (dividers: List (Polynomial n ord _cmp)): DivisionResult n _cmp := 
+def divide_many [MonomialOrder $ Variables n ord] (divisible: Polynomial n ord) (dividers: List (Polynomial n ord)): DivisionResult n ord := 
    let remainder := build_division_remainder divisible dividers
    DivisionResult.mk (divisible - remainder) remainder
    

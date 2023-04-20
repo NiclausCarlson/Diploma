@@ -115,8 +115,8 @@ private def reduce_lt_check (p₁ p₂: String) (expected_reduced: String) (expe
 #eval reduce_lt_check "2" "y+1" "" ""
 
 --# Test div
-private def parse_list (ps: List String): List (Polynomial Dimension order.Lex Ordering.lex) := ps.map parse_lex!
-def div (p: String) (ps: List String): DivisionResult Dimension Ordering.lex := 
+private def parse_list (ps: List String): List (Polynomial Dimension order.Lex) := ps.map parse_lex!
+def div (p: String) (ps: List String): DivisionResult Dimension order.Lex := 
   divide_many (parse_lex! p) (parse_list ps)
 
 private def check_div (divisible: String) (ps: List String) (poly: String) (remainder: String): Except String String :=
