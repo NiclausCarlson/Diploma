@@ -1,7 +1,7 @@
 import Lean.Data.Parsec
 
 import Diploma.Polynomials.Polynomial
-import Diploma.Algebra.MonomialOrder
+import Diploma.Order.MonomialOrder
 import Std.Data.List.Basic
 
 open Lean Parsec

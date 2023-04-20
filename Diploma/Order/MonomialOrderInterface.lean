@@ -1,4 +1,4 @@
-import Diploma.Algebra.MonomialOrder
+import Diploma.Order.MonomialOrder
 import Std.Data.RBMap
 
 open polynomial
