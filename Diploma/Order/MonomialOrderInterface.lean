@@ -13,7 +13,7 @@ instance LexOrder: MonomialOrder (Variables n order.Lex) where
   le_trans     := lex_le_trans
   le_antisymm  := lex_le_antisymm
   le_total     := lex_le_total
---  add_le_add   := sorry
+--  add_le_add   := lex_add_le_add
   decidable_le := Order.lex_decidable
 
 instance GrlexOrder: MonomialOrder (Variables n order.GrLex) where
@@ -22,7 +22,7 @@ instance GrlexOrder: MonomialOrder (Variables n order.GrLex) where
   le_trans     := grlex_le_trans
   le_antisymm  := grlex_le_antisymm
   le_total     := grlex_le_total
---  add_le_add   := sorry
+--  add_le_add   := grlex_add_le_add
   decidable_le := Order.grlex_decidable
 
 end algebra

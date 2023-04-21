@@ -258,12 +258,33 @@ theorem lex_add_le_add : ∀ a b c: Variables n order.Lex, Order.lex a b → Ord
                                                exact h
                                                simp at *
                                                rename_i var_mul₁ var_mul₂ _ _ _ _ _ _ _ _ eq neq heq₁ heq₂
-                                               simp [map₂, Variables.mul, List.zipWith] at var_mul₁
-                                               simp [map₂, Variables.mul] at var_mul₂
+                                               simp [map₂, Variables.mul, List.zipWith] at var_mul₁ var_mul₂
                                                have eq₁ := heq₁.left 
                                                have eq₂ := heq₂.left
-                                               sorry
-                                               sorry
+                                               cases var_mul₁
+                                               cases var_mul₂
+                                               rename_i sum_eq _
+                                               simp [eq₁, eq₂] at sum_eq
+                                               contradiction
+                                               rw [Order.lex_impl] at h
+                                               split at h
+                                               simp at *
+                                               split at h
+                                               rename_i var_mul₁ var_mul₂ _ _ _ _ _ _ _ _ _ heq₁ heq₂ eq
+                                               simp [map₂, Variables.mul, List.zipWith] at var_mul₁ var_mul₂
+                                               cases heq₁
+                                               cases heq₂
+                                               cases var_mul₁
+                                               cases var_mul₂
+                                               simp [eq]
+                                               rename_i var_mul₁ var_mul₂ _ _ _ _ _ _ _ _ _ heq₁ heq₂ eq
+                                               cases heq₁
+                                               cases heq₂
+                                               simp [map₂, Variables.mul, List.zipWith] at var_mul₁ var_mul₂
+                                               cases var_mul₁ 
+                                               cases var_mul₂
+                                               simp at *
+                                               exact h
   apply aux n v₁ v₂ v₃
 
 theorem Order.lex_true_of_ble_lex_true (h: Eq (Order.ble_lex_impl v₁ v₂) true): Order.lex v₁ v₂ := by
@@ -536,6 +557,29 @@ theorem grlex_false_of_ble_grlex_false (h: Not (Eq (Order.bgrlex v₁ v₂) true
 instance Order.grlex_decidable (v₁ v₂: Variables n order.GrLex): Decidable (Order.grlex v₁ v₂) := 
   dite (Eq (Order.bgrlex v₁ v₂) true) (fun h => isTrue (grlex_true_of_ble_grlex_true h))
                                       (fun h => isFalse (grlex_false_of_ble_grlex_false h))
+
+theorem grlex_add_le_add : ∀ a b c: Variables n order.GrLex, Order.grlex a b → Order.grlex (Variables.mul a c) (Variables.mul b c) := by
+  intros v₁ v₂ v₃
+  let rec aux (m: Nat) (a b c: Variables m order.GrLex) : Order.grlex a b → Order.grlex (Variables.mul a c) (Variables.mul b c) := by
+    intros h 
+    match a, b, c with
+      | ⟨[], _⟩, ⟨[], _⟩, ⟨[], _⟩          => rw [Order.grlex]
+                                              simp [Order.lex]
+                                              rw [Order.lex_impl, Variables.mul]
+                                              simp [map₂]   
+      | ⟨x::xs, p₁⟩, ⟨y::ys, p₂⟩, ⟨z::zs, p₃⟩ => rw [Order.grlex]
+                                                 simp
+                                                 split
+                                                 simp
+                                                 split
+                                                 simp at * 
+                                                 simp [Order.grlex] at h
+                                                 split at h
+                                                 simp
+                                                 sorry
+                                                 sorry
+                                                 sorry
+  apply aux n v₁ v₂ v₃
 
 -- TODO: maybe unused
 def Ordering.grlex (m₁ m₂: Monomial n order.GrLex): Ordering :=

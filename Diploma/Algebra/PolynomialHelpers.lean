@@ -1,7 +1,10 @@
 import Diploma.Polynomials.DegsFunctions
 
-namespace polynomial
+import Mathlib.Data.Vector
 
+namespace polynomial
+open algebra Vector
+     
 --theorem mul_minus_one_change_sign: 
 --  ∀ p: Polynomial n ord, (p.contains m == true) → ((p.invert_sign.contains) ⟨-1 * m.fst, m.snd⟩ == true) := by 
 --  sorry
