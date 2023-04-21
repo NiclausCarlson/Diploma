@@ -378,11 +378,6 @@ theorem Order.lex_false_of_ble_lex_false (h: Not (Eq (Order.ble_lex_impl v₁ v�
 instance Order.lex_decidable (v₁ v₂: Variables n order.Lex): Decidable (Order.lex v₁ v₂) :=
   dite (Eq (Order.ble_lex_impl v₁ v₂) true) (fun h => isTrue (Order.lex_true_of_ble_lex_true h))
                                             (fun h => isFalse (Order.lex_false_of_ble_lex_false h))
--- TODO: maybe unused
-def Ordering.lex (m₁ m₂: Monomial n order.Lex): Ordering := 
-  if m₁.snd == m₂.snd then Ordering.eq
-  else if Order.lex m₁.snd m₂.snd then Ordering.gt
-  else Ordering.lt
 
 end monomials_lex_order
 
@@ -580,12 +575,6 @@ theorem grlex_add_le_add : ∀ a b c: Variables n order.GrLex, Order.grlex a b �
                                                  sorry
                                                  sorry
   apply aux n v₁ v₂ v₃
-
--- TODO: maybe unused
-def Ordering.grlex (m₁ m₂: Monomial n order.GrLex): Ordering :=
-  if m₁.snd == m₂.snd then Ordering.eq
-  else if Order.grlex m₁.snd m₂.snd then Ordering.gt
-  else Ordering.lt
 
 end monomials_grlex_order
 
