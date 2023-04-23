@@ -12,7 +12,7 @@ instance: HMul (Variables n ord) (Variables n ord) (Variables n ord) where
 
 instance LexOrder: MonomialOrder (Variables n order.Lex) where
   lt               := Order.lex
-  le               := Order.lex_le
+  le               := Order.lex
   le_refl          := lex_le_refl
   le_trans         := lex_le_trans
   le_antisymm      := lex_le_antisymm
@@ -23,7 +23,7 @@ instance LexOrder: MonomialOrder (Variables n order.Lex) where
 
 instance GrlexOrder: MonomialOrder (Variables n order.GrLex) where
   lt               := Order.grlex
-  le               := Order.grlex_le 
+  le               := Order.grlex
   le_refl          := grlex_le_refl
   le_trans         := grlex_le_trans
   le_antisymm      := grlex_le_antisymm
