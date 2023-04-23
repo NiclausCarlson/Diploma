@@ -10,7 +10,7 @@ open Vector Classical Nat polynomial
 namespace algebra
 
 class MonomialOrder (α: Type u) [HMul α α α] extends LinearOrder α := 
- add_le_add : ∀ a b c: α, a < b → a * c < b * c
+ add_le_add : ∀ a b c: α, a ≤ b → a * c ≤ b * c
 
 --# Lex order
 --# a <=_lex b ↔ ∃ c: a = c ++ p₁, b = c ++ p₂ ∧ p₁[0] < p₂[0]
@@ -389,7 +389,8 @@ def Order.grlex (vs₁ vs₂: Variables n order.GrLex): Prop :=
   let sum₁ := elem_sum vs₁ 
   let sum₂ := elem_sum vs₂   
   if sum₁ < sum₂ then True
-  else if sum₁ = sum₂ then Order.lex vs₁ vs₂
+  else if sum₁ = sum₂ then if Order.lex vs₁ vs₂ then True
+                           else False
   else False
   where
     elem_sum (vs: Variables n order.GrLex): Nat :=
@@ -401,7 +402,8 @@ private def Order.bgrlex (vs₁ vs₂: Variables n order.GrLex): Bool :=
   let sum₁ := elem_sum vs₁ 
   let sum₂ := elem_sum vs₂   
   if sum₁ < sum₂ then true
-  else if sum₁ = sum₂ then Order.lex vs₁ vs₂
+  else if sum₁ = sum₂ then if Order.lex vs₁ vs₂ then true
+                           else false  
   else false
   where
     elem_sum (vs: Variables n order.GrLex): Nat :=
@@ -419,7 +421,9 @@ theorem grlex_lt_iff_le_not_le : ∀ (a b : Variables n order.GrLex), Order.grle
 theorem grlex_le_refl: ∀ (a : Variables n order.GrLex), Order.grlex a a := by 
   intros a
   simp [Order.grlex]
-  apply lex_le_refl
+  split
+  simp [lex_le_refl]
+  simp [lex_le_refl] at *
 
 theorem grlex_le_trans : ∀ (a b c : Variables n order.GrLex), Order.grlex a b → Order.grlex b c → Order.grlex a c := by
   intros a b c ab bc
@@ -452,16 +456,22 @@ theorem grlex_le_trans : ∀ (a b c : Variables n order.GrLex), Order.grlex a b 
   split at bc
   rename_i nleq₁ nleq₂ eq₁ eq₂ neq₁ eq₃
   simp at *
-  apply lex_le_trans
-  exact ab
-  exact bc
-  repeat contradiction
-  rename_i nleq₁ nleq₂ neq₁ eq leq
-  rw [eq] at nleq₁
-  contradiction
+  split
+  simp [lex_le_trans]
+  split at ab
   split at bc
-  rename_i nleq₁ nleq₂ neq eq₁ nleq₃ eq₂
-  rw [eq₁] at neq
+  rename_i h₁ h₂ h₃
+  have contr := lex_le_trans a b c h₂ h₃
+  repeat contradiction
+  split at ab
+  rename_i h₁ h₂ h₃ h₄
+  rw [← h₂] at h₃
+  repeat contradiction
+  split at ab
+  split at bc
+  simp at *
+  rename_i h₁ h₂ h₃ _ _ _ _
+  rw [h₂] at h₁
   repeat contradiction
 
 theorem grlex_le_antisymm : ∀ (a b : Variables n order.GrLex), Order.grlex a b → Order.grlex b a → a = b := by 
@@ -484,37 +494,54 @@ theorem grlex_le_antisymm : ∀ (a b : Variables n order.GrLex), Order.grlex a b
   rw [symm] at leq
   simp at leq
   split at ba
-  apply lex_le_antisymm 
-  exact ab
-  exact ba
+  apply lex_le_antisymm
+  split at ab
+  split at ba
+  repeat (
+    rename_i h₁ _
+    exact h₁
+  )
+  contradiction
+  split at ab
+  split at ba
+  rename_i h
+  exact h
   repeat contradiction
 
 theorem grlex_le_total : ∀ (a b : Variables n order.GrLex), Order.grlex a b ∨ Order.grlex b a := by 
   intros a b
+  have contr := lex_le_total a b
+  cases contr
   simp [Order.grlex]
   split <;> simp
   split <;> repeat (first | split | simp)
-  simp [lex_le_total] 
-  rename_i nleq₁ eq nleq₂ neq
-  have contr := Eq.symm eq 
-  contradiction
-  rename_i nleq₁ neq nleq₂ eq
+  repeat contradiction
+  simp at *
+  rename_i neq₁ eq nle _ _
   have contr := Eq.symm eq 
   contradiction
   simp
-  rename_i nleq₁ neq nleq₂ eq
+  simp at *
+  rename_i neq₁ neq₂ nleq₁ nleq₂
   simp at *
   have contr := Nat.le_antisymm nleq₁ nleq₂
   contradiction
+  simp [Order.grlex]
+  split <;> repeat (first | split | simp)
+  simp
+  rename_i eq _ _ neq
+  rw [eq] at neq
+  contradiction
+  split
+  simp at *
+  simp at *
+  rename_i neq h₁ h₂
+  have contr := Nat.le_antisymm h₁ h₂
+  rw [contr] at neq
+  simp at *
   
-theorem grlex_add_lt_add : ∀ a b c: Variables n order.GrLex, Order.grlex a b → Order.grlex (Variables.mul a c) (Variables.mul b c) := by
-  intros v₁ v₂ v₃
-  let rec aux (m: Nat) (a b c: Variables m order.GrLex) : Order.grlex a b → Order.grlex (Variables.mul a c) (Variables.mul b c) := by
-    intros h 
-    match a, b, c with
-      | ⟨[], _⟩, ⟨[], _⟩, ⟨[], _⟩          => sorry
-      | ⟨x::xs, p₁⟩, ⟨y::ys, p₂⟩, ⟨z::zs, p₃⟩ => sorry
-  exact aux n v₁ v₂ v₃ 
+theorem grlex_add_le_add : ∀ a b c: Variables n order.GrLex, Order.grlex a b → Order.grlex (Variables.mul a c) (Variables.mul b c) := by
+  sorry
 
 --# Decidable theorems
 theorem grlex_true_of_ble_grlex_true (h: Eq (Order.bgrlex v₁ v₂) true): Order.grlex v₁ v₂ := by
@@ -527,13 +554,20 @@ theorem grlex_true_of_ble_grlex_true (h: Eq (Order.bgrlex v₁ v₂) true): Orde
   simp at h
   simp at *
   rw [Order.grlex.elem_sum, Order.grlex.elem_sum] at *
-  rw [algebra.Order.bgrlex.elem_sum, algebra.Order.bgrlex.elem_sum] at *
+  rw [Order.bgrlex.elem_sum, Order.bgrlex.elem_sum] at *
   rename_i hh
   simp [hh] at h
-  exact h
+  split
+  simp
+  contradiction
+  split
+  simp
+  simp at *
+  rename_i h₁
+  simp [h₁] at h
   rename_i nleq eq _
   contradiction
-  simp [algebra.Order.bgrlex] at h
+  simp [Order.bgrlex] at h
   split at h
   contradiction
   rename_i nleq neq₁ neq₂
@@ -556,17 +590,12 @@ theorem grble_eq_true_of_grlex (h: Order.grlex v₁ v₂): Eq (Order.bgrlex v₁
   rename_i le neq
   intros nleq
   have le_contr := Nat.not_lt_of_le nleq
-  rw [Order.grlex.elem_sum, Order.grlex.elem_sum] at le
-  rw [algebra.Order.bgrlex.elem_sum, algebra.Order.bgrlex.elem_sum] at le_contr
   contradiction
   split at h
   simp [algebra.Order.bgrlex]
-  intros le
   split
-  exact h
-  rename_i nlt eq neq
-  rw [Order.grlex.elem_sum, Order.grlex.elem_sum] at nlt eq
-  rw [algebra.Order.bgrlex.elem_sum, algebra.Order.bgrlex.elem_sum] at le neq
+  split at h
+  intros _ hh
   repeat contradiction
 
 theorem grlex_false_of_ble_grlex_false (h: Not (Eq (Order.bgrlex v₁ v₂) true)): Not (Order.grlex v₁ v₂) := 
