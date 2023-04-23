@@ -9,7 +9,7 @@ open Vector Classical Nat polynomial
 
 namespace algebra
 
-class MonomialOrder (α: Type u) [HMul α α α] extends LinearOrder α := 
+class MonomialOrder (α: Type u) [HMul α α α] extends LinearOrder α, WellFoundedRelation α := 
  add_le_add : ∀ a b c: α, a ≤ b → a * c ≤ b * c
 
 --# Lex order
