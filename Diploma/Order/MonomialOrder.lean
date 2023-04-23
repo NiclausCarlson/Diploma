@@ -9,18 +9,20 @@ open Vector Classical Nat polynomial
 
 namespace algebra
 
-class MonomialOrder (α : Type u) [HMul α α α] extends LinearOrder α := 
+class MonomialOrder (α: Type u) [HMul α α α] extends LinearOrder α := 
  add_le_add : ∀ a b c: α, a < b → a * c < b * c
 
 --# Lex order
 --# a <=_lex b ↔ ∃ c: a = c ++ p₁, b = c ++ p₂ ∧ p₁[0] < p₂[0]
-def Order.lex_impl (v₁ v₂ : Vector Nat n): Prop :=
+def Order.lex_impl (v₁ v₂: Vector Nat n): Prop :=
   match v₁, v₂ with
     | ⟨[], _⟩  , ⟨[], _⟩   => True
     | ⟨x::_, _⟩, ⟨y::_, _⟩ => if x = y then lex_impl v₁.tail v₂.tail 
                               else x ≤ y
 
-def Order.lex (v₁ v₂ : Variables n order.Lex): Prop := Order.lex_impl v₁ v₂
+def Order.lex (v₁ v₂: Variables n order.Lex): Prop := Order.lex_impl v₁ v₂
+
+def Order.lex_lt (v₁ v₂: Variables n order.Lex): Prop := Order.lex v₁ v₂ ∧ ¬Order.lex v₂ v₁ 
 
 private def Order.ble_lex_impl (v₁ v₂ : Vector Nat n): Bool :=
   match v₁, v₂ with
@@ -226,9 +228,14 @@ theorem lex_le_total : ∀ (a b : Variables n order.Lex), Order.lex a b ∨ Orde
                                   simp [Nat.le_total]
   exact aux n v₁ v₂
 
-theorem lex_lt_iff_le_not_le: ∀ (a b : Variables n order.Lex), Order.lex a b ↔ Order.lex a b ∧ ¬ Order.lex b a := by
-  sorry
-  
+theorem lex_lt_iff_le_not_le: ∀ (a b : Variables n order.Lex), Order.lex_lt a b ↔ Order.lex a b ∧ ¬Order.lex b a := by
+  intros v₁ v₂
+  apply Iff.intro
+  repeat (
+    rw [Order.lex_lt]
+    simp
+  )
+
 theorem lex_add_le_add : ∀ a b c: Variables n order.Lex, Order.lex a b → Order.lex (Variables.mul a c) (Variables.mul b c) := by
   intros v₁ v₂ v₃
   let rec aux (m: Nat) (a b c: Variables m order.Lex) : Order.lex_impl a b → Order.lex_impl (Variables.mul a c) (Variables.mul b c) := by
@@ -388,6 +395,8 @@ def Order.grlex (vs₁ vs₂: Variables n order.GrLex): Prop :=
     elem_sum (vs: Variables n order.GrLex): Nat :=
       List.foldl (fun x y => x + y) 0 vs.toList
 
+def Order.grlex_lt (v₁ v₂: Variables n order.GrLex): Prop := Order.grlex v₁ v₂ ∧ ¬Order.grlex v₂ v₁ 
+
 private def Order.bgrlex (vs₁ vs₂: Variables n order.GrLex): Bool :=
   let sum₁ := elem_sum vs₁ 
   let sum₂ := elem_sum vs₂   
@@ -399,12 +408,13 @@ private def Order.bgrlex (vs₁ vs₂: Variables n order.GrLex): Bool :=
       List.foldl (fun x y => x + y) 0 vs.toList
 
 --# Ordering theorems
-theorem grlex_lt_iff_le_not_le : ∀ (a b : Variables n order.GrLex), Order.grlex a b ↔ Order.grlex a b ∧ ¬Order.grlex b a := 
-  by 
+theorem grlex_lt_iff_le_not_le : ∀ (a b : Variables n order.GrLex), Order.grlex_lt a b ↔ Order.grlex a b ∧ ¬Order.grlex b a := by 
     intros a b 
     apply Iff.intro
-    sorry
-    sorry
+    repeat (
+        rw [Order.grlex_lt]
+        simp
+    )
 
 theorem grlex_le_refl: ∀ (a : Variables n order.GrLex), Order.grlex a a := by 
   intros a
