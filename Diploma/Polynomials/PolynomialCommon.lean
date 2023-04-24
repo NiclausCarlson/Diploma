@@ -17,7 +17,6 @@ def Monomial (n: Nat) (ord: Type) := Rat × (Variables n ord)
 instance : Inhabited (Monomial n ord) where
   default := (0, get_variables n)
 
--- TODO: maybe unused
 instance: BEq (Variables n ord) where
   beq v₁ v₂ := AsVector v₁ == AsVector v₂
 
