@@ -87,3 +87,4 @@ instance : ToString Variable where
 #eval AssertEq (toString (parse_grlex! "x^3y^2-x^3yz+3"))   "x^3y^2-x^3yz+3"
 #eval AssertEq (toString (parse_grlex! "-x^3yz+x^3y^2+3"))  "x^3y^2-x^3yz+3"
 #eval AssertEq (toString (parse_grlex! "x^2-2y^2+x"))       "x^2-2y^2+x"
+#eval AssertEq (toString (parse_grlex! "-2y^2+x^2y+x"))      "x^2y-2y^2+x"
