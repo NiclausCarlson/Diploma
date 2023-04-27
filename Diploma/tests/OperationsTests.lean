@@ -86,34 +86,6 @@ private def monomial_div_check(p₁ p₂: String) (is_divides: Bool) (expected: 
 #eval monomial_div_check "4x1^3"     "x0"   false "0"
 #eval monomial_div_check "4x1^3"     "x0x1" false "0"
 
-private def reduce_lt_check (p₁ p₂: String) (expected_reduced: String) (expected_reducer: String): Except String String :=
-  let q   := parse_lex! expected_reduced
-  let r   := parse_lex! expected_reducer
-  match reduce_lt (parse_lex! p₁) (parse_lex! p₂) with
-    | none     => AssertTrue ((expected_reduced == "") ∧ (expected_reducer == "")) s!"expected values are no empty"
-    | some res => match AssertTrue (res.reduced == q) 
-                            s!"expected reduced {toString q} actual {toString res.reduced}" with
-                    | Except.ok _ => AssertTrue (res.reducer == r) s!"expected reducer {toString r} actual {toString res.reducer}"
-                    | Except.error err => Except.error err
-
-#eval reduce_lt_check "x0" "x0" "0" "x0"
-#eval reduce_lt_check "x0^2" "x0" "0" "x0^2"
-#eval reduce_lt_check "2x0" "x0" "0" "2x0"
-#eval reduce_lt_check "x0x1" "x0" "0" "x0x1"
-#eval reduce_lt_check "2x0x1" "x0" "0" "2x0x1"
-#eval reduce_lt_check "x1" "x1" "0" "x1"
-
-#eval reduce_lt_check "2x0x1+x2" "x0" "x2" "2x0x1"
-#eval reduce_lt_check "2x0^2x1+x2" "x0" "x2" "2x0^2x1"
-#eval reduce_lt_check "2x0^2x1x2+x2" "x0" "x2" "2x0^2x1x2"
-#eval reduce_lt_check "2x0^2x1^4x2+x0+x1+x2" "x0" "x0+x1+x2" "2x0^2x1^4x2"
-#eval reduce_lt_check "3x0^2x1^4x2+x0+x1+x2" "x0x1" "x0+x1+x2" "3x0^2x1^4x2"
-#eval reduce_lt_check "3x0^2x1^4x2+x0" "x0x1^3" "x0" "3x0^2x1^4x2"
-#eval reduce_lt_check "x0x1^2+1" "x0x1+1" "-x1+1" "x0x1^2+x1"
-#eval reduce_lt_check "-x1+1" "x1+1" "2" "-x1-1"
-#eval reduce_lt_check "2" "x0x1-1" "" ""
-#eval reduce_lt_check "2" "x1+1" "" ""
-
 --# Test div
 private def parse_list (ps: List String): List (Polynomial Dimension order.Lex) := ps.map parse_lex!
 def div (p: String) (ps: List String): DivisionResult Dimension order.Lex := 

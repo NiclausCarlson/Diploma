@@ -96,4 +96,3 @@ instance : ToString Variable where
 #eval AssertEq (toString (parse_lex_! 2 "2x0x1")) "2x0x1"
 #eval AssertEq (toString (parse_lex_! 5 "2x0x1x2x3x4")) "2x0x1x2x3x4"
 #eval AssertEq (toString (parse_lex_! 5 "2x0x1x2x3x4+x0^8+x1")) "x0^8+2x0x1x2x3x4+x1"
-

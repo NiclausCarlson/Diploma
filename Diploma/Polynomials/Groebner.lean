@@ -1,5 +1,6 @@
 import Diploma.Polynomials.Polynomial
 import Diploma.Polynomials.DegsFunctions
+import Diploma.Algebra.PolynomialRing
 
 namespace polynomial
 open algebra
@@ -24,44 +25,58 @@ where p₁ : Polynomial n ord := Polynomial.single m
 instance [MonomialOrder $ Variables n ord]: HMul (Monomial n ord) (Polynomial n ord) (Polynomial n ord) where
   hMul m p := m.mul_p p
 
-structure ReduceResult (n: Nat) (ord: Type) [MonomialOrder $ Variables n ord] where
-  reduced: Polynomial n ord
-  reducer: Polynomial n ord
-
--- Reduce p₁ by p₂
-def reduce_lt [MonomialOrder $ Variables n ord] (p₁ p₂: Polynomial n ord): Option (ReduceResult n ord) := 
-  if p₁.lt.is_div p₂.lt then some (impl (Polynomial.single (p₁.lt.div p₂.lt)))
-  else none
-  where
-    impl (p: Polynomial n ord): ReduceResult n ord := 
-      let reducer := p * p₂
-      {
-        reduced := p₁ - reducer,
-        reducer := reducer
-      }
-
 structure DivisionResult (n: Nat) (ord: Type) [MonomialOrder $ Variables n ord] where
   p: Polynomial n ord
   r: Polynomial n ord
 
+def build_division_remainder [MonomialOrder $ Variables n ord] (divisible: Polynomial n ord) (dividers: List (Polynomial n ord)): Polynomial n ord := 
+  if dividers == [] then divisible
+  else if dividers.any (fun p => p == 0) then divisible
+  else impl divisible dividers 0 0 (by simp) 
+  where 
+    impl (p: Polynomial n ord)
+         (ps: List (Polynomial n ord)) 
+         (quotient: Polynomial n ord)
+         (remainder: Polynomial n ord)
+         (sum_eq : divisible = p + quotient + remainder) : Polynomial n ord :=
+      if p == 0 then remainder
+      else match ps with
+               | []    => impl (p - p.Lt) dividers quotient 
+                               (remainder + p.Lt) 
+                               (
+                                by 
+                                  have h: remainder + Polynomial.Lt p = Polynomial.Lt p + remainder := 
+                                    add_comm remainder (Polynomial.Lt p)
+                                  have h₂: -Polynomial.Lt p + quotient = quotient + -Polynomial.Lt p :=
+                                    add_comm (-Polynomial.Lt p) quotient
+                                  rw [h, sub_eq_add_neg, add_assoc,
+                                      add_assoc, add_comm, ←add_assoc,
+                                      ←add_assoc, add_comm, h₂, add_comm, add_assoc, add_comm, 
+                                      add_assoc, add_assoc, add_left_neg, add_zero, add_comm
+                                      ]
+                                  exact sum_eq
+                               )
+               | a::as => if p.lt.is_div a.lt then 
+                             let reducer := (p.lt.div a.lt) * a
+                             impl (p - reducer) dividers (quotient + reducer) 
+                                  (remainder) 
+                                  ( 
+                                    by 
+                                      have h: -reducer + (quotient + reducer) = (quotient + reducer) + -reducer := 
+                                        add_comm (-reducer) (quotient + reducer) 
+                                      rw [sub_eq_add_neg, ←add_assoc, add_comm, add_assoc,
+                                          add_assoc, h, add_assoc, add_right_neg, add_zero, add_comm]
+                                      exact sum_eq
+                                  )
+                          else impl p as quotient remainder sum_eq                                       
+     termination_by impl p ps quotient remainder sum_eq => p == 0
+     decreasing_by {
+       sorry
+     }
+ 
 def divide_many [MonomialOrder $ Variables n ord] (divisible: Polynomial n ord) (dividers: List (Polynomial n ord)): DivisionResult n ord := 
-  if dividers == [] then {p:=0, r:=0}
-  else impl divisible dividers {p:=0, r:=0}
-  where
-    impl (p: Polynomial n ord) (ps: List (Polynomial n ord)) (step: DivisionResult n ord): DivisionResult n ord :=
-        if p == 0 then step
-        else match ps with
-              | []    => let r := step.r + p.Lt
-                         let new_p := p - p.Lt
-                         impl new_p dividers {p := step.p, r := r}
-              | a::as => match reduce_lt p a with
-                          | none     => impl p as step
-                          | some res => impl res.reduced dividers {p := step.p + res.reducer, r := step.r}
-    termination_by impl p ps psp => p == 0
-    decreasing_by {
-      simp_wf
-      sorry
-    }
+   let remainder := build_division_remainder divisible dividers
+   DivisionResult.mk (divisible - remainder) remainder
 
 def Monomial.lcm (m₁ m₂: Monomial n ord): Monomial n ord := ⟨1, Vector.map₂ (fun x y => max x y) m₁.snd m₂.snd⟩  
 
@@ -74,8 +89,8 @@ where
 private def step [MonomialOrder $ Variables n ord] (p q: Polynomial n ord) (ps: List (Polynomial n ord)) : Bool × Polynomial n ord := 
   if p == q then (false, 0)
   else
-    let div_result := divide_many (build_s_polynomial p q) ps
-    (div_result.r == 0, div_result.r)
+    let div_result := build_division_remainder (build_s_polynomial p q) ps
+    (div_result == 0, div_result)
 
 private def build [MonomialOrder $ Variables n ord]
                   (e: Polynomial n ord) 
@@ -105,12 +120,7 @@ def build_groebner_basis [MonomialOrder $ Variables n ord] (pl: List (Polynomial
       sorry
     }
 
-def is_in [MonomialOrder $ Variables n ord] (p: Polynomial n ord) (ps: List (Polynomial n ord)) : Bool := 
-  let basis := build_groebner_basis ps
-  let div_res := divide_many p basis
-  div_res.r == 0
-
 def is_in_basis [MonomialOrder $ Variables n ord] (p: Polynomial n ord) (groebner_basis: List (Polynomial n ord)) : Bool :=
-  (divide_many p groebner_basis).r == 0
+  (build_division_remainder p groebner_basis) == 0
 
 end polynomial
