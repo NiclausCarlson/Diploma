@@ -26,8 +26,8 @@ instance [MonomialOrder $ Variables n ord]: EmptyCollection (Polynomial n ord) w
   emptyCollection := Std.RBSet.empty
 
 instance [MonomialOrder $ Variables n ord]: BEq (Polynomial n ord) where
-  beq p₁ p₂ := if AsRBSet p₁ == AsRBSet 0 ∧ AsRBSet p₂ == AsRBSet 0 then p₁.max!.fst == p₂.max!.fst
-               else  AsRBSet p₁ == AsRBSet p₂
+  beq p₁ p₂ := if p₁.size != p₂.size then false
+               else AsRBSet p₁ == AsRBSet p₂
 
 def Polynomial.Simplify [MonomialOrder $ Variables n ord] (p: Polynomial n ord) : Polynomial n ord := 
   check_non_empty (Std.RBSet.filter p (fun x => x.fst != 0))
@@ -53,7 +53,7 @@ def Monomial.mul (m₁ m₂: Monomial n ord) : Monomial n ord :=
   (m₁.fst * m₂.fst, Variables.mul m₁.snd m₂.snd)
 
 def Polynomial.mul_monomial [MonomialOrder $ Variables n ord] (p : Polynomial n ord) (m: Monomial n ord) : Polynomial n ord :=
-  monomials_mul p.toList m
+  Polynomial.Simplify $ monomials_mul p.toList m
   where 
     monomials_mul (monomials: List (Monomial n ord)) (m: Monomial n ord) : Polynomial n ord :=
       match monomials with

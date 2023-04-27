@@ -192,13 +192,13 @@ def f₄ := "x2^2"
 #eval check_groebner ["17x0^5x1^8+4x0x1x2^12", "x0x1^4x2", "x1-1"] ["17x0^5x1^8+4x0x1x2^12", "x0x1^4x2", "x1-1", "4/17x0x2^13", "x0^5+4/17x0x2^12", "4/17x0x2^12", "x0x2"]
 
 --# Test eval
-#eval (parse_lex! "x0^2").eval ⟨[1, 0, 0], by rfl⟩                                == 1
-#eval (parse_lex! "x0^2").eval ⟨[1, 4, 3], by rfl⟩                                == 1
-#eval (parse_lex! "x0^2").eval ⟨[2, 0, 0], by rfl⟩                                == 4
-#eval (parse_lex! "x0^2x1").eval ⟨[2, 0, 0], by rfl⟩                               == 0
-#eval (parse_lex! "x0^2x1").eval ⟨[2, 1, 0], by rfl⟩                               == 4
-#eval (parse_lex! "x0^2x1^3").eval ⟨[2, 2, 0], by rfl⟩                             == 32
-#eval (parse_lex! "x0^2x1^3x2^4").eval ⟨[2, 2, 5], by rfl⟩                          == 20000
-#eval (parse_lex! "5x0^2x1^3x2^4").eval ⟨[2, 2, 5], by rfl⟩                         == 100000
+#eval (parse_lex! "x0^2").eval ⟨[1, 0, 0], by rfl⟩                                      == 1
+#eval (parse_lex! "x0^2").eval ⟨[1, 4, 3], by rfl⟩                                      == 1
+#eval (parse_lex! "x0^2").eval ⟨[2, 0, 0], by rfl⟩                                      == 4
+#eval (parse_lex! "x0^2x1").eval ⟨[2, 0, 0], by rfl⟩                                    == 0
+#eval (parse_lex! "x0^2x1").eval ⟨[2, 1, 0], by rfl⟩                                    == 4
+#eval (parse_lex! "x0^2x1^3").eval ⟨[2, 2, 0], by rfl⟩                                  == 32
+#eval (parse_lex! "x0^2x1^3x2^4").eval ⟨[2, 2, 5], by rfl⟩                              == 20000
+#eval (parse_lex! "5x0^2x1^3x2^4").eval ⟨[2, 2, 5], by rfl⟩                             == 100000
 #eval (parse_lex! "5x0^2x1^3x2^4 + x0 + x1^3x2^7 + x0^3 + 27").eval ⟨[2, 2, 5], by rfl⟩ == 725037
  
