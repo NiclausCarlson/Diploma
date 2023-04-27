@@ -10,8 +10,6 @@ namespace polynomial
 open Lean Parsec
 open algebra
 
-def Dimension := 3
-
 structure Variable where
   deg: Nat
   name: Nat
@@ -69,52 +67,52 @@ def SignToInt (sign: Option Char): Int :=
       | none => 1
       | some val => if val == '-' then -1 else 1  
 
-def Monom (ord: Type) [MonomialOrder $ Variables Dimension ord]: Parsec (Monomial Dimension ord) := do
+def Monom (dimension: Nat) (ord: Type) [MonomialOrder $ Variables dimension ord]: Parsec (Monomial dimension ord) := do
   let sign  ← ws *> Sign
   let coeff ← ws *> Coeff
   let vs  ← many Var
   let sign_int := SignToInt sign
-  let vars := toVariables vs Dimension
+  let vars := toVariables vs dimension
   match coeff with
     | none     => if vs.isEmpty then fail s!"expected coeff or vars after sign `{sign}`"
                   else return (sign_int, vars)
     | some val => if vs.isEmpty then return (sign_int * val, vars)
                   else return (sign_int * val, vars)
 
-def Polynom (ord: Type) [MonomialOrder $ Variables Dimension ord]: Parsec (Polynomial Dimension ord) := do
-  let monomial  ← Monom ord <* ws
-  let monomials ← many (Monom ord <* ws)
+def Polynom (dimension: Nat) (ord: Type) [MonomialOrder $ Variables dimension ord]: Parsec (Polynomial dimension ord) := do
+  let monomial  ← Monom dimension ord <* ws
+  let monomials ← many (Monom dimension ord <* ws)
   return (Polynomial.of_monomial monomial) +                    
-         (Array.foldl (fun x (y: Monomial Dimension ord) => 
+         (Array.foldl (fun x (y: Monomial dimension ord) => 
                           x + (Polynomial.of_monomial y)) 0 monomials)
 
-def parse (s: String) (ord: Type) [MonomialOrder $ Variables Dimension ord]: Except String (Polynomial Dimension ord) :=
-  match Polynom ord s.mkIterator with
+def parse (dimension: Nat) (s: String) (ord: Type) [MonomialOrder $ Variables dimension ord]: Except String (Polynomial dimension ord) :=
+  match Polynom dimension ord s.mkIterator with
     | Parsec.ParseResult.success _ res => Except.ok res.Simplify
     | Parsec.ParseResult.error it err  => Except.error s!"offset {it.i.byteIdx}: {err}"
 
-instance [MonomialOrder $ Variables Dimension ord]: Inhabited (Polynomial Dimension ord) where
+instance [MonomialOrder $ Variables dimension ord]: Inhabited (Polynomial dimension ord) where
 default := {}
 
-def parse! (s: String) (ord: Type) [MonomialOrder $ Variables Dimension ord]: Polynomial Dimension ord:=
-  match (parse s ord) with
+def parse! (dimension: Nat) (s: String) (ord: Type) [MonomialOrder $ Variables dimension ord]: Polynomial dimension ord:=
+  match (parse dimension s ord) with
     | .ok res  => res
     | .error err => panic! err
 
-def PolynomialWithSemilcon (ord: Type) [MonomialOrder $ Variables Dimension ord]: Parsec (Polynomial Dimension ord) := do
-  (Polynom ord <* ws) <* skipChar ';'
+def PolynomialWithSemilcon (dimension: Nat) (ord: Type) [MonomialOrder $ Variables dimension ord]: Parsec (Polynomial dimension ord) := do
+  (Polynom dimension ord <* ws) <* skipChar ';'
 
-def Polynomials (ord: Type) [MonomialOrder $ Variables Dimension ord]: Parsec (List (Polynomial Dimension ord)) := do 
- let ps ← many (PolynomialWithSemilcon ord <* ws) 
+def Polynomials (dimension: Nat) (ord: Type) [MonomialOrder $ Variables dimension ord]: Parsec (List (Polynomial dimension ord)) := do 
+ let ps ← many (PolynomialWithSemilcon dimension ord <* ws) 
  return ps.toList
 
-def parse_polynomials (s: String) (ord: Type) [MonomialOrder $ Variables Dimension ord]: Except String (List (Polynomial Dimension ord)) :=
-  match Polynomials ord s.mkIterator with
+def parse_polynomials (dimension: Nat) (s: String) (ord: Type) [MonomialOrder $ Variables dimension ord]: Except String (List (Polynomial dimension ord)) :=
+  match Polynomials dimension ord s.mkIterator with
     | Parsec.ParseResult.success _ res => Except.ok res
     | Parsec.ParseResult.error it err  => Except.error s!"offset {it.i.byteIdx}: {err}"
 
-def parse_polynomials! (s: String) (ord: Type) [MonomialOrder $ Variables Dimension ord]: List (Polynomial Dimension ord) :=
-   match (parse_polynomials s ord) with
+def parse_polynomials! (dimension: Nat) (s: String) (ord: Type) [MonomialOrder $ Variables dimension ord]: List (Polynomial dimension ord) :=
+   match (parse_polynomials dimension s ord) with
     | .ok res  => res
     | .error err => panic! err
 
