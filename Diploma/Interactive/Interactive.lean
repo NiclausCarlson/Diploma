@@ -16,7 +16,12 @@ private def GroebnerCmd := "groebner"
 private def SimpCmd     := "simp"
 private def IsInCmd     := "is_in"
 private def Exit        := "exit"
+private def SetN        := "set_n"
 end commands
+
+inductive EvalResult where
+  | str : String → EvalResult
+  | new_dimension : Nat → EvalResult 
 
 inductive Orders where
   | lex
@@ -89,14 +94,14 @@ instance {dimension: Nat} {ord: Type} [MonomialOrder $ Variables dimension ord]:
   toString s := s!"groebner ⟨{PolynomialsToString s.input}⟩ [{s.ordering_type}] = ⟨{PolynomialsToString s.result}⟩"
 
 open Orders in 
-private def BuildGroebner (dimension: Nat): Parsec String := do
+private def BuildGroebner (dimension: Nat): Parsec EvalResult := do
   let ord_type ← OrdType
   ws *> skipChar ':' *> ws
   match ord_type with
     | lex   => let polynomials ← PolynomialsBlock dimension order.Lex
-               return toString $ Groebner.mk (toString ord_type) polynomials (build_groebner_basis polynomials)
+               return EvalResult.str $ toString $ Groebner.mk (toString ord_type) polynomials (build_groebner_basis polynomials)
     | grlex => let polynomials ← PolynomialsBlock dimension order.GrLex
-               return toString $ Groebner.mk (toString ord_type) polynomials (build_groebner_basis polynomials)
+               return EvalResult.str $ toString $ Groebner.mk (toString ord_type) polynomials (build_groebner_basis polynomials)
 
 --# Simp command
 private structure Simp (dimension: Nat) (ord: Type) [MonomialOrder $ Variables dimension ord] where
@@ -108,16 +113,16 @@ instance {dimension: Nat} {ord: Type} [MonomialOrder $ Variables dimension ord]:
   toString s := s!"[{PolynomialsToString s.result}]"
 
 open Orders in 
-private def EvalSimp (dimension: Nat): Parsec String := do
+private def EvalSimp (dimension: Nat): Parsec EvalResult := do
   let ord_type ← OrdType
   ws *> skipChar ':' *> ws
   match ord_type with
     | lex   => let polynomials ← PolynomialsBlock dimension order.Lex
                ws *> skipChar ';' *> ws
-               return toString $ Simp.mk (toString ord_type) polynomials
+               return EvalResult.str $ toString $ Simp.mk (toString ord_type) polynomials
     | grlex => let polynomials ← PolynomialsBlock dimension order.GrLex
                ws *> skipChar ';' *> ws
-               return toString $ Simp.mk (toString ord_type) polynomials
+               return EvalResult.str $ toString $ Simp.mk (toString ord_type) polynomials
 
 
 --# Is in command 
@@ -134,11 +139,15 @@ private def IsInStr (b: Bool): String :=
 instance {dimension: Nat} {ord: Type} [MonomialOrder $ Variables dimension ord]: ToString (IsIn dimension ord) where
   toString s := s!"{s.polynomial} {IsInStr s.result} ⟨{PolynomialsToString s.ideal}⟩"
 
-private def EvalIsIn (dimension: Nat): Parsec String := do
+private def EvalIsIn (dimension: Nat): Parsec EvalResult := do
   let p  ← PolynomialWithSemilcon dimension order.GrLex <* ws
   let ps ← PolynomialsBlock dimension order.GrLex
   let basis := build_groebner_basis ps
-  return toString $ IsIn.mk p basis (is_in_basis p basis)
+  return EvalResult.str $ toString $ IsIn.mk p basis (is_in_basis p basis)
+
+private def EvalSetN : Parsec EvalResult := do
+  let new_n ← ws <* pstring "set_n" <* ws *> Number
+  return EvalResult.new_dimension $ String.toNat! new_n
 
 --# Main parser
 private def Commands: Parsec String := 
@@ -147,18 +156,20 @@ private def Commands: Parsec String :=
   pstring SimpCmd     <|>
   pstring IsInCmd     <|>
   pstring Exit        <|>
+  pstring SetN        <|>
   pure ""
 
-def Eval (dimension: Nat): Parsec (Option String) := do
+def Eval (dimension: Nat): Parsec (Option EvalResult) := do
   let command ← ws *> Commands
-  if command == Help then return toString HelpImpl
+  if command == Help then return EvalResult.str $ toString HelpImpl
   else if command == SimpCmd then EvalSimp dimension
   else if command == GroebnerCmd then BuildGroebner dimension
   else if command == IsInCmd then EvalIsIn dimension
+  else if command == SetN then EvalSetN
   else if command == Exit then return none
   else fail s!"unsupported command {command}"
 
-def eval (s: String) (dimension: Nat): Except String (Option String) :=
+def eval (s: String) (dimension: Nat): Except String (Option EvalResult) :=
   match Eval dimension s.mkIterator with
       | Parsec.ParseResult.success _ res => Except.ok res
       | Parsec.ParseResult.error _ err  => Except.error s!"{err}"
