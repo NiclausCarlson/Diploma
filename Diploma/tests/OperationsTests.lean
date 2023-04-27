@@ -9,56 +9,56 @@ def sum (p₁ p₂: String): String :=
   toString (parse_lex! p₁ + parse_lex! p₂)
  
 --# Test sum
-#eval AssertEq (sum "1" "0")                        "1"
-#eval AssertEq (sum "0" "1")                        "1"
-#eval AssertEq (sum "0" "2")                        "2"
-#eval AssertEq (sum "2" "0")                        "2"
-#eval AssertEq (sum "2" "2")                        "4"
-#eval AssertEq (sum "x" "0")                        "x"
-#eval AssertEq (sum "x" "x")                        "2x"
-#eval AssertEq (sum "2x" "x")                       "3x"
-#eval AssertEq (sum "x^4" "x")                      "x^4+x"
-#eval AssertEq (sum "3x^4" "x")                     "3x^4+x"
-#eval AssertEq (sum "3x^4" "x^4")                   "4x^4"
-#eval AssertEq (sum "3x^4y^2" "x^4")                "3x^4y^2+x^4"
-#eval AssertEq (sum "3x^4y^2+x^4y^2+10z" "x^4+15z") "4x^4y^2+x^4+25z"
+#eval AssertEq (sum "1" "0")                               "1"
+#eval AssertEq (sum "0" "1")                               "1"
+#eval AssertEq (sum "0" "2")                               "2"
+#eval AssertEq (sum "2" "0")                               "2"
+#eval AssertEq (sum "2" "2")                               "4"
+#eval AssertEq (sum "x0" "0")                              "x0"
+#eval AssertEq (sum "x0" "x0")                             "2x0"
+#eval AssertEq (sum "2x0" "x0")                            "3x0"
+#eval AssertEq (sum "x0^4" "x0")                           "x0^4+x0"
+#eval AssertEq (sum "3x0^4" "x0")                          "3x0^4+x0"
+#eval AssertEq (sum "3x0^4" "x0^4")                        "4x0^4"
+#eval AssertEq (sum "3x0^4x1^2" "x0^4")                    "3x0^4x1^2+x0^4"
+#eval AssertEq (sum "3x0^4x1^2+x0^4x1^2+10x2" "x0^4+15x2") "4x0^4x1^2+x0^4+25x2"
 
-#eval AssertEq (sum "-y+1" "y+1") "2"
-#eval AssertEq (sum "xy^2+1" "-xy^2+1") "2"
+#eval AssertEq (sum "-x1+1" "x1+1") "2"
+#eval AssertEq (sum "x0x1^2+1" "-x0x1^2+1") "2"
 
 
 def sub (p₁ p₂: String): String :=
   toString (parse_lex! p₁ - parse_lex! p₂)
 
 --# Test sub
-#eval AssertEq (sub "1" "0")                          "1"
-#eval AssertEq (sub "0" "1")                          "-1"
-#eval AssertEq (sub "0" "2")                          "-2"
-#eval AssertEq (sub "2" "0")                          "2"
-#eval AssertEq (sub "2" "2")                          "0"
-#eval AssertEq (sub "x" "0")                          "x"
-#eval AssertEq (sub "x" "x")                          "0"
-#eval AssertEq (sub "3x" "3x")                        "0"
-#eval AssertEq (sub "2x" "x")                         "x"
-#eval AssertEq (sub "x^4" "x")                        "x^4-x"
-#eval AssertEq (sub "3x^4" "x")                       "3x^4-x"
-#eval AssertEq (sub "3x^4" "x^4")                     "2x^4"
-#eval AssertEq (sub "3x^4y^2" "x^4")                  "3x^4y^2-x^4"
-#eval AssertEq (sub "3x^4y^2+x^4y^2+10z" "x^4+15z")   "4x^4y^2-x^4-5z"
-#eval AssertEq (sub "3x^4y^2+x^4y^2+10z+1" "x^4+15z") "4x^4y^2-x^4-5z+1"
+#eval AssertEq (sub "1" "0")                                 "1"
+#eval AssertEq (sub "0" "1")                                 "-1"
+#eval AssertEq (sub "0" "2")                                 "-2"
+#eval AssertEq (sub "2" "0")                                 "2"
+#eval AssertEq (sub "2" "2")                                 "0"
+#eval AssertEq (sub "x0" "0")                                "x0"
+#eval AssertEq (sub "x0" "x0")                               "0"
+#eval AssertEq (sub "3x0" "3x0")                             "0"
+#eval AssertEq (sub "2x0" "x0")                              "x0"
+#eval AssertEq (sub "x0^4" "x0")                             "x0^4-x0"
+#eval AssertEq (sub "3x0^4" "x0")                            "3x0^4-x0"
+#eval AssertEq (sub "3x0^4" "x0^4")                          "2x0^4"
+#eval AssertEq (sub "3x0^4x1^2" "x0^4")                      "3x0^4x1^2-x0^4"
+#eval AssertEq (sub "3x0^4x1^2+x0^4x1^2+10x2" "x0^4+15x2")   "4x0^4x1^2-x0^4-5x2"
+#eval AssertEq (sub "3x0^4x1^2+x0^4x1^2+10x2+1" "x0^4+15x2") "4x0^4x1^2-x0^4-5x2+1"
 
 
 def mul (p₁ p₂: String): String :=
   toString (parse_lex! p₁ * parse_lex! p₂)
 
 --# Test mul
-#eval AssertEq (mul "1" "0")                                  "0"
-#eval AssertEq (mul "x" "x")                                  "x^2"
-#eval AssertEq (mul "2x" "x")                                 "2x^2"
-#eval AssertEq (mul "2x" "3x^5")                              "6x^6"
-#eval AssertEq (mul "x+y" "x-y")                              "x^2-y^2"
-#eval AssertEq (mul "x+y-z" "x-y")                            "x^2-xz-y^2+yz"
-#eval AssertEq (mul "6x^7+18x^4y^2z^2-xyz" "17x^18-14y^34+z") "102x^25+306x^22y^2z^2-17x^19yz-84x^7y^34+6x^7z-252x^4y^36z^2+18x^4y^2z^3+14xy^35z-xyz^2"
+#eval AssertEq (mul "1" "0")                                            "0"
+#eval AssertEq (mul "x0" "x0")                                          "x0^2"
+#eval AssertEq (mul "2x0" "x0")                                         "2x0^2"
+#eval AssertEq (mul "2x0" "3x0^5")                                      "6x0^6"
+#eval AssertEq (mul "x0+x1" "x0-x1")                                    "x0^2-x1^2"
+#eval AssertEq (mul "x0+x1-x2" "x0-x1")                                 "x0^2-x0x2-x1^2+x1x2"
+#eval AssertEq (mul "6x0^7+18x0^4x1^2x2^2-x0x1x2" "17x0^18-14x1^34+x2") "102x0^25+306x0^22x1^2x2^2-17x0^19x1x2-84x0^7x1^34+6x0^7x2-252x0^4x1^36x2^2+18x0^4x1^2x2^3+14x0x1^35x2-x0x1x2^2"
 
 
 --# Check monomials div
@@ -72,19 +72,19 @@ private def monomial_div_check(p₁ p₂: String) (is_divides: Bool) (expected: 
   else if ¬is_divides then Except.ok "OK"
        else Except.error "Monomials are not divides"
 
-#eval monomial_div_check "x" "x"                 true "1"
-#eval monomial_div_check "2x" "x"                true "2"
-#eval monomial_div_check "x^2" "x"               true "x"
-#eval monomial_div_check "2x^2" "x"              true "2x"
-#eval monomial_div_check "4x^3y^3z^8" "x"        true "4x^2y^3z^8"
-#eval monomial_div_check "4x^3y^3z^8" "2x"       true "2x^2y^3z^8"
-#eval monomial_div_check "4x^3y^3z^8" "2xy^3z^6" true "2x^2z^2"
-#eval monomial_div_check "4x^3y^3z^8" "2xy^3z^6" true "2x^2z^2"
+#eval monomial_div_check "x0" "x0"                     true "1"
+#eval monomial_div_check "2x0" "x0"                    true "2"
+#eval monomial_div_check "x0^2" "x0"                   true "x0"
+#eval monomial_div_check "2x0^2" "x0"                  true "2x0"
+#eval monomial_div_check "4x0^3x1^3x2^8" "x0"          true "4x0^2x1^3x2^8"
+#eval monomial_div_check "4x0^3x1^3x2^8" "2x0"         true "2x0^2x1^3x2^8"
+#eval monomial_div_check "4x0^3x1^3x2^8" "2x0x1^3x2^6" true "2x0^2x2^2"
+#eval monomial_div_check "4x0^3x1^3x2^8" "2x0x1^3x2^6" true "2x0^2x2^2"
 
-#eval monomial_div_check "x"       "y"  false "0"
-#eval monomial_div_check "4x^3y^3" "z"  false "0"
-#eval monomial_div_check "4y^3"    "x"  false "0"
-#eval monomial_div_check "4y^3"    "xy" false "0"
+#eval monomial_div_check "x0"        "x1"   false "0"
+#eval monomial_div_check "4x0^3x1^3" "x2"   false "0"
+#eval monomial_div_check "4x1^3"     "x0"   false "0"
+#eval monomial_div_check "4x1^3"     "x0x1" false "0"
 
 private def reduce_lt_check (p₁ p₂: String) (expected_reduced: String) (expected_reducer: String): Except String String :=
   let q   := parse_lex! expected_reduced
@@ -96,23 +96,23 @@ private def reduce_lt_check (p₁ p₂: String) (expected_reduced: String) (expe
                     | Except.ok _ => AssertTrue (res.reducer == r) s!"expected reducer {toString r} actual {toString res.reducer}"
                     | Except.error err => Except.error err
 
-#eval reduce_lt_check "x" "x" "0" "x"
-#eval reduce_lt_check "x^2" "x" "0" "x^2"
-#eval reduce_lt_check "2x" "x" "0" "2x"
-#eval reduce_lt_check "xy" "x" "0" "xy"
-#eval reduce_lt_check "2xy" "x" "0" "2xy"
-#eval reduce_lt_check "y" "y" "0" "y"
+#eval reduce_lt_check "x0" "x0" "0" "x0"
+#eval reduce_lt_check "x0^2" "x0" "0" "x0^2"
+#eval reduce_lt_check "2x0" "x0" "0" "2x0"
+#eval reduce_lt_check "x0x1" "x0" "0" "x0x1"
+#eval reduce_lt_check "2x0x1" "x0" "0" "2x0x1"
+#eval reduce_lt_check "x1" "x1" "0" "x1"
 
-#eval reduce_lt_check "2xy+z" "x" "z" "2xy"
-#eval reduce_lt_check "2x^2y+z" "x" "z" "2x^2y"
-#eval reduce_lt_check "2x^2yz+z" "x" "z" "2x^2yz"
-#eval reduce_lt_check "2x^2y^4z+x+y+z" "x" "x+y+z" "2x^2y^4z"
-#eval reduce_lt_check "3x^2y^4z+x+y+z" "xy" "x+y+z" "3x^2y^4z"
-#eval reduce_lt_check "3x^2y^4z+x" "xy^3" "x" "3x^2y^4z"
-#eval reduce_lt_check "xy^2+1" "xy+1" "-y+1" "xy^2+y"
-#eval reduce_lt_check "-y+1" "y+1" "2" "-y-1"
-#eval reduce_lt_check "2" "xy-1" "" ""
-#eval reduce_lt_check "2" "y+1" "" ""
+#eval reduce_lt_check "2x0x1+x2" "x0" "x2" "2x0x1"
+#eval reduce_lt_check "2x0^2x1+x2" "x0" "x2" "2x0^2x1"
+#eval reduce_lt_check "2x0^2x1x2+x2" "x0" "x2" "2x0^2x1x2"
+#eval reduce_lt_check "2x0^2x1^4x2+x0+x1+x2" "x0" "x0+x1+x2" "2x0^2x1^4x2"
+#eval reduce_lt_check "3x0^2x1^4x2+x0+x1+x2" "x0x1" "x0+x1+x2" "3x0^2x1^4x2"
+#eval reduce_lt_check "3x0^2x1^4x2+x0" "x0x1^3" "x0" "3x0^2x1^4x2"
+#eval reduce_lt_check "x0x1^2+1" "x0x1+1" "-x1+1" "x0x1^2+x1"
+#eval reduce_lt_check "-x1+1" "x1+1" "2" "-x1-1"
+#eval reduce_lt_check "2" "x0x1-1" "" ""
+#eval reduce_lt_check "2" "x1+1" "" ""
 
 --# Test div
 private def parse_list (ps: List String): List (Polynomial Dimension order.Lex) := ps.map parse_lex!
@@ -129,12 +129,12 @@ private def check_div (divisible: String) (ps: List String) (poly: String) (rema
                         | Except.error err => Except.error err
     | Except.error err => Except.error err
 
-#eval check_div "x^2" ["x"] "x^2" "0"
-#eval check_div "xy^2+1" ["xy+1"] "xy^2+y" "-y+1"
-#eval check_div "xy^2+1" ["xy+1", "y+1"] "xy^2-1" "2"
-#eval check_div "x+y" ["y"] "y" "x" 
-#eval check_div "x+y^2+y" ["xy-1", "y^2-1"] "y^2-1" "x+y+1"
-#eval check_div "x^2y+xy^2+y^2" ["xy-1", "y^2-1"] "x^2y+xy^2-x+y^2-y-1" "x+y+1"
+#eval check_div "x0^2" ["x0"] "x0^2" "0"
+#eval check_div "x0x1^2+1" ["x0x1+1"] "x0x1^2+x1" "-x1+1"
+#eval check_div "x0x1^2+1" ["x0x1+1", "x1+1"] "x0x1^2-1" "2"
+#eval check_div "x0+x1" ["x1"] "x1" "x0" 
+#eval check_div "x0+x1^2+x1" ["x0x1-1", "x1^2-1"] "x1^2-1" "x0+x1+1"
+#eval check_div "x0^2x1+x0x1^2+x1^2" ["x0x1-1", "x1^2-1"] "x0^2x1+x0x1^2-x0+x1^2-x1-1" "x0+x1+1"
 
 --# Test s_polynomials
 private def check_s_polynomial (p₁ p₂ expected: String) : Except String String :=
@@ -149,16 +149,16 @@ private def check_s_polynomial_grlex (p₁ p₂ expected: String) : Except Strin
   let s_p     := build_s_polynomial parsed₁ parsed₂
   AssertEq (toString s_p) expected 
 
-#eval check_s_polynomial "x" "x" "0"
-#eval check_s_polynomial "xy" "x" "0"
-#eval check_s_polynomial "xy^2" "x" "0"
-#eval check_s_polynomial "xy^2" "z" "0"
-#eval check_s_polynomial "xy^2+1" "z" "z"
-#eval check_s_polynomial "xy^2+1" "x" "1"
-#eval check_s_polynomial "x^3y^2-x^2y^3+x" "3x^4y+y^2" "-x^3y^3+x^2-1/3y^3"
+#eval check_s_polynomial "x0" "x0" "0"
+#eval check_s_polynomial "x0x1" "x0" "0"
+#eval check_s_polynomial "x0x1^2" "x0" "0"
+#eval check_s_polynomial "x0x1^2" "x2" "0"
+#eval check_s_polynomial "x0x1^2+1" "x2" "x2"
+#eval check_s_polynomial "x0x1^2+1" "x0" "1"
+#eval check_s_polynomial "x0^3x1^2-x0^2x1^3+x0" "3x0^4x1+x1^2" "-x0^3x1^3+x0^2-1/3x1^3"
 
-#eval check_s_polynomial_grlex "x^3y^2-x^2y^3+x" "3x^4y+y^2" "-x^3y^3-1/3y^3+x^2"
-#eval check_s_polynomial_grlex "x^3-2xy" "x^2y-2y^2+x" "-x^2"
+#eval check_s_polynomial_grlex "x0^3x1^2-x0^2x1^3+x0" "3x0^4x1+x1^2" "-x0^3x1^3-1/3x1^3+x0^2"
+#eval check_s_polynomial_grlex "x0^3-2x0x1" "x0^2x1-2x1^2+x0" "-x0^2"
 
 --# Test Groebner
 private def check_groebner (input expected: List String): Except String String := 
@@ -167,39 +167,38 @@ private def check_groebner (input expected: List String): Except String String :
   let groebner := build_groebner_basis parsed
   AssertTrue (groebner == parsed_expected) s!"expected {parsed_expected}; actual {groebner}"
 
-#eval check_groebner ["xy-y", "x"] ["xy-y", "x", "-y"]
-#eval check_groebner ["x+y-1", "y-z", "z-xy"] ["x+y-1", "y-z", "-xy+z", "z^2"]
+#eval check_groebner ["x0x1-x1", "x0"] ["x0x1-x1", "x0", "-x1"]
+#eval check_groebner ["x0+x1-1", "x1-x2", "x2-x0x1"] ["x0+x1-1", "x1-x2", "-x0x1+x2", "x2^2"]
 
 -- Demostration that "x+y-1", "y-z", "-xy+z", "z^2" is Groebner basis
-def f₁ := "x+y-1"
-def f₂ := "y-z"
-def f₃ := "-xy+z"
-def f₄ := "z^2"
+def f₁ := "x0+x1-1"
+def f₂ := "x1-x2"
+def f₃ := "-x0x1+x2"
+def f₄ := "x2^2"
 #eval build_s_polynomial (parse_lex! f₁) (parse_lex! f₂)
-#eval (div "xz+y^2-y" ["x+y-1", "y-z", "-xy+z"]).r -- zero
+#eval (div "x0x2+x1^2-x1" ["x0+x1-1", "x1-x2", "-x0x1+x2"]).r -- zero
 #eval build_s_polynomial (parse_lex! f₁) (parse_lex! f₃)
-#eval (div "y^2-y+z" ["x+y-1", "y-z", "-xy+z", "z^2"]).r -- zero
+#eval (div "x1^2-x1+x2" ["x0+x1-1", "x1-x2", "-x0x1+x2", "x2^2"]).r -- zero
 #eval build_s_polynomial (parse_lex! f₁) (parse_lex! f₄)
-#eval (div "yz^2-z^2" ["x+y-1", "y-z", "-xy+z", "z^2"]).r -- zero
+#eval (div "x1x2^2-x2^2" ["x0+x1-1", "x1-x2", "-x0x1+x2", "x2^2"]).r -- zero
 #eval build_s_polynomial (parse_lex! f₂) (parse_lex! f₃)
-#eval (div "-xz+z" ["x+y-1", "y-z", "-xy+z", "z^2"]).r -- zero
+#eval (div "-x0x2+x2" ["x0+x1-1", "x1-x2", "-x0x1+x2", "x2^2"]).r -- zero
 #eval build_s_polynomial (parse_lex! f₂) (parse_lex! f₄)
-#eval (div "-z^3" ["x+y-1", "y-z", "-xy+z", "z^2"]).r -- zero
+#eval (div "-x2^3" ["x0+x1-1", "x1-x2", "-x0x1+x2", "x2^2"]).r -- zero
 #eval build_s_polynomial (parse_lex! f₃) (parse_lex! f₄)
-#eval (div "-z^3" ["x+y-1", "y-z", "-xy+z", "z^2"]).r -- zero
+#eval (div "-x2^3" ["x0+x1-1", "x1-x2", "-x0x1+x2", "x2^2"]).r -- zero
 
-#eval check_groebner ["x^2+xyz^4+y", "x+y+z"] ["x^2+xyz^4+y", "x+y+z", "-y^2z^4+y^2-yz^5+2yz+y+z^2"]
-#eval check_groebner ["x^2+xyz^4+y", "x+y+z"] ["x^2+xyz^4+y", "x+y+z", "-y^2z^4+y^2-yz^5+2yz+y+z^2"]
-#eval check_groebner ["17x^5y^8+4xyz^12", "xy^4z", "y-1"] ["17x^5y^8+4xyz^12", "xy^4z", "y-1", "4/17xz^13", "x^5+4/17xz^12", "4/17xz^12", "xz"]
+#eval check_groebner ["x0^2+x0x1x2^4+x1", "x0+x1+x2"] ["x0^2+x0x1x2^4+x1", "x0+x1+x2", "-x1^2x2^4+x1^2-x1x2^5+2x1x2+x1+x2^2"]
+#eval check_groebner ["17x0^5x1^8+4x0x1x2^12", "x0x1^4x2", "x1-1"] ["17x0^5x1^8+4x0x1x2^12", "x0x1^4x2", "x1-1", "4/17x0x2^13", "x0^5+4/17x0x2^12", "4/17x0x2^12", "x0x2"]
 
 --# Test eval
-#eval (parse_lex! "x^2").eval ⟨[1, 0, 0], by rfl⟩                                == 1
-#eval (parse_lex! "x^2").eval ⟨[1, 4, 3], by rfl⟩                                == 1
-#eval (parse_lex! "x^2").eval ⟨[2, 0, 0], by rfl⟩                                == 4
-#eval (parse_lex! "x^2y").eval ⟨[2, 0, 0], by rfl⟩                               == 0
-#eval (parse_lex! "x^2y").eval ⟨[2, 1, 0], by rfl⟩                               == 4
-#eval (parse_lex! "x^2y^3").eval ⟨[2, 2, 0], by rfl⟩                             == 32
-#eval (parse_lex! "x^2y^3z^4").eval ⟨[2, 2, 5], by rfl⟩                          == 20000
-#eval (parse_lex! "5x^2y^3z^4").eval ⟨[2, 2, 5], by rfl⟩                         == 100000
-#eval (parse_lex! "5x^2y^3z^4 + x + y^3z^7 + x^3 + 27").eval ⟨[2, 2, 5], by rfl⟩ == 725037
+#eval (parse_lex! "x0^2").eval ⟨[1, 0, 0], by rfl⟩                                == 1
+#eval (parse_lex! "x0^2").eval ⟨[1, 4, 3], by rfl⟩                                == 1
+#eval (parse_lex! "x0^2").eval ⟨[2, 0, 0], by rfl⟩                                == 4
+#eval (parse_lex! "x0^2x1").eval ⟨[2, 0, 0], by rfl⟩                               == 0
+#eval (parse_lex! "x0^2x1").eval ⟨[2, 1, 0], by rfl⟩                               == 4
+#eval (parse_lex! "x0^2x1^3").eval ⟨[2, 2, 0], by rfl⟩                             == 32
+#eval (parse_lex! "x0^2x1^3x2^4").eval ⟨[2, 2, 5], by rfl⟩                          == 20000
+#eval (parse_lex! "5x0^2x1^3x2^4").eval ⟨[2, 2, 5], by rfl⟩                         == 100000
+#eval (parse_lex! "5x0^2x1^3x2^4 + x0 + x1^3x2^7 + x0^3 + 27").eval ⟨[2, 2, 5], by rfl⟩ == 725037
  

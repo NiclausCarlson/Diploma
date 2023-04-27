@@ -5,10 +5,10 @@ import Diploma.Order.MonomialOrder
 open polynomial
 open algebra
 
-#eval ExpectTrue $ Order.lex (parseMonomial! "x").snd (parseMonomial! "x^2").snd
-#eval ExpectTrue $ Order.lex (parseMonomial! "xy").snd (parseMonomial! "x^2").snd
+#eval ExpectTrue $ Order.lex (parseMonomial! "x0").snd (parseMonomial! "x0^2").snd
+#eval ExpectTrue $ Order.lex (parseMonomial! "x0x1").snd (parseMonomial! "x0^2").snd
 #eval ExpectTrue $ Order.lex (parseMonomial! "x").snd (parseMonomial! "xy").snd
 
-#eval ExpectTrue $ Order.grlex (parseMonomial! "x").snd (parseMonomial! "x^2").snd
-#eval ExpectTrue $ Order.grlex (parseMonomial! "x^2").snd (parseMonomial! "xyz").snd
-#eval ExpectTrue $ Order.grlex (parseMonomial! "xyz").snd (parseMonomial! "x^5").snd
+#eval ExpectTrue $ Order.grlex (parseMonomial! "x0").snd (parseMonomial! "x0^2").snd
+#eval ExpectTrue $ Order.grlex (parseMonomial! "x0^2").snd (parseMonomial! "x0x1x2").snd
+#eval ExpectTrue $ Order.grlex (parseMonomial! "x0x1x2").snd (parseMonomial! "x0^5").snd

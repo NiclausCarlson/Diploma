@@ -10,8 +10,6 @@ namespace polynomial
 
 open Nat Rat algebra
 
-def NameShift := 120
-
 def Polynomial (n: Nat) (ord: Type) [MonomialOrder $ Variables n ord] := Std.RBSet (Monomial n ord) ordering.m_cmp
 
 def AsRBSet [MonomialOrder $ Variables n ord] (p: Polynomial n ord) : Std.RBSet (Monomial n ord) ordering.m_cmp:= p
@@ -79,8 +77,6 @@ def Polynomial.invert_sign [MonomialOrder $ Variables n ord] (p: Polynomial n or
 instance [MonomialOrder $ Variables n ord]: HSub (Polynomial n ord) (Polynomial n ord) (Polynomial n ord) where
   hSub p₁ p₂ := p₁ + p₂.invert_sign
 
-section Eval
-
 def Polynomial.eval [MonomialOrder $ Variables n ord] (p: Polynomial n ord) (v: Vector Rat n): Rat :=
   p.foldl (fun res m => res + m.fst * (eval_subst m.snd v) 1) 0 
 where
@@ -88,8 +84,6 @@ where
     match vars, v with
       | ⟨[], _⟩  , ⟨[], _⟩   => res
       | ⟨x::_, _⟩, ⟨y::_, _⟩ => (eval_subst vars.tail v.tail (res * (y^x)))
-
-end Eval
 
 section ToString
 
@@ -104,8 +98,7 @@ where
     if deg == 0 then ""
     else if deg == 1 then mk_str pos
     else (mk_str pos) ++ "^" ++ (toString deg)
-  mk_str (pos: Nat) : String :=
-    String.mk [(Char.ofNat (pos + NameShift))]
+  mk_str (pos: Nat) : String := s!"x{pos}"
 
 instance: ToString (Variables n ord) := ⟨Variables.toStringImpl⟩
 
