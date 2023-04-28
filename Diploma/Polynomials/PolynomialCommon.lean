@@ -20,6 +20,7 @@ instance : Inhabited (Monomial n ord) where
 instance: BEq (Variables n ord) where
   beq v₁ v₂ := AsVector v₁ == AsVector v₂
 
+--# For polynomial build. Ignoring coeffs
 instance: BEq (Monomial n ord) where
   beq m₁ m₂ := m₁.snd == m₂.snd
 

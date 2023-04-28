@@ -26,9 +26,8 @@ instance [MonomialOrder $ Variables n ord]: EmptyCollection (Polynomial n ord) w
   emptyCollection := Std.RBSet.empty
 
 instance [MonomialOrder $ Variables n ord]: BEq (Polynomial n ord) where
-  beq p₁ p₂ := if p₁.size != p₂.size then false
-               else AsRBSet p₁ == AsRBSet p₂
-
+  beq p₁ p₂ := p₁.all₂ (fun m₁ m₂ => m₁.fst == m₂.fst ∧ m₁ == m₂) p₂
+  
 def Polynomial.Simplify [MonomialOrder $ Variables n ord] (p: Polynomial n ord) : Polynomial n ord := 
   check_non_empty (Std.RBSet.filter p (fun x => x.fst != 0))
   where 
@@ -137,5 +136,5 @@ instance [MonomialOrder $ Variables n ord]: ToString (Polynomial n ord) where
   toString p := MonomialsListToString p.toList
 
 end ToString
-  
+
 end polynomial

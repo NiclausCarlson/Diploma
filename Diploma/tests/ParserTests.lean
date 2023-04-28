@@ -62,6 +62,8 @@ instance : ToString Variable where
 #eval AssertEq (toString (parse_lex! "51"))  "51"
 #eval AssertEq (toString (parse_lex! "-5"))  "-5"
 #eval AssertEq (toString (parse_lex! "-51")) "-51"
+#eval AssertNEq (parse_lex! "1") (parse_lex! "2")
+#eval AssertNEq (parse_lex! "x0+1") (parse_lex! "x0+2")
 
 #eval AssertEq (toString (parse_lex! "x0"))      "x0"
 #eval AssertEq (toString (parse_lex! "5x0"))     "5x0"

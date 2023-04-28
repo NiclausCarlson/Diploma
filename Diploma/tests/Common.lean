@@ -7,6 +7,11 @@ def AssertEq {α:Type} [BEq α] [ToString α] (a b: α): Except String String :=
   else Except.error ("Values: " ++ (toString a) ++ " and " ++
                                    (toString b) ++ " not equals")
 
+def AssertNEq {α:Type} [BEq α] [ToString α] (a b: α): Except String String :=
+  if a != b then Except.ok "Ok"
+  else Except.error ("Values: " ++ (toString a) ++ " and " ++
+                                   (toString b) ++ " are equals")
+
 def AssertTrue (b: Bool) (msg: Option String) : Except String String :=
   if b then Except.ok "Ok"
   else match msg with
