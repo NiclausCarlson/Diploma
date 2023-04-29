@@ -88,7 +88,7 @@ private def monomial_div_check(p₁ p₂: String) (is_divides: Bool) (expected: 
 
 --# Test div
 private def parse_list (ps: List String): List (Polynomial Dimension order.Lex) := ps.map parse_lex!
-def div (p: String) (ps: List String): DivisionResult Dimension order.Lex := 
+def div (p: String) (ps: List String): DivisionResult (parse_lex! p) := 
   divide_many (parse_lex! p) (parse_list ps)
 
 private def check_div (divisible: String) (ps: List String) (poly: String) (remainder: String): Except String String :=

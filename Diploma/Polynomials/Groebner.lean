@@ -25,8 +25,7 @@ where p₁ : Polynomial n ord := Polynomial.single m
 instance [MonomialOrder $ Variables n ord]: HMul (Monomial n ord) (Polynomial n ord) (Polynomial n ord) where
   hMul m p := m.mul_p p
 
-structure DivisionResult (n: Nat) (ord: Type) [MonomialOrder $ Variables n ord] where
-  divisible: Polynomial n ord
+structure DivisionResult [MonomialOrder $ Variables n ord] (divisible: Polynomial n ord) where
   p: Polynomial n ord
   r: Polynomial n ord
   sum_eq: divisible = p + r
@@ -36,22 +35,22 @@ axiom beq_eq {n:Nat} {ord: Type} [MonomialOrder $ Variables n ord]:
 
 def divide_many [MonomialOrder $ Variables n ord] 
                 (divisible: Polynomial n ord) 
-                (dividers: List (Polynomial n ord)): DivisionResult n ord := 
-  if dividers == [] then DivisionResult.mk divisible divisible 0 (by simp)
-  else if dividers.any (fun p => p == 0) then DivisionResult.mk divisible divisible 0 (by simp)
+                (dividers: List $ Polynomial n ord): DivisionResult divisible := 
+  if dividers == [] then DivisionResult.mk divisible 0 (by simp)
+  else if dividers.any (fun p => p == 0) then DivisionResult.mk divisible 0 (by simp)
   else impl divisible dividers 0 0 (by simp) 
   where 
     impl (p: Polynomial n ord)
          (ps: List (Polynomial n ord)) 
          (quotient: Polynomial n ord)
          (remainder: Polynomial n ord)
-         (sum_eq : divisible = p + quotient + remainder) : DivisionResult n ord :=
-      if h: p == 0 then DivisionResult.mk divisible quotient remainder (
-                                                                        by
-                                                                          have eq_zero := beq_eq p h 
-                                                                          rw [eq_zero, zero_add] at sum_eq
-                                                                          exact sum_eq
-                                                                       )
+         (sum_eq : divisible = p + quotient + remainder) : DivisionResult divisible :=
+      if h: p == 0 then DivisionResult.mk quotient remainder (
+                                                              by
+                                                                have eq_zero := beq_eq p h 
+                                                                rw [eq_zero, zero_add] at sum_eq
+                                                                exact sum_eq
+                                                             )
       else match ps with
                | []    => impl (p - p.Lt) dividers quotient 
                                (remainder + p.Lt) 
