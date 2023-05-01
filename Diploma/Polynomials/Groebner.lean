@@ -88,9 +88,9 @@ def divide_many [MonomialOrder $ Variables n ord]
 def Monomial.lcm (m₁ m₂: Monomial n ord): Monomial n ord := ⟨1, Vector.map₂ (fun x y => max x y) m₁.snd m₂.snd⟩  
 
 def build_s_polynomial [MonomialOrder $ Variables n ord] (p₁ p₂: Polynomial n ord): Polynomial n ord :=
-  let lcm := Monomial.lcm (p₁.lm) (p₂.lm)
   (div_lcm_lt lcm p₁.lt) * p₁ - (div_lcm_lt lcm p₂.lt) * p₂
 where
+  lcm := Monomial.lcm (p₁.lm) (p₂.lm)
   div_lcm_lt (lcm lt: Monomial n ord): Polynomial n ord := Polynomial.single (lcm.div lt)
 
 private def step [MonomialOrder $ Variables n ord] (p q: Polynomial n ord) (ps: List (Polynomial n ord)) : Bool × Polynomial n ord := 

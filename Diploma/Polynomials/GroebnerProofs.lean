@@ -6,18 +6,56 @@ import Diploma.Polynomials.Groebner
 open polynomial algebra
 
 def asSet [MonomialOrder $ Variables n ord] 
-          (ps: List $ Polynomial n ord): Set $ Polynomial n ord := impl ps ∅
-where impl (l: List $ Polynomial n ord) (set: Set $ Polynomial n ord): Set $ Polynomial n ord :=
-  match l with
-    | [] => set
-    | x::xs => impl xs (set.insert x)
-
+          (ps: List $ Polynomial n ord): Set $ Polynomial n ord := {x | x ∈ ps }
+theorem listInSet [MonomialOrder $ Variables n ord] 
+                  (l: List $ Polynomial n ord): ∀x ∈ l, x ∈ asSet l := by
+  intros y h
+  simp [asSet]
+  exact h
+    
 def asIdeal [MonomialOrder $ Variables n ord] 
             (l: List $ Polynomial n ord):
             Ideal $ Polynomial n ord := Ideal.span $ asSet l
 
+theorem listInIdeal [MonomialOrder $ Variables n ord] 
+                    (l: List $ Polynomial n ord): ∀x ∈ l, x ∈ asIdeal l := by
+  intros y h
+  rw [asIdeal, asSet]
+  have in_set := listInSet l y h
+  rw [asSet] at in_set
+  apply Ideal.subset_span
+  exact in_set  
+
+
 namespace profs
 open Ideal
+
+structure SIdeal [MonomialOrder $ Variables n ord] where
+  generators: List $ Polynomial n ord
+  ideal     : Ideal $ Polynomial n ord
+  eq        : ideal = asIdeal generators 
+
+theorem div_from_ideal_to_ideal [MonomialOrder $ Variables n ord]
+                                (p: Polynomial n ord)
+                                (ideal : SIdeal)
+                                (in_ideal: p ∈ ideal.ideal)
+                                (div_result: DivisionResult p)
+                                (h_div_result: div_result = divide_many p ideal.generators)
+                                  : div_result.r ∈ ideal.ideal := 
+  by
+    cases ideal
+    rename_i generators ideal eq
+    simp at *
+    rw [divide_many] at h_div_result
+    split at h_div_result
+    rw [h_div_result]
+    simp
+    split at h_div_result
+    rw [h_div_result]
+    simp
+    sorry
+                                
+
 theorem s_poly_in_ideal [MonomialOrder $ Variables n ord] 
                         (i: Ideal $ Polynomial n ord)
                         (p q: Polynomial n ord)
@@ -25,26 +63,33 @@ theorem s_poly_in_ideal [MonomialOrder $ Variables n ord]
                         (h₂: q ∈ i) : build_s_polynomial p q ∈ i :=
 by
   rw [build_s_polynomial]
-  have lcm := Monomial.lcm (Polynomial.lm p) (Polynomial.lm q)
-  have sub_left := build_s_polynomial.div_lcm_lt lcm (Polynomial.lt p)
-  have left := sub_left * p
-  have left_in_ideal := mul_mem_left i sub_left h₁
-  have sub_right := -build_s_polynomial.div_lcm_lt lcm (Polynomial.lt q)
-  have right := sub_right * q
-  have right_in_ideal := mul_mem_left i sub_right h₂
-  --exact add_mem left_in_ideal right_in_ideal
-  sorry
+  have left_in_ideal := mul_mem_left i (build_s_polynomial.div_lcm_lt 
+                                          (Monomial.lcm (Polynomial.lm p) (Polynomial.lm q))
+                                          (Polynomial.lt p)) h₁
+  have right_in_ideal := mul_mem_left i (build_s_polynomial.div_lcm_lt 
+                                           (Monomial.lcm (Polynomial.lm p) (Polynomial.lm q))
+                                           (Polynomial.lt q)) h₂
+  rw [build_s_polynomial.lcm]
+  exact sub_mem left_in_ideal right_in_ideal
 
-theorem remainder_in_ideal [MonomialOrder $ Variables n ord] 
-                           (i: List $ Polynomial n ord)
-                           (p: Polynomial n ord)
-                           (h: p ∈ i) 
-                           (div_res: DivisionResult p)
-                           (hh: div_res = divide_many p i): div_res.r ∈ asIdeal i := 
+theorem s_remainder_in_ideal [MonomialOrder $ Variables n ord] 
+                           (ideal: SIdeal)
+                           (p q: Polynomial n ord)
+                           (s_poly: Polynomial n ord)
+                           (hs_poly: s_poly = build_s_polynomial p q)
+                           (in_ideal: p ∈ ideal.ideal ∧ q ∈ ideal.ideal) 
+                           (div_res: DivisionResult s_poly)
+                           (hh: div_res = divide_many s_poly ideal.generators): div_res.r ∈ ideal.ideal  := 
 by
+  cases in_ideal
+  cases ideal
+  rename_i generators ideal eq p_in_ideal q_in_ideal
+  simp at *
+  have s_poly_ideal := s_poly_in_ideal ideal p q p_in_ideal q_in_ideal
+  rw [← hs_poly] at s_poly_ideal
   cases div_res
-  rename_i divisible_ p₁ r sum_eq
-  simp at * 
+  rename_i quotient remainder q_sum_r
+  simp at *
   sorry
 
 
