@@ -25,8 +25,12 @@ axiom t_mul_assoc {n: Nat} {ord: Type} [MonomialOrder $ Variables n ord] : ∀ (
 
 axiom t_left_distrib {n: Nat} {ord: Type} [MonomialOrder $ Variables n ord] : ∀ (a b c : Polynomial n ord), a * (b + c) = a * b + a * c
 
-axiom t_right_distrib {n: Nat} {ord: Type} [MonomialOrder $ Variables n ord] : ∀ (a b c : Polynomial n ord), (a + b) * c = a * c + b * c
-
+theorem t_right_distrib [MonomialOrder $ Variables n ord] : ∀ (a b c : Polynomial n ord), (a + b) * c = a * c + b * c :=
+  by
+    intros a b c
+    have rl_mul := t_mul_comm (a + b) c
+    simp [rl_mul, t_left_distrib, t_mul_comm]
+    
 axiom t_one_mul {n: Nat} {ord: Type} [MonomialOrder $ Variables n ord] : ∀ (a : Polynomial n ord), 1 * a = a 
 
 theorem t_mul_one [MonomialOrder $ Variables n ord]: ∀ (a : Polynomial n ord), a * 1 = a := by

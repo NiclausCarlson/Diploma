@@ -5,28 +5,6 @@ import Diploma.Polynomials.Groebner
 
 open polynomial algebra
 
-def asSet [MonomialOrder $ Variables n ord] 
-          (ps: List $ Polynomial n ord): Set $ Polynomial n ord := {x | x ∈ ps }
-theorem listInSet [MonomialOrder $ Variables n ord] 
-                  (l: List $ Polynomial n ord): ∀x ∈ l, x ∈ asSet l := by
-  intros y h
-  simp [asSet]
-  exact h
-    
-def asIdeal [MonomialOrder $ Variables n ord] 
-            (l: List $ Polynomial n ord):
-            Ideal $ Polynomial n ord := Ideal.span $ asSet l
-
-theorem listInIdeal [MonomialOrder $ Variables n ord] 
-                    (l: List $ Polynomial n ord): ∀x ∈ l, x ∈ asIdeal l := by
-  intros y h
-  rw [asIdeal, asSet]
-  have in_set := listInSet l y h
-  rw [asSet] at in_set
-  apply Ideal.subset_span
-  exact in_set  
-
-
 namespace profs
 open Ideal
 
@@ -53,6 +31,7 @@ theorem div_from_ideal_to_ideal [MonomialOrder $ Variables n ord]
     split at h_div_result
     rw [h_div_result]
     simp
+    rw [h_div_result]
     sorry
                                 
 
