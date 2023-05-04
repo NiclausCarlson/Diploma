@@ -2,8 +2,7 @@ import Diploma.tests.Common
 import Diploma.Polynomials.Parser
 import Diploma.Polynomials.Groebner
 
-open polynomial
-open algebra
+open polynomial algebra IdealHelpers
 
 def sum (p₁ p₂: String): String :=
   toString (parse_lex! p₁ + parse_lex! p₂)
@@ -88,7 +87,7 @@ private def monomial_div_check(p₁ p₂: String) (is_divides: Bool) (expected: 
 
 --# Test div
 private def parse_list (ps: List String): List (Polynomial Dimension order.Lex) := ps.map parse_lex!
-def div (p: String) (ps: List String): DivisionResult (parse_lex! p) := 
+def div (p: String) (ps: List String): DivisionResult (parse_lex! p) (asIdeal$ parse_list ps) := 
   divide_many (parse_lex! p) (parse_list ps)
 
 private def check_div (divisible: String) (ps: List String) (poly: String) (remainder: String): Except String String :=
@@ -142,7 +141,7 @@ private def check_groebner (input expected: List String): Except String String :
 #eval check_groebner ["x0x1-x1", "x0"] ["x0x1-x1", "x0", "-x1"]
 #eval check_groebner ["x0+x1-1", "x1-x2", "x2-x0x1"] ["x0+x1-1", "x1-x2", "-x0x1+x2", "x2^2"]
 
--- Demostration that "x+y-1", "y-z", "-xy+z", "z^2" is Groebner basis
+-- Demostration that ⟨x+y-1, y-z, -xy+z, z^2⟩ is Groebner basis
 def f₁ := "x0+x1-1"
 def f₂ := "x1-x2"
 def f₃ := "-x0x1+x2"

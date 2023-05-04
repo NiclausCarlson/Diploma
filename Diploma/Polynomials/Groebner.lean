@@ -2,32 +2,12 @@ import Mathlib.RingTheory.Ideal.Basic
 import Mathlib.Data.List.Basic
 
 import Diploma.Polynomials.Polynomial
+import Diploma.Algebra.IdealHelpers
 import Diploma.Polynomials.DegsFunctions
 import Diploma.Algebra.PolynomialRing
 
 namespace polynomial
-open algebra Ideal
-
-def asSet [MonomialOrder $ Variables n ord] 
-          (ps: List $ Polynomial n ord): Set $ Polynomial n ord := {x | x ∈ ps }
-theorem listInSet [MonomialOrder $ Variables n ord] 
-                  (l: List $ Polynomial n ord): ∀x ∈ l, x ∈ asSet l := by
-  intros y h
-  simp [asSet]
-  exact h
-    
-def asIdeal [MonomialOrder $ Variables n ord] 
-            (l: List $ Polynomial n ord):
-            Ideal $ Polynomial n ord := Ideal.span $ asSet l
-
-theorem listInIdeal [MonomialOrder $ Variables n ord] 
-                    (l: List $ Polynomial n ord): ∀x ∈ l, x ∈ asIdeal l := by
-  intros y h
-  rw [asIdeal, asSet]
-  have in_set := listInSet l y h
-  rw [asSet] at in_set
-  apply Ideal.subset_span
-  exact in_set  
+open algebra Ideal IdealHelpers
 
 -- is m₁ divides to m₂
 open Nat in
@@ -94,7 +74,7 @@ theorem zero_r_in_ideal [MonomialOrder $ Variables n ord]
                         (dividers: List $ Polynomial n ord) 
                         : divisible ∈ asIdeal dividers → 0 ∈ asIdeal dividers := by intros; simp
  
-theorem remainder_in_ideal₁ [MonomialOrder $ Variables n ord] 
+theorem remainder_in_ideal [MonomialOrder $ Variables n ord] 
                             (divisible quotient remainder: Polynomial n ord)
                             (dividers: List $ Polynomial n ord)
                             (div_sum_r_eq_p: divisible = quotient + remainder) 
@@ -127,49 +107,35 @@ def divide_many [MonomialOrder $ Variables n ord]
                               quotient 
                               remainder 
                               div_sum_r_eq_p
-                              (remainder_in_ideal₁ divisible quotient remainder dividers div_sum_r_eq_p quotient_in_ideal)
+                              (remainder_in_ideal divisible quotient remainder dividers div_sum_r_eq_p quotient_in_ideal)
       else match ps with
-               | []    => impl (p - p.Lt)
-                               dividers
-                               (by simp)
-                               quotient
-                               (remainder + p.Lt)
-                               quotient_in_ideal
+               | []    => impl (p - p.Lt) dividers (by simp) quotient (remainder + p.Lt) quotient_in_ideal
                                (erase_lt divisible p quotient remainder sum_eq)
                | a::as => if p.lt.is_div a.lt then 
                              let reducer := (Polynomial.single $ p.lt.div a.lt) * a
-                             impl 
-                                (p - reducer)
-                                dividers
-                                (by simp)
-                                (quotient + reducer)
-                                remainder 
-                                (
-                                  by 
-                                    have a_in_ideal: a ∈ asIdeal dividers 
-                                    have a_in_dividers: a ∈ dividers
-                                    simp [HasSubset.Subset, List.Subset] at ps_in_dividers
-                                    have left := ps_in_dividers.left
-                                    exact left
-                                    have in_ideal := listInIdeal dividers a a_in_dividers
-                                    exact in_ideal
-                                    have reducer_in_ideal : ((Polynomial.single $ Monomial.div (Polynomial.lt p) (Polynomial.lt a)) * a) ∈ asIdeal dividers
-                                    exact mul_mem_left (asIdeal dividers) (Polynomial.single $ Monomial.div (Polynomial.lt p) (Polynomial.lt a)) a_in_ideal
-                                    exact add_mem quotient_in_ideal reducer_in_ideal
-                                )
-                                (erase_reducer divisible p quotient remainder reducer sum_eq)
-                          else impl p
-                                    as
+                             impl (p - reducer) dividers (by simp) (quotient + reducer) remainder 
+                                  (
+                                    by 
+                                      have a_in_ideal: a ∈ asIdeal dividers 
+                                      have a_in_dividers: a ∈ dividers
+                                      simp [HasSubset.Subset, List.Subset] at ps_in_dividers
+                                      have left := ps_in_dividers.left
+                                      exact left
+                                      have in_ideal := listInIdeal dividers a a_in_dividers
+                                      exact in_ideal
+                                      have reducer_in_ideal : ((Polynomial.single $ Monomial.div (Polynomial.lt p) (Polynomial.lt a)) * a) ∈ asIdeal dividers
+                                      exact mul_mem_left (asIdeal dividers) (Polynomial.single $ Monomial.div (Polynomial.lt p) (Polynomial.lt a)) a_in_ideal
+                                      exact add_mem quotient_in_ideal reducer_in_ideal
+                                  )
+                                  (erase_reducer divisible p quotient remainder reducer sum_eq)
+                          else impl p as
                                     (
                                       by 
                                         simp [HasSubset.Subset, List.Subset] at ps_in_dividers
                                         have right := ps_in_dividers.right  
                                         exact right
                                     )
-                                    quotient
-                                    remainder
-                                    quotient_in_ideal
-                                    sum_eq                                       
+                                    quotient remainder quotient_in_ideal sum_eq                                       
      termination_by impl p ps ps_in_dividers quotient remainder quotient_in_ideal sum_eq => p == 0
      decreasing_by {
        sorry
