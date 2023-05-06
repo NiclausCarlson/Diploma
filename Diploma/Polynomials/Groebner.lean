@@ -29,6 +29,7 @@ structure DivisionResult [MonomialOrder $ Variables n ord]
   p: Polynomial n ord
   r: Polynomial n ord
   sum_eq: divisible = p + r
+  p_in_ideal: p ∈ ideal
   r_in_ideal: divisible ∈ ideal → r ∈ ideal 
 
 axiom beq_eq {n:Nat} {ord: Type} [MonomialOrder $ Variables n ord]:
@@ -90,10 +91,10 @@ by
 
 def divide_many [MonomialOrder $ Variables n ord] 
                 (divisible: Polynomial n ord) 
-                (dividers: List $ Polynomial n ord): DivisionResult divisible (asIdeal dividers) := 
-  if dividers == [] then DivisionResult.mk divisible 0 (by simp) (zero_r_in_ideal divisible dividers)
-  else if dividers.any (fun p => p == 0) then DivisionResult.mk divisible 0 (by simp) (zero_r_in_ideal divisible dividers)
-  else impl divisible dividers (by simp) 0 0 (by simp) (by simp) 
+                (dividers: List $ Polynomial n ord)
+                (dividers_non_empty: Not (dividers == []))
+                (not_div_by_zero: Not $ dividers.any (fun p => p == 0)): DivisionResult divisible (asIdeal dividers) := 
+  impl divisible dividers (by simp) 0 0 (by simp) (by simp) 
   where 
     impl (p: Polynomial n ord)
          (ps: List (Polynomial n ord))
@@ -107,6 +108,7 @@ def divide_many [MonomialOrder $ Variables n ord]
                               quotient 
                               remainder 
                               div_sum_r_eq_p
+                              (by exact quotient_in_ideal)
                               (remainder_in_ideal divisible quotient remainder dividers div_sum_r_eq_p quotient_in_ideal)
       else match ps with
                | []    => impl (p - p.Lt) dividers (by simp) quotient (remainder + p.Lt) quotient_in_ideal
@@ -149,10 +151,14 @@ where
   lcm := Monomial.lcm (p₁.lm) (p₂.lm)
   div_lcm_lt (lcm lt: Monomial n ord): Polynomial n ord := Polynomial.single (lcm.div lt)
 
-private def step [MonomialOrder $ Variables n ord] (p q: Polynomial n ord) (ps: List (Polynomial n ord)) : Bool × Polynomial n ord := 
+private def step [MonomialOrder $ Variables n ord]
+                 (p q: Polynomial n ord)
+                 (ps: List (Polynomial n ord)) : Bool × Polynomial n ord := 
   if p == q then (false, 0)
+  else if h₁: ps == [] then (false, 0)
+  else if h₂: ps.any (fun p => p == 0) then (false, 0)
   else
-    let div_result := divide_many (build_s_polynomial p q) ps
+    let div_result := divide_many (build_s_polynomial p q) ps h₁ h₂
     (div_result.r == 0, div_result.r)
 
 private def build [MonomialOrder $ Variables n ord]
@@ -183,7 +189,28 @@ def build_groebner_basis [MonomialOrder $ Variables n ord] (pl: List (Polynomial
       sorry
     }
 
-def is_in_basis [MonomialOrder $ Variables n ord] (p: Polynomial n ord) (groebner_basis: List (Polynomial n ord)) : Bool :=
-  (divide_many p groebner_basis).r == 0
+theorem sufficiency_poly_in_ideal [MonomialOrder $ Variables n ord] 
+                                  (p: Polynomial n ord)
+                                  (dividers: List $ Polynomial n ord)
+                                  (dividers_non_empty: Not $ dividers == [])
+                                  (not_div_by_zero: Not $ dividers.any (fun p => p == 0))
+                                  (div_res : DivisionResult p (asIdeal dividers))
+                                  (h: div_res = divide_many p dividers dividers_non_empty not_div_by_zero)
+                                    : div_res.r = 0 → p ∈ asIdeal dividers :=
+by
+  intros is_zero
+  cases div_res
+  rename_i q r sum_eq p_in_ideal r_in_ideal
+  simp at *
+  simp [is_zero] at sum_eq
+  rw [sum_eq]
+  exact p_in_ideal
+
+def is_in_basis [MonomialOrder $ Variables n ord]
+                (p: Polynomial n ord)
+                (groebner_basis: List (Polynomial n ord))
+                (dividers_non_empty:  Not $ groebner_basis == [])
+                (not_div_by_zero: Not $ groebner_basis.any (fun p => p == 0)) : Bool :=
+  (divide_many p groebner_basis dividers_non_empty not_div_by_zero).r == 0
 
 end polynomial

@@ -87,18 +87,24 @@ private def monomial_div_check(p₁ p₂: String) (is_divides: Bool) (expected: 
 
 --# Test div
 private def parse_list (ps: List String): List (Polynomial Dimension order.Lex) := ps.map parse_lex!
-def div (p: String) (ps: List String): DivisionResult (parse_lex! p) (asIdeal$ parse_list ps) := 
-  divide_many (parse_lex! p) (parse_list ps)
+
+def div (p: String) (ps: List String): Except String (DivisionResult (parse_lex! p) (asIdeal$ parse_list ps)) := 
+  let divivders :=  parse_list ps
+  if h₁: divivders == [] then Except.error s!"divivders is empty"
+  else if h₂: divivders.any (fun p => p == 0) then Except.error s!"divivders contains zero" 
+  else Except.ok $ divide_many (parse_lex! p) (divivders) h₁ h₂
 
 private def check_div (divisible: String) (ps: List String) (poly: String) (remainder: String): Except String String :=
   let res := div divisible ps
-  let p   := parse_lex! poly
-  let r   := parse_lex! remainder
-  match AssertTrue (res.p == p) s!"expected poly {toString p} actual {toString res.p}" with
-    | Except.ok _ =>  match AssertTrue (res.r == r) s!"expected remainder {toString r} actual {toString res.r}" with
-                        | Except.ok _      => AssertTrue ((parse_lex! divisible) == (p + r)) s!"divisible ≠ p + r"
-                        | Except.error err => Except.error err
+  match res with
     | Except.error err => Except.error err
+    | Except.ok ok => let p := parse_lex! poly
+                      let r := parse_lex! remainder
+                      match AssertTrue (ok.p == p) s!"expected poly {toString p} actual {toString ok.p}" with
+                        | Except.ok _ =>  match AssertTrue (ok.r == r) s!"expected remainder {toString r} actual {toString ok.r}" with
+                                            | Except.ok _      => AssertTrue ((parse_lex! divisible) == (p + r)) s!"divisible ≠ p + r"
+                                            | Except.error err => Except.error err
+                        | Except.error err => Except.error err
 
 #eval check_div "x0^2" ["x0"] "x0^2" "0"
 #eval check_div "x0x1^2+1" ["x0x1+1"] "x0x1^2+x1" "-x1+1"
@@ -141,23 +147,28 @@ private def check_groebner (input expected: List String): Except String String :
 #eval check_groebner ["x0x1-x1", "x0"] ["x0x1-x1", "x0", "-x1"]
 #eval check_groebner ["x0+x1-1", "x1-x2", "x2-x0x1"] ["x0+x1-1", "x1-x2", "-x0x1+x2", "x2^2"]
 
+def get_remainder (div_res: Except String (DivisionResult (parse_lex! p) (asIdeal$ parse_list ps))): String := 
+  match div_res with
+    | Except.ok res => toString res.r
+    | Except.error err => err
+
 -- Demostration that ⟨x+y-1, y-z, -xy+z, z^2⟩ is Groebner basis
 def f₁ := "x0+x1-1"
 def f₂ := "x1-x2"
 def f₃ := "-x0x1+x2"
 def f₄ := "x2^2"
 #eval build_s_polynomial (parse_lex! f₁) (parse_lex! f₂)
-#eval (div "x0x2+x1^2-x1" ["x0+x1-1", "x1-x2", "-x0x1+x2"]).r -- zero
+#eval get_remainder (div "x0x2+x1^2-x1" ["x0+x1-1", "x1-x2", "-x0x1+x2"]) -- zero
 #eval build_s_polynomial (parse_lex! f₁) (parse_lex! f₃)
-#eval (div "x1^2-x1+x2" ["x0+x1-1", "x1-x2", "-x0x1+x2", "x2^2"]).r -- zero
+#eval get_remainder (div "x1^2-x1+x2" ["x0+x1-1", "x1-x2", "-x0x1+x2", "x2^2"]) -- zero
 #eval build_s_polynomial (parse_lex! f₁) (parse_lex! f₄)
-#eval (div "x1x2^2-x2^2" ["x0+x1-1", "x1-x2", "-x0x1+x2", "x2^2"]).r -- zero
+#eval get_remainder (div "x1x2^2-x2^2" ["x0+x1-1", "x1-x2", "-x0x1+x2", "x2^2"]) -- zero
 #eval build_s_polynomial (parse_lex! f₂) (parse_lex! f₃)
-#eval (div "-x0x2+x2" ["x0+x1-1", "x1-x2", "-x0x1+x2", "x2^2"]).r -- zero
+#eval get_remainder (div "-x0x2+x2" ["x0+x1-1", "x1-x2", "-x0x1+x2", "x2^2"]) -- zero
 #eval build_s_polynomial (parse_lex! f₂) (parse_lex! f₄)
-#eval (div "-x2^3" ["x0+x1-1", "x1-x2", "-x0x1+x2", "x2^2"]).r -- zero
+#eval get_remainder (div "-x2^3" ["x0+x1-1", "x1-x2", "-x0x1+x2", "x2^2"]) -- zero
 #eval build_s_polynomial (parse_lex! f₃) (parse_lex! f₄)
-#eval (div "-x2^3" ["x0+x1-1", "x1-x2", "-x0x1+x2", "x2^2"]).r -- zero
+#eval get_remainder (div "-x2^3" ["x0+x1-1", "x1-x2", "-x0x1+x2", "x2^2"]) -- zero
 
 #eval check_groebner ["x0^2+x0x1x2^4+x1", "x0+x1+x2"] ["x0^2+x0x1x2^4+x1", "x0+x1+x2", "-x1^2x2^4+x1^2-x1x2^5+2x1x2+x1+x2^2"]
 #eval check_groebner ["17x0^5x1^8+4x0x1x2^12", "x0x1^4x2", "x1-1"] ["17x0^5x1^8+4x0x1x2^12", "x0x1^4x2", "x1-1", "4/17x0x2^13", "x0^5+4/17x0x2^12", "4/17x0x2^12", "x0x2"]

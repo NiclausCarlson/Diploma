@@ -143,7 +143,9 @@ private def EvalIsIn (dimension: Nat): Parsec EvalResult := do
   let p  ← PolynomialWithSemilcon dimension order.GrLex <* ws
   let ps ← PolynomialsBlock dimension order.GrLex
   let basis := build_groebner_basis ps
-  return EvalResult.str $ toString $ IsIn.mk p basis (is_in_basis p basis)
+  if h₁: basis == [] then fail s!"basis is empty"
+  else if h₂: basis.any (fun p => p == 0) then fail s!"basis contains zero"
+  else return EvalResult.str $ toString $ IsIn.mk p basis (is_in_basis p basis h₁ h₂)
 
 private def EvalSetN : Parsec EvalResult := do
   let new_n ← ws <* pstring "set_n" <* ws *> Number
