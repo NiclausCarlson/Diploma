@@ -154,9 +154,9 @@ where
 private def step [MonomialOrder $ Variables n ord]
                  (p q: Polynomial n ord)
                  (ps: List (Polynomial n ord)) : Bool × Polynomial n ord := 
-  if p == q then (false, 0)
-  else if h₁: ps == [] then (false, 0)
-  else if h₂: ps.any (fun p => p == 0) then (false, 0)
+  if p == q then (true, 0)
+  else if h₁: ps == [] then (true, 0)
+  else if h₂: ps.any (fun p => p == 0) then (true, 0)
   else
     let div_result := divide_many (build_s_polynomial p q) ps h₁ h₂
     (div_result.r == 0, div_result.r)
