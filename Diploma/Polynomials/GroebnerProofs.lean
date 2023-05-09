@@ -20,9 +20,8 @@ def build_pairs (l: List α): List (α × α) :=
 
 structure GroebnerBasis [MonomialOrder $ Variables n ord] 
                         (ideal: Ideal $ Polynomial n ord) where
-generators: List $ Polynomial n ord
-correct_generators: asIdeal generators = ideal
-groebner_def: ∀p ∈ ideal, ∃f ∈ generators, Monomial.is_div p.lt f.lt == true 
+ generators: List $ Polynomial n ord
+ groebner_def: ∀p ∈ ideal, ∃f ∈ generators, Monomial.is_div p.lt f.lt == true 
 
 structure NonZeroRemainders (n: Nat) (ord: Type) [MonomialOrder $ Variables n ord] where
   remainders: List $ Polynomial n ord
@@ -36,10 +35,9 @@ def build_non_zero_remainders [MonomialOrder $ Variables n ord]
   match ps with
     | []         => ⟨[], by simp⟩ 
     | head::tail => let tail_res := build_non_zero_remainders tail dividers dividers_non_empty not_div_by_zero
-                    let s_poly := build_s_polynomial head.fst head.snd
-                    let div_res := divide_many s_poly dividers dividers_non_empty not_div_by_zero
-                    if tail_res.remainders.elem div_res.r then
-                      tail_res
+                    let s_poly   := build_s_polynomial head.fst head.snd
+                    let div_res  := divide_many s_poly dividers dividers_non_empty not_div_by_zero
+                    if tail_res.remainders.elem div_res.r then tail_res
                     else if h: div_res.r != 0 then
                       ⟨
                        [div_res.r] ++ tail_res.remainders,
@@ -59,34 +57,58 @@ def build_non_zero_remainders [MonomialOrder $ Variables n ord]
 
 theorem bb_criterion [MonomialOrder $ Variables n ord]
                      (generators: List $ Polynomial n ord)
+                     (pairs: List $ (Polynomial n ord) × (Polynomial n ord))
+                     (h_pairs: pairs = build_pairs generators)
                      (non_empty: Not (generators == []))
                      (not_div_by_zero: Not $ generators.any (fun p => p == 0))
                      (ideal: Ideal $ Polynomial n ord)
                      (ideal_generated_by: ideal = asIdeal generators)
-                      : (build_non_zero_remainders (build_pairs generators) generators non_empty not_div_by_zero).remainders = [] → 
+                     (d: NonZeroRemainders n ord)
+                     (h: d=build_non_zero_remainders pairs generators non_empty not_div_by_zero)
+                      : d.remainders == [] → 
                         ∀p ∈ ideal, ∃f ∈ generators, Monomial.is_div p.lt f.lt == true := sorry
+
+structure BbCriterionStruct (n: Nat) (ord: Type) 
+                            [MonomialOrder $ Variables n ord] where
+  generators: List $ Polynomial n ord
+  pairs: List $ (Polynomial n ord) × (Polynomial n ord)
+  h_pairs: pairs = build_pairs generators
+
+  generators_non_empty: Not (generators == [])
+  not_div_by_zero: Not $ generators.any (fun p => p == 0)
+
+  remainders: NonZeroRemainders n ord
+  h: remainders = build_non_zero_remainders pairs generators generators_non_empty not_div_by_zero
+  empty: remainders.remainders == []
 
 def build_groebner_basis [MonomialOrder $ Variables n ord] 
                          (polynomials: List $ Polynomial n ord)
                          : GroebnerBasis $ asIdeal polynomials := 
-if h₁: polynomials == [] then GroebnerBasis.mk [] sorry sorry
-else if h₂: polynomials.any (fun p => p == 0) then GroebnerBasis.mk [] sorry sorry
+if h₁: polynomials == [] then GroebnerBasis.mk [] sorry
+else if h₂: polynomials.any (fun p => p == 0) then GroebnerBasis.mk [] sorry
 else 
   let res := impl polynomials polynomials h₁ h₂
   ⟨ 
-    res.fst,
-    sorry,
-    sorry
+    res.generators,
+    by
+      cases res
+      rename_i generators pairs h_pairs generators_non_empty not_div_by_zero remainders h empty
+      have t := bb_criterion generators pairs h_pairs generators_non_empty not_div_by_zero (asIdeal generators) (by simp)
+      simp at t
+      rw [h] at empty
+      have tt := t empty
+      simp 
+      sorry
   ⟩ 
 where 
     impl (polynomials: List $ Polynomial n ord) 
          (result: List $ Polynomial n ord)
          (h₁: Not (polynomials == []))
          (h₂: Not $ polynomials.any (fun p => p == 0))
-          : (List $ Polynomial n ord) × NonZeroRemainders n ord  := 
+          : BbCriterionStruct n ord := 
       let pairs := build_pairs polynomials
       let res := build_non_zero_remainders pairs polynomials h₁ h₂ 
-      if res.remainders == [] then (result, res)
+      if h: res.remainders == [] then ⟨polynomials, pairs, by simp, h₁, h₂, res, by simp, h⟩  
       else impl (polynomials ++ res.remainders)
                 (result ++ res.remainders)
                 (sorry)
