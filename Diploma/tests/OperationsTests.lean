@@ -142,7 +142,7 @@ private def check_groebner (input expected: List String): Except String String :
   let parsed          := parse_list input
   let parsed_expected := parse_list expected
   let groebner := build_groebner_basis parsed
-  AssertTrue (groebner == parsed_expected) s!"expected {parsed_expected}; actual {groebner}"
+  AssertTrue (groebner.generators == parsed_expected) s!"expected {parsed_expected}; actual {groebner.generators}"
 
 #eval check_groebner ["x0x1-x1", "x0"] ["x0x1-x1", "x0", "-x1"]
 #eval check_groebner ["x0+x1-1", "x1-x2", "x2-x0x1"] ["x0+x1-1", "x1-x2", "-x0x1+x2", "x2^2"]
