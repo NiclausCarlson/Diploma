@@ -11,6 +11,22 @@ open polynomial algebra
 namespace profs
 open Ideal IdealHelpers
 
+theorem s_poly_in_ideal [MonomialOrder $ Variables n ord] (ideal: Ideal $ Polynomial n ord)
+                         : ∀p ∈ ideal, ∀ q ∈ ideal, build_s_polynomial p q ∈ ideal := by
+  intros p h_in_p q h_in_q
+  rw [build_s_polynomial]
+  have left_mem
+    : build_s_polynomial.div_lcm_lt (build_s_polynomial.lcm p q) (Polynomial.lt p) * p ∈ ideal
+  exact mul_mem_left ideal 
+                     (build_s_polynomial.div_lcm_lt (build_s_polynomial.lcm p q) (Polynomial.lt p)) 
+                     h_in_p
+  have right_mem
+    : build_s_polynomial.div_lcm_lt (build_s_polynomial.lcm p q) (Polynomial.lt q) * q ∈ ideal 
+  exact mul_mem_left ideal 
+                     (build_s_polynomial.div_lcm_lt (build_s_polynomial.lcm p q) (Polynomial.lt q)) 
+                     h_in_q
+  exact sub_mem left_mem right_mem  
+
 structure GroebnerBasis [MonomialOrder $ Variables n ord] 
                         (ideal: Ideal $ Polynomial n ord) where
  generators: List $ Polynomial n ord
@@ -76,6 +92,7 @@ def build_non_zero_remainders [MonomialOrder $ Variables n ord]
                           apply Or.elim h₁
                           intros eq
                           rw [eq]
+--                          have s_poly_in_ideal: s_poly ∈ ideal
                           sorry
                           intros h_in
                           exact tail_res.remainders_in_ideal r h_in
