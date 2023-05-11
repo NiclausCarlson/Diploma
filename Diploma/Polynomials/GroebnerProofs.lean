@@ -51,7 +51,7 @@ structure NonZeroRemainders [MonomialOrder $ Variables n ord]
                             (ideal: Ideal $ Polynomial n ord) where
   remainders: List $ Polynomial n ord
   not_contains_zero: ∀r ∈ remainders, r != 0
-  remainders_in_ideal: ∀r ∈ remainders, r ∈ ideal  
+  remainders_in_ideal: ∀r ∈ remainders, r ∈ ideal
 
 def build_non_zero_remainders [MonomialOrder $ Variables n ord]
           (ideal: Ideal $ Polynomial n ord)  
@@ -144,7 +144,14 @@ where
       let res := build_non_zero_remainders ideal ps ideals_are_equals pairs h₁ h₂ 
       if h: res.remainders == [] then ⟨ps, ideals_are_equals, res, h⟩  
       else impl ideal (ps ++ res.remainders)
-                (sorry)
+                (
+                  by 
+                    cases res
+                    rename_i remainders _ remainders_in_ideal
+                    rw [← ideals_are_equals] at remainders_in_ideal
+                    simp [← ideals_are_equals]
+                    exact generators_extension ps remainders remainders_in_ideal
+                )
                 (sorry)
                 (sorry)
     termination_by impl ps ideals_are_equals h₁ h₂ => ps == []
