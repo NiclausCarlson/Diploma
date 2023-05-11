@@ -92,8 +92,18 @@ def build_non_zero_remainders [MonomialOrder $ Variables n ord]
                           apply Or.elim h₁
                           intros eq
                           rw [eq]
---                          have s_poly_in_ideal: s_poly ∈ ideal
-                          sorry
+                          have s_poly_in_ideal: s_poly ∈ ideal
+                          have head_in_generators := in_gen head
+                          simp at head_in_generators
+                          have left_in_ideal := elemInListElemInIdeal generators head.fst head_in_generators.left
+                          have right_in_ideal := elemInListElemInIdeal generators head.snd head_in_generators.right
+                          have s_poly_in_ideal := s_poly_in_ideal (asIdeal generators) head.fst left_in_ideal head.snd right_in_ideal
+                          rw [ideals_are_equals] at s_poly_in_ideal
+                          simp 
+                          exact s_poly_in_ideal
+                          rename_i r_in_ideal
+                          rw [ideals_are_equals] at r_in_ideal
+                          apply r_in_ideal s_poly_in_ideal
                           intros h_in
                           exact tail_res.remainders_in_ideal r h_in
                        ) 

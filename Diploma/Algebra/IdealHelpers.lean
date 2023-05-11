@@ -31,6 +31,11 @@ theorem listInIdeal [Semiring α] (l: List α): ∀x ∈ l, x ∈ asIdeal l := b
   apply Ideal.subset_span
   exact in_set  
 
+theorem elemInListElemInIdeal [Semiring α] (l: List α) (x: α) (h: x ∈ l): x ∈ asIdeal l := 
+  by
+    have list_in_ideal := listInIdeal l
+    exact list_in_ideal x h
+
 theorem subsets_h (l: List α) (s: Set α) (h: ∀e ∈ l, e ∈ s): asSet l ⊆ s := 
   by
     rw [asSet]
