@@ -209,7 +209,7 @@ by
 def is_in_basis [MonomialOrder $ Variables n ord]
                 (p: Polynomial n ord)
                 (groebner_basis: List (Polynomial n ord))
-                (dividers_non_empty:  Not $ groebner_basis == [])
+                (dividers_non_empty: Not $ groebner_basis == [])
                 (not_div_by_zero: Not $ groebner_basis.any (fun p => p == 0)) : Bool :=
   (divide_many p groebner_basis dividers_non_empty not_div_by_zero).r == 0
 
