@@ -129,20 +129,10 @@ def build_groebner_basis [MonomialOrder $ Variables n ord]
                          : GroebnerBasis $ asIdeal polynomials := 
 if h₁: polynomials == [] then GroebnerBasis.mk [] sorry
 else if h₂: polynomials.any (fun p => p == 0) then GroebnerBasis.mk [] sorry
-else 
-  let res := impl (asIdeal polynomials) polynomials (by simp) h₁ h₂
-  ⟨ 
-    res.generators,
-    --by
-    --  cases res
-    --  rename_i generators ideals_are_equals pairs h_pairs generators_non_empty not_div_by_zero remainders h empty
-    --  have t := bb_criterion generators pairs h_pairs generators_non_empty not_div_by_zero (asIdeal generators) (by simp)
-    --  simp at t
-    --  rw [h] at empty
-    --  have tt := t empty
-    --  simp
-      sorry
-  ⟩ 
+else
+  let ideal := (asIdeal polynomials)
+  let res := impl ideal polynomials (by simp) h₁ h₂
+  ⟨res.generators, bb_criterion ideal res⟩ 
 where 
     impl (ideal: Ideal $ Polynomial n ord) 
          (ps: List $ Polynomial n ord) 
