@@ -88,7 +88,7 @@ private def monomial_div_check(p₁ p₂: String) (is_divides: Bool) (expected: 
 --# Test div
 private def parse_list (ps: List String): List (Polynomial Dimension order.Lex) := ps.map parse_lex!
 
-def div (p: String) (ps: List String): Except String (DivisionResult (parse_lex! p) (asIdeal$ parse_list ps)) := 
+def div (p: String) (ps: List String): Except String (DivisionResult (parse_lex! p) (parse_list ps)) := 
   let divivders :=  parse_list ps
   if h₁: divivders == [] then Except.error s!"divivders is empty"
   else if h₂: divivders.any (fun p => p == 0) then Except.error s!"divivders contains zero" 
@@ -149,7 +149,7 @@ private def check_groebner (input expected: List String): Except String String :
 #eval check_groebner ["x0^2+x0x1x2^4+x1", "x0+x1+x2"] ["x0^2+x0x1x2^4+x1", "x0+x1+x2", "-x1^2x2^4+x1^2-x1x2^5+2x1x2+x1+x2^2"]
 #eval check_groebner ["17x0^5x1^8+4x0x1x2^12", "x0x1^4x2", "x1-1"] ["17x0^5x1^8+4x0x1x2^12", "x0x1^4x2", "x1-1", "4/17x0x2^13", "x0^5+4/17x0x2^12", "4/17x0x2^12", "x0x2"]
 
-def get_remainder (div_res: Except String (DivisionResult (parse_lex! p) (asIdeal$ parse_list ps))): String := 
+def get_remainder (div_res: Except String (DivisionResult (parse_lex! p) (parse_list ps))): String := 
   match div_res with
     | Except.ok res => toString res.r
     | Except.error err => err

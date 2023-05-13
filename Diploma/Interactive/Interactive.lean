@@ -99,9 +99,13 @@ private def BuildGroebner (dimension: Nat): Parsec EvalResult := do
   ws *> skipChar ':' *> ws
   match ord_type with
     | lex   => let polynomials ← PolynomialsBlock dimension order.Lex
-               return EvalResult.str $ toString $ Groebner.mk (toString ord_type) polynomials (build_groebner_basis polynomials)
+               return EvalResult.str $ toString $ Groebner.mk (toString ord_type) 
+                                                              polynomials 
+                                                              (build_groebner_basis polynomials).generators
     | grlex => let polynomials ← PolynomialsBlock dimension order.GrLex
-               return EvalResult.str $ toString $ Groebner.mk (toString ord_type) polynomials (build_groebner_basis polynomials)
+               return EvalResult.str $ toString $ Groebner.mk (toString ord_type) 
+                                                              polynomials 
+                                                              (build_groebner_basis polynomials).generators
 
 --# Simp command
 private structure Simp (dimension: Nat) (ord: Type) [MonomialOrder $ Variables dimension ord] where
@@ -142,7 +146,7 @@ instance {dimension: Nat} {ord: Type} [MonomialOrder $ Variables dimension ord]:
 private def EvalIsIn (dimension: Nat): Parsec EvalResult := do
   let p  ← PolynomialWithSemilcon dimension order.GrLex <* ws
   let ps ← PolynomialsBlock dimension order.GrLex
-  let basis := build_groebner_basis ps
+  let basis := (build_groebner_basis ps).generators
   if h₁: basis == [] then fail s!"basis is empty"
   else if h₂: basis.any (fun p => p == 0) then fail s!"basis contains zero"
   else return EvalResult.str $ toString $ IsIn.mk p basis (is_in_basis p basis h₁ h₂)

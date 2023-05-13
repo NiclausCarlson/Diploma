@@ -41,6 +41,4 @@ def m_cmp [algebra.MonomialOrder $ Variables n ord] (m₁ m₂: Monomial n ord):
   else if m₁.snd < m₂.snd then Ordering.gt
   else Ordering.lt
 
-abbrev Polynomial (n: Nat) [algebra.MonomialOrder $ Variables n ord] := Std.RBSet (Monomial n ord) m_cmp
-
 end ordering

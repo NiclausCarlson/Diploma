@@ -142,13 +142,13 @@ where
       simp_wf
       sorry
     }
-    
+
 theorem sufficiency_poly_in_ideal [MonomialOrder $ Variables n ord] 
                                   (p: Polynomial n ord)
                                   (dividers: List $ Polynomial n ord)
                                   (dividers_non_empty: Not $ dividers == [])
                                   (not_div_by_zero: Not $ dividers.any (fun p => p == 0))
-                                  (div_res : DivisionResult p (asIdeal dividers))
+                                  (div_res : DivisionResult p dividers)
                                   (h: div_res = divide_many p dividers dividers_non_empty not_div_by_zero)
                                     : div_res.r = 0 → p ∈ asIdeal dividers :=
 by

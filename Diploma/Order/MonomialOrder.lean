@@ -186,7 +186,7 @@ theorem lex_le_antisymm : ∀ (a b : Variables n order.Lex), Order.lex a b → O
                                   rename_i neq₁ neq₂
                                   have eq := Nat.le_antisymm ab ba
                                   contradiction
-  exact aux n v₁ v₂ h₁ h₂ theorem vectors_neq_r_head_neq (v₁ v₂: Vector Nat (Nat.succ n)) (h: v₁ ≠ v₂): head v₁ ≠ head v₂ := by sorry 
+  exact aux n v₁ v₂ h₁ h₂ 
 
 theorem lex_le_total : ∀ (a b : Variables n order.Lex), Order.lex a b ∨ Order.lex b a := by
   intros v₁ v₂
