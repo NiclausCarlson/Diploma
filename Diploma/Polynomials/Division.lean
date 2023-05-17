@@ -9,15 +9,6 @@ import Diploma.Algebra.PolynomialRing
 namespace polynomial
 open algebra Ideal IdealHelpers
 
-structure DivisionResult [MonomialOrder $ Variables n ord] 
-                         (divisible: Polynomial n ord)
-                         (dividers: List $ Polynomial n ord) where
-  p: Polynomial n ord
-  r: Polynomial n ord
-  sum_eq: divisible = p + r
-  p_in_ideal: p ∈ asIdeal dividers
-  r_in_ideal: divisible ∈ asIdeal dividers → r ∈ asIdeal dividers 
-
 -- is m₁ divides to m₂
 open Nat in
 def Monomial.is_div (m₁ m₂: Monomial n ord) : Bool := impl n m₁.snd m₂.snd
@@ -27,6 +18,17 @@ where
     | ⟨[], _⟩   , ⟨[], _⟩    => true
     | ⟨[x], _⟩  , ⟨[y], _⟩   => x >= y
     | ⟨x::xs, p⟩, ⟨y::ys, q⟩ => x >= y ∧ impl (m - 1) ⟨xs, congrArg pred p⟩ ⟨ys, congrArg pred q⟩
+
+structure DivisionResult [MonomialOrder $ Variables n ord] 
+                         (divisible: Polynomial n ord)
+                         (dividers: List $ Polynomial n ord) where
+  p: Polynomial n ord
+  r: Polynomial n ord
+  r_as_list: List $ Monomial n ord
+  sum_eq: divisible = p + r
+  correct_r: r_as_list = [] ∨ (∀m ∈ r_as_list, ∀d ∈ dividers, m.is_div d.lt == false)
+  p_in_ideal: p ∈ asIdeal dividers
+  r_in_ideal: divisible ∈ asIdeal dividers → r ∈ asIdeal dividers 
 
 open Vector in
 private def Variables.div (v₁ v₂: Variables n ord) : Variables n ord := map₂ (fun x y: Nat => x - y) v₁ v₂
@@ -119,28 +121,35 @@ def divide_many [MonomialOrder $ Variables n ord]
                 (dividers: List $ Polynomial n ord)
                 (dividers_non_empty: Not (dividers == []))
                 (not_div_by_zero: Not $ dividers.any (fun p => p == 0)): DivisionResult divisible dividers := 
-  impl divisible dividers (by simp) 0 0 (by simp) (by simp) 
+  impl divisible dividers (by simp) 0 0 [] (by simp) (by simp) (by simp) 
   where 
     impl (p: Polynomial n ord)
          (ps: List (Polynomial n ord))
          (ps_in_dividers: ps ⊆ dividers) 
          (quotient: Polynomial n ord)
          (remainder: Polynomial n ord)
+         (remainder_as_list: List $ Monomial n ord)
+         (correct_remainder: remainder_as_list = [] ∨ (∀m ∈ remainder_as_list, ∀d ∈ dividers, m.is_div d.lt == false))
          (quotient_in_ideal: quotient ∈ asIdeal dividers)
          (sum_eq : divisible = p + quotient + remainder) : DivisionResult divisible dividers :=
       if h: p == 0 then let div_sum_r_eq_p := div_sum_r_eq_p divisible p quotient remainder sum_eq h
                         DivisionResult.mk 
                               quotient 
-                              remainder 
+                              remainder
+                              remainder_as_list 
                               div_sum_r_eq_p
+                              correct_remainder
                               (by exact quotient_in_ideal)
                               (remainder_in_ideal divisible quotient remainder dividers div_sum_r_eq_p quotient_in_ideal)
       else match ps with
-               | []    => impl (p - p.Lt) dividers (by simp) quotient (remainder + p.Lt) quotient_in_ideal
+               | []    => impl (p - p.Lt) dividers (by simp) 
+                               quotient (remainder + p.Lt) (remainder_as_list ++ [p.lt])
+                               (by simp; sorry) quotient_in_ideal
                                (erase_lt divisible p quotient remainder sum_eq)
                | a::as => if p.lt.is_div a.lt then 
                              let reducer := (Polynomial.single $ p.lt.div a.lt) * a
-                             impl (p - reducer) dividers (by simp) (quotient + reducer) remainder 
+                             impl (p - reducer) dividers (by simp) 
+                                  (quotient + reducer) remainder remainder_as_list correct_remainder
                                   (
                                     by 
                                       have a_in_ideal: a ∈ asIdeal dividers 
@@ -162,8 +171,11 @@ def divide_many [MonomialOrder $ Variables n ord]
                                         have right := ps_in_dividers.right  
                                         exact right
                                     )
-                                    quotient remainder quotient_in_ideal sum_eq                                       
-     termination_by impl p ps ps_in_dividers quotient remainder quotient_in_ideal sum_eq => p == 0
+                                    quotient remainder remainder_as_list 
+                                    correct_remainder quotient_in_ideal sum_eq                                       
+     termination_by impl p ps ps_in_dividers 
+                          quotient remainder remainder_as_list 
+                          correct_remainder quotient_in_ideal sum_eq => p == 0
      decreasing_by {
        sorry
      }

@@ -13,7 +13,7 @@ open algebra Ideal IdealHelpers
 structure GroebnerBasis [MonomialOrder $ Variables n ord] 
                         (ideal: Ideal $ Polynomial n ord) where
  generators: List $ Polynomial n ord
- groebner_def: ∀p ∈ ideal, ∃f ∈ generators, Monomial.is_div p.lt f.lt == true 
+ groebner_def: ∀p ∈ ideal, ∃f ∈ generators, Monomial.is_div p.lt f.lt == true
 
 structure PolynomialPairs [MonomialOrder $ Variables n ord] 
                           (generators: List $ Polynomial n ord) where
@@ -154,7 +154,7 @@ theorem sufficiency_poly_in_ideal [MonomialOrder $ Variables n ord]
 by
   intros is_zero
   cases div_res
-  rename_i q r sum_eq p_in_ideal r_in_ideal
+  rename_i q r sum_eq _ p_in_ideal r_in_ideal
   simp at *
   simp [is_zero] at sum_eq
   rw [sum_eq]
