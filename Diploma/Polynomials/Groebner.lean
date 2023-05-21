@@ -27,8 +27,57 @@ def build_pairs (l: List α): List $ α × α :=
  where 
   pairs (a: α) (l: List α): List $ α × α := l.map (fun x => (a, x))
 
+theorem pair_in_list₁ (l: List α) (pairs: List $ α × α) (h: pairs = build_pairs l)
+        : ∀p ∈ pairs, p.fst ∈ l:= by 
+  let rec aux (l: List α) (pairs: List $ α × α) (h: pairs = build_pairs l)
+        : ∀p ∈ pairs, p.fst ∈ l:= by
+    intros p in_pairs
+    rw [h] at in_pairs
+    match l with
+      | [] => simp [build_pairs] at in_pairs
+      | x::xs => simp [build_pairs, build_pairs.pairs] at in_pairs
+                 cases in_pairs
+                 rename_i hh
+                 let ⟨y, t⟩ := hh
+                 simp
+                 have right := Eq.symm t.right
+                 constructor
+                 simp [right]
+                 simp [build_pairs, build_pairs.pairs] at h
+                 simp
+                 have res := aux xs (build_pairs xs) (by simp) p
+                 rename_i rr
+                 simp [res rr]
+  exact aux l pairs h
+
+theorem pair_in_list₂ (a: α) (l: List α) (pairs: List $ α × α) (h: pairs = build_pairs.pairs a l)
+                       : ∀p ∈ pairs, p.snd ∈ l := by
+  intros p in_pairs
+  rw [h, build_pairs.pairs] at in_pairs
+  simp at *
+  let ⟨y, t⟩ := in_pairs
+  have left := t.left
+  have right := Eq.symm t.right
+  simp [right, left]
+
+theorem pair_in_list₃ (l: List α) (pairs: List $ α × α) (h: pairs = build_pairs l)
+        : ∀p ∈ pairs, p.snd ∈ l:= by 
+  intros p in_pairs
+  rw [h] at in_pairs
+  
+  sorry
+theorem pair_in_list (l: List α) (pairs: List $ α × α) (h: pairs = build_pairs l)
+        : ∀p ∈ pairs, p.fst ∈ l ∧ p.snd ∈ l:= by
+  intros p in_pairs
+  constructor
+  exact pair_in_list₁ l pairs h p in_pairs
+  
+  sorry
+  
 def build_polynomial_pairs [MonomialOrder $ Variables n ord] 
-                           (l: List $ Polynomial n ord): PolynomialPairs l := ⟨build_pairs l, sorry⟩  
+                           (l: List $ Polynomial n ord): PolynomialPairs l := 
+  let pairs := build_pairs l
+  ⟨pairs, pair_in_list l pairs (by simp)⟩  
 
 structure NonZeroRemainders [MonomialOrder $ Variables n ord] 
                             (ideal: Ideal $ Polynomial n ord) where
