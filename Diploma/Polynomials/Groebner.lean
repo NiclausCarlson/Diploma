@@ -49,7 +49,7 @@ theorem pair_in_list₁ (l: List α) (pairs: List $ α × α) (h: pairs = build_
                  rename_i rr
                  simp [res rr]
   exact aux l pairs h
-  
+
 theorem pair_in_list₂ (l: List α) (pairs: List $ α × α) (h: pairs = build_pairs l)
         : ∀p ∈ pairs, p.snd ∈ l:= by 
   let rec aux (l: List α) (pairs: List $ α × α) (h: pairs = build_pairs l)
@@ -155,11 +155,41 @@ structure BbCriterionStruct [MonomialOrder $ Variables n ord]
   remainders: NonZeroRemainders ideal
   empty: remainders.remainders == []
 
+def empty_remainders [MonomialOrder $ Variables n ord] (ps: List $ Polynomial n ord) (h: ps = []):
+  NonZeroRemainders $ asIdeal ps := ⟨ 
+                                      ps, 
+                                      by 
+                                        intros p hh
+                                        rw [h] at hh
+                                        simp at *,
+                                      by 
+                                        intros p hh
+                                        rw [h] at hh
+                                        simp at *
+                                    ⟩  
+def empty_bb_struct [MonomialOrder $ Variables n ord] (ps: List $ Polynomial n ord) (h: ps = []):
+  BbCriterionStruct $ asIdeal ps := ⟨
+                                      ps,
+                                      by simp,
+                                      empty_remainders ps h,
+                                      by
+                                        simp [empty_remainders, h]
+                                        rfl
+                                    ⟩ 
+
 axiom bb_criterion {n: Nat} {ord: Type}
                    [MonomialOrder $ Variables n ord]
                    (ideal: Ideal $ Polynomial n ord)
                    (bb_struct: BbCriterionStruct ideal)
                     : ∀p ∈ ideal, ∃f ∈ bb_struct.generators, Monomial.is_div p.lt f.lt == true
+
+theorem cons_non_empty 
+        [BEq α] (a b: List α) (h: ¬(b == []) = true): ¬(a ++ b == []) = true := 
+  by
+    simp at *
+    cases a
+    simp [h]
+    rfl
 
 def build_groebner_basis [MonomialOrder $ Variables n ord] 
                          (polynomials: List $ Polynomial n ord)
@@ -189,8 +219,22 @@ where
                     simp [← ideals_are_equals]
                     exact generators_extension ps remainders remainders_in_ideal
                 )
-                (sorry)
-                (sorry)
+                (cons_non_empty ps res.remainders h)
+                (
+                  by
+                    cases res
+                    simp
+                    rename_i not_contains_zero _
+                    intros p or
+                    have t := not_contains_zero p
+                    simp [bne] at t
+                    cases or
+                    rename_i hh
+                    simp at h₂
+                    exact h₂ p hh
+                    rename_i hh
+                    exact t hh
+                )
     termination_by impl ps ideals_are_equals h₁ h₂ => ps == []
     decreasing_by {
       simp_wf
