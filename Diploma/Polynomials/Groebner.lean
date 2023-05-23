@@ -34,7 +34,7 @@ theorem pair_in_list₁ (l: List α) (pairs: List $ α × α) (h: pairs = build_
     intros p in_pairs
     rw [h] at in_pairs
     match l with
-      | [] => simp [build_pairs] at in_pairs
+      | []    => simp [build_pairs] at in_pairs
       | x::xs => simp [build_pairs, build_pairs.pairs] at in_pairs
                  cases in_pairs
                  rename_i hh
@@ -49,30 +49,35 @@ theorem pair_in_list₁ (l: List α) (pairs: List $ α × α) (h: pairs = build_
                  rename_i rr
                  simp [res rr]
   exact aux l pairs h
-
-theorem pair_in_list₂ (a: α) (l: List α) (pairs: List $ α × α) (h: pairs = build_pairs.pairs a l)
-                       : ∀p ∈ pairs, p.snd ∈ l := by
-  intros p in_pairs
-  rw [h, build_pairs.pairs] at in_pairs
-  simp at *
-  let ⟨y, t⟩ := in_pairs
-  have left := t.left
-  have right := Eq.symm t.right
-  simp [right, left]
-
-theorem pair_in_list₃ (l: List α) (pairs: List $ α × α) (h: pairs = build_pairs l)
-        : ∀p ∈ pairs, p.snd ∈ l:= by 
-  intros p in_pairs
-  rw [h] at in_pairs
   
-  sorry
+theorem pair_in_list₂ (l: List α) (pairs: List $ α × α) (h: pairs = build_pairs l)
+        : ∀p ∈ pairs, p.snd ∈ l:= by 
+  let rec aux (l: List α) (pairs: List $ α × α) (h: pairs = build_pairs l)
+        : ∀p ∈ pairs, p.snd ∈ l := by
+    intros p in_pairs
+    rw [h] at in_pairs
+    match l with
+      | []    => simp [build_pairs] at *
+      | x::xs => simp [build_pairs] at h in_pairs
+                 apply Or.elim in_pairs
+                 intros in_build_pairs
+                 simp [build_pairs.pairs] at in_build_pairs
+                 let ⟨y, t⟩ := in_build_pairs
+                 have left := t.left
+                 have right := t.right
+                 simp [Eq.symm right, left]             
+                 intros in_build_pairs
+                 simp
+                 have res := aux xs (build_pairs xs) (by simp) p
+                 simp [res in_build_pairs]
+  exact aux l pairs h
+
 theorem pair_in_list (l: List α) (pairs: List $ α × α) (h: pairs = build_pairs l)
         : ∀p ∈ pairs, p.fst ∈ l ∧ p.snd ∈ l:= by
   intros p in_pairs
   constructor
   exact pair_in_list₁ l pairs h p in_pairs
-  
-  sorry
+  exact pair_in_list₂ l pairs h p in_pairs
   
 def build_polynomial_pairs [MonomialOrder $ Variables n ord] 
                            (l: List $ Polynomial n ord): PolynomialPairs l := 
