@@ -167,6 +167,7 @@ def empty_remainders [MonomialOrder $ Variables n ord] (ps: List $ Polynomial n 
                                         rw [h] at hh
                                         simp at *
                                     ⟩  
+
 def empty_bb_struct [MonomialOrder $ Variables n ord] (ps: List $ Polynomial n ord) (h: ps = []):
   BbCriterionStruct $ asIdeal ps := ⟨
                                       ps,
@@ -183,6 +184,9 @@ axiom bb_criterion {n: Nat} {ord: Type}
                    (bb_struct: BbCriterionStruct ideal)
                     : ∀p ∈ ideal, ∃f ∈ bb_struct.generators, Monomial.is_div p.lt f.lt == true
 
+def get_bb_from_empty [MonomialOrder $ Variables n ord] (ps: List $ Polynomial n ord) (h: ps = []) := 
+                                bb_criterion (asIdeal ps) (empty_bb_struct ps h)
+
 theorem cons_non_empty 
         [BEq α] (a b: List α) (h: ¬(b == []) = true): ¬(a ++ b == []) = true := 
   by
@@ -191,10 +195,23 @@ theorem cons_non_empty
     simp [h]
     rfl
 
+theorem list_empty [BEq α] : ∀ l: List α, (l == []) = true → l = [] := by
+  intros l h
+  cases l
+  simp
+  contradiction
+
 def build_groebner_basis [MonomialOrder $ Variables n ord] 
                          (polynomials: List $ Polynomial n ord)
                          : GroebnerBasis $ asIdeal polynomials := 
-if h₁: polynomials == [] then GroebnerBasis.mk [] sorry
+if h₁: polynomials == [] then GroebnerBasis.mk [] (
+                                                    by
+                                                      have empty := list_empty polynomials h₁
+                                                      have h := get_bb_from_empty polynomials empty
+                                                      simp [empty_bb_struct, empty] at h
+                                                      simp [empty]
+                                                      exact h
+                                                  )
 else if h₂: polynomials.any (fun p => p == 0) then GroebnerBasis.mk [] sorry
 else
   let ideal := (asIdeal polynomials)
