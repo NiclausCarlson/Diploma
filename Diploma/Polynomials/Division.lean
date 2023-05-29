@@ -144,7 +144,24 @@ def divide_many [MonomialOrder $ Variables n ord]
       else match ps with
                | []    => impl (p - p.Lt) dividers (by simp) 
                                quotient (remainder + p.Lt) (remainder_as_list ++ [p.lt])
-                               (by simp; sorry) quotient_in_ideal
+                               (
+                                  by
+                                    simp
+                                    simp at *
+                                    intros m in_remainders d in_dividers
+                                    cases correct_remainder
+                                    rename_i h
+                                    simp [h] at in_remainders
+                                    rw [in_remainders]
+                                    sorry
+                                    rename_i h
+                                    cases in_remainders
+                                    rename_i h₁
+                                    exact h m h₁ d in_dividers 
+                                    rename_i h
+                                    rw [h]
+                                    sorry
+                               ) quotient_in_ideal
                                (erase_lt divisible p quotient remainder sum_eq)
                | a::as => if p.lt.is_div a.lt then 
                              let reducer := (Polynomial.single $ p.lt.div a.lt) * a
