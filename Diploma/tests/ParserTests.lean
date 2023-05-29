@@ -83,6 +83,13 @@ instance : ToString Variable where
 #eval AssertEq (toString (parse_lex! "12x0^3x1^5-x0^4x1^7+3")) "-x0^4x1^7+12x0^3x1^5+3"
 #eval AssertEq (toString (parse_lex! "x0^3x1^5-x0^4x1^7+3"))   "-x0^4x1^7+x0^3x1^5+3"
 
+#eval AssertEq (toString (parse_lex! "1/3x0"))                "1/3x0"
+#eval AssertEq (toString (parse_lex! "-1/3x0"))               "-1/3x0"
+#eval AssertEq (toString (parse_lex! "24/3x0"))               "8x0"
+#eval AssertEq (toString (parse_lex! "-1/3x0x1"))             "-1/3x0x1"
+#eval AssertEq (toString (parse_lex! "-1/3x0+1/3x0"))         "0"
+#eval AssertEq (toString (parse_lex! "2/4x0+5/3x1+125/25x2")) "1/2x0+5/3x1+5x2"
+
 #eval AssertEq (toString (parse_lex! "     12x0^3x1^5 -       x0^4x1^7 +    3")) "-x0^4x1^7+12x0^3x1^5+3"
 
 #eval AssertEq (toString (parse_grlex! "x0^3x1^20-x0^4x1^7+3")) "x0^3x1^20-x0^4x1^7+3"

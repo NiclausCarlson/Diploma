@@ -54,11 +54,14 @@ def Minus : Parsec Char := pchar '-'
 
 private def CharNone : Parsec (Option Char) := do return none  
 def Sign : Parsec (Option Char) := (Option.some <$> (Minus <|> Plus)) <|> CharNone
-                         
-def Coeff : Parsec (Option Int) := do 
-                                      let digits ← manyChars digit
-                                      if digits.isEmpty then return none
-                                      else return some (String.toInt! digits)  
+
+def Coeff : Parsec (Option ℚ) := do 
+                                   let num ← manyChars digit
+                                   let den ← skipChar '/' *> manyChars digit <|> pure ""
+                                   if num.isEmpty then return none
+                                   else if den.isEmpty then return some (String.toInt! num)
+                                   else return some $ mkRat (String.toInt! num) (String.toNat! den) 
+
 def SignToInt (sign: Option Char): Int := 
    match sign with
       | none => 1
