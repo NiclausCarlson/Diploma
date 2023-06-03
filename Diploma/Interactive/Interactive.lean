@@ -152,7 +152,7 @@ private def EvalIsIn (dimension: Nat): Parsec EvalResult := do
   else return EvalResult.str $ toString $ IsIn.mk p basis (is_in_basis p basis h₁ h₂)
 
 private def EvalSetN : Parsec EvalResult := do
-  let new_n ← ws <* pstring "set_n" <* ws *> Number
+  let new_n ← ws *> Number
   return EvalResult.new_dimension $ String.toNat! new_n
 
 --# Main parser
