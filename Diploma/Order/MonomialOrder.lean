@@ -539,9 +539,89 @@ theorem grlex_le_total : ∀ (a b : Variables n order.GrLex), Order.grlex a b �
   have contr := Nat.le_antisymm h₁ h₂
   rw [contr] at neq
   simp at *
-  
+
+private def sum (a b: Nat) := a + b
+
+open List in
+theorem zipWith_to_fold (init₁ init₂: Nat) (l₁ l₂: List Nat) (h: l₁.length = l₂.length): List.foldl sum (init₁ + init₂) (List.zipWith sum l₁ l₂) = sum (List.foldl sum init₁ l₁) (List.foldl sum init₂ l₂) := by 
+  simp [algebra.sum]
+  match l₁, l₂ with
+    | [], []       => simp
+    | x::xs, y::ys => simp
+                      have open_init₂ : init₂ + (x + y) = x + init₂ + y
+                      rw [Nat.add_right_comm, Nat.add_comm] 
+                      rw [Nat.add_assoc, open_init₂, ← Nat.add_assoc, ←Nat.add_assoc]
+                      have size_eq : xs.length = ys.length
+                      simp at h
+                      exact h
+                      have res := zipWith_to_fold (init₁ + x) (init₂ + y) xs ys size_eq
+                      simp [sum] at res
+                      rw [Nat.add_assoc]
+                      exact res
+open List in
+theorem elem_sum_is_hom: ∀a b: Variables n order.GrLex, Order.grlex.elem_sum (Variables.mul a b) = Order.grlex.elem_sum a + Order.grlex.elem_sum b := by
+  intros a b
+  match a, b with
+    | ⟨[], _⟩   , ⟨[], _⟩    => simp [Order.grlex.elem_sum, Variables.mul]
+    | ⟨x::xs, p⟩, ⟨y::ys, q⟩ => simp [Order.grlex.elem_sum, Variables.mul]
+                                simp [List.zipWith]
+                                simp [foldl_cons]
+                                have size_eq : (x::xs).length = (y::ys).length
+                                rw [Eq.symm q] at p
+                                exact p
+                                have tails_size_eq : xs.length = ys.length
+                                simp at size_eq
+                                exact size_eq
+                                have hh := zipWith_to_fold x y xs ys tails_size_eq
+                                simp [algebra.sum] at hh 
+                                simp [hh] 
+                                
 theorem grlex_add_le_add : ∀ a b c: Variables n order.GrLex, Order.grlex a b → Order.grlex (Variables.mul a c) (Variables.mul b c) := by
-  sorry
+  intros a b c h_le
+  rw [Order.grlex]
+  rw [Order.grlex] at h_le
+  split
+  split at h_le
+  intros sum₁ sum₂
+  repeat (split; simp)
+  simp at *
+  split at h_le
+  rename_i h₁ h₂ h₃
+  simp [elem_sum_is_hom] at *
+  have h₄ := Nat.le_of_lt h₃
+  have h₅ := Eq.symm (Nat.le_antisymm h₂ h₄)
+  contradiction
+  rename_i h₁ h₂ h₃
+  simp [elem_sum_is_hom] at *
+  split at h_le
+  contradiction
+  exact h_le
+  intros sum₁ sum₂
+  repeat (split; simp)
+  simp [elem_sum_is_hom] at *
+  split at h_le
+  rename_i h₁ h₂ h₃
+  exact Nat.le_lt_antisymm h₁ h₃
+  exact h_le
+  intros sum₁ sum₂
+  split
+  simp
+  split
+  simp [elem_sum_is_hom] at *
+  split at h_le
+  rename_i h₁ h₂ h₃
+  exact Nat.le_lt_antisymm h₁ h₃
+  simp at *
+  split at h_le
+  rename_i h_lex₁ _ _ _ h_lex₂
+  have hr := lex_add_le_add a b c h_lex₂
+  contradiction
+  exact h_le
+  simp [elem_sum_is_hom] at *
+  split at h_le
+  rename_i h₁ h₂ h₃
+  exact Nat.le_lt_antisymm h₁ h₃
+  exact h_le
 
 --# Decidable theorems
 theorem grlex_true_of_ble_grlex_true (h: Eq (Order.bgrlex v₁ v₂) true): Order.grlex v₁ v₂ := by
